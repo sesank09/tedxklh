@@ -11,15 +11,11 @@ export default function CustomCursor() {
   const mouseX = useMotionValue(-100);
   const mouseY = useMotionValue(-100);
 
-  // Smooth springs for high-performance theme cursor
-  const springX = useSpring(mouseX, { stiffness: 450, damping: 28, mass: 0.18 });
-  const springY = useSpring(mouseY, { stiffness: 450, damping: 28, mass: 0.18 });
-
-  const outerX = useSpring(mouseX, { stiffness: 180, damping: 22, mass: 0.5 });
-  const outerY = useSpring(mouseY, { stiffness: 180, damping: 22, mass: 0.5 });
+  const outerX = useSpring(mouseX, { stiffness: 220, damping: 24, mass: 0.4 });
+  const outerY = useSpring(mouseY, { stiffness: 220, damping: 24, mass: 0.4 });
 
   useEffect(() => {
-    // Disable on touch devices for native lag-free performance
+    // Disable custom cursor overlay on touch devices for native lag-free performance
     const isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
     if (isTouch) return;
 
@@ -40,8 +36,6 @@ export default function CustomCursor() {
           setCursorText("OPEN");
         } else if (target.closest(".theme-card")) {
           setCursorText("EXPLORE");
-        } else if (interactive) {
-          setCursorText("");
         } else {
           setCursorText("");
         }
@@ -66,40 +60,16 @@ export default function CustomCursor() {
 
   return (
     <>
-      {/* Central Diamond/Core Idea Target Pointer */}
+      {/* Clean Reticle Scope — Red dot removed per request */}
       <motion.div
-        className="fixed top-0 left-0 w-2.5 h-2.5 bg-[#EB0028] pointer-events-none z-[99999] shadow-[0_0_12px_#EB0028] rotate-45"
-        style={{
-          x: mouseX,
-          y: mouseY,
-          translateX: "-50%",
-          translateY: "-50%",
-          willChange: "transform",
-        }}
-      />
-
-      {/* Trailing Energy Ring */}
-      <motion.div
-        className="fixed top-0 left-0 w-5 h-5 border border-[#EB0028]/60 rounded-full pointer-events-none z-[99998] blur-[0.5px]"
-        style={{
-          x: springX,
-          y: springY,
-          translateX: "-50%",
-          translateY: "-50%",
-          willChange: "transform",
-        }}
-      />
-
-      {/* Futuristic Outer Geometric Reticle */}
-      <motion.div
-        className="fixed top-0 left-0 rounded-full pointer-events-none z-[99993] border border-[#EB0028]/40 flex items-center justify-center mix-blend-screen overflow-hidden"
+        className="fixed top-0 left-0 rounded-full pointer-events-none z-[99993] border border-[#EB0028]/30 flex items-center justify-center mix-blend-screen overflow-hidden"
         animate={{
-          width: isHovered ? 76 : 40,
-          height: isHovered ? 76 : 40,
-          backgroundColor: isHovered ? "rgba(235, 0, 40, 0.14)" : "rgba(0, 0, 0, 0)",
-          borderColor: isHovered ? "#FF2E54" : "rgba(235, 0, 40, 0.35)",
-          boxShadow: isHovered ? "0 0 30px rgba(235, 0, 40, 0.45)" : "0 0 10px rgba(235,0,40,0.1)",
-          rotate: isHovered ? 180 : 0,
+          width: isHovered ? 68 : 32,
+          height: isHovered ? 68 : 32,
+          backgroundColor: isHovered ? "rgba(235, 0, 40, 0.12)" : "rgba(0, 0, 0, 0)",
+          borderColor: isHovered ? "#FF2E54" : "rgba(235, 0, 40, 0.3)",
+          boxShadow: isHovered ? "0 0 25px rgba(235, 0, 40, 0.35)" : "0 0 0px transparent",
+          rotate: isHovered ? 90 : 0,
         }}
         style={{
           x: outerX,
@@ -108,13 +78,13 @@ export default function CustomCursor() {
           translateY: "-50%",
           willChange: "transform, width, height",
         }}
-        transition={{ type: "spring", stiffness: 300, damping: 24, mass: 0.35 }}
+        transition={{ type: "spring", stiffness: 350, damping: 26, mass: 0.3 }}
       >
-        {/* 4 Corner Crosshair Ticks */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1px] h-1.5 bg-[#EB0028]/80" />
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[1px] h-1.5 bg-[#EB0028]/80" />
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 h-[1px] w-1.5 bg-[#EB0028]/80" />
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 h-[1px] w-1.5 bg-[#EB0028]/80" />
+        {/* Subtle corner ticks */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1px] h-1 bg-[#EB0028]/60" />
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[1px] h-1 bg-[#EB0028]/60" />
+        <div className="absolute left-0 top-1/2 -translate-y-1/2 h-[1px] w-1 bg-[#EB0028]/60" />
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 h-[1px] w-1 bg-[#EB0028]/60" />
 
         {cursorText && (
           <motion.span
