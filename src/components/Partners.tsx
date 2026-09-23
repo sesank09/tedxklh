@@ -9,7 +9,7 @@ const PARTNERS = [
   { name: "NVIDIA Robotics",   tier: "Compute Partner", category: "Hardware" },
   { name: "MIT Media Lab",     tier: "Academic Partner", category: "Education" },
   { name: "Designboom",        tier: "Media Partner", category: "Design" },
-  { name: "KL University",     tier: "Host Institution", category: "Campus" },
+  { name: "KLH University, Bowrampet", tier: "Host Institution", category: "Campus" },
 ];
 
 export default function Partners() {
@@ -33,7 +33,7 @@ export default function Partners() {
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#EB0028]/30 bg-[#EB0028]/10 text-[#EB0028] text-xs font-mono tracking-widest uppercase"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            CHAPTER V · COLLABORATORS
+            INSTITUTIONAL COLLABORATORS
           </motion.div>
 
           <motion.h2

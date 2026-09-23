@@ -1,58 +1,58 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Sparkles, Compass, Lightbulb, Share2 } from "lucide-react";
+import { Sparkles, Dna, Orbit, Sparkle } from "lucide-react";
 
 const NARRATIVE_STEPS = [
   {
     step: "01",
-    title: "The Spark of Curiosity",
-    desc: "Every paradigm shift begins with a single question that refuses to be ignored. We bring together thinkers whose work challenges assumptions.",
-    icon: Lightbulb,
+    title: "Structural Dissolution",
+    desc: "Every paradigm shift begins with the courage to let go of the obsolete form. Before a breakthrough can emerge, existing models must dissolve.",
+    icon: Sparkle,
   },
   {
     step: "02",
-    title: "Neural Convergence",
-    desc: "Disconnected ideas collide across disciplines—where artificial intelligence meets philosophy, design, and environmental ethics.",
-    icon: Compass,
+    title: "The Imaginal Crucible",
+    desc: "Disconnected disciplines collide within the chrysalis—where artificial intelligence, synthetic biology, philosophical ethics, and spatial acoustics synthesize anew.",
+    icon: Dna,
   },
   {
     step: "03",
-    title: "Boundless Impact",
-    desc: "Ideas are born locally but reverberate globally. Our platform catalyzes conversation that extends far beyond the auditorium stage.",
-    icon: Share2,
+    title: "Irreversible Emergence",
+    desc: "Metamorphosis is structural, total, and permanent. Ideas born on this stage leave the room transformed, catalyzing change across communities and continents.",
+    icon: Orbit,
   },
 ];
 
 const METRICS = [
-  { val: "12+",   label: "Keynote Speakers" },
+  { val: "12+",   label: "Keynote Pioneers" },
   { val: "100",   label: "Curated Delegates" },
-  { val: "18+",   label: "Topics & Exhibits" },
-  { val: "100%",  label: "Non-Profit Event" },
+  { val: "4",     label: "Transformation Acts" },
+  { val: "100%",  label: "Non-Profit License" },
 ];
 
 export default function About() {
   return (
     <section 
       id="about" 
-      className="relative w-full py-40 px-5 sm:px-8 md:px-12 select-none overflow-hidden"
+      className="relative w-full pt-10 pb-28 sm:pt-16 sm:pb-36 px-4 sm:px-8 md:px-12 select-none overflow-hidden"
     >
       {/* Radial Background Accent */}
       <div className="absolute top-1/3 left-10 w-[450px] h-[450px] bg-[radial-gradient(ellipse_at_center,rgba(235,0,40,0.08),transparent_70%)] pointer-events-none" />
 
-      {/* Main Aligned Container (max-w-[1440px]) */}
+      {/* Main Container */}
       <div className="w-full max-w-[1440px] mx-auto space-y-24 relative z-20">
         
-        {/* Section Header (100% Centered) */}
+        {/* Section Header */}
         <div className="max-w-3xl mx-auto text-center space-y-4 flex flex-col items-center justify-center">
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#EB0028]/30 bg-[#EB0028]/10 text-[#EB0028] text-xs font-mono tracking-widest uppercase"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#EB0028]/30 bg-[#EB0028]/10 text-[#EB0028] text-xs font-mono tracking-widest uppercase shadow-[0_0_15px_rgba(235,0,40,0.2)]"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            CHAPTER I · THE NARRATIVE
+            THE NARRATIVE
           </motion.div>
 
           <motion.h2
@@ -63,7 +63,7 @@ export default function About() {
             className="text-4xl sm:text-6xl font-black text-white tracking-tight uppercase text-center"
             style={{ fontFamily: "'Satoshi', 'Space Grotesk', sans-serif" }}
           >
-            The Lifecycle of an <span className="text-[#EB0028] text-glow">Idea</span>
+            THE ANATOMY OF <span className="text-[#EB0028] text-glow">TRANSFORMATION</span>
           </motion.h2>
 
           <motion.p
@@ -74,14 +74,14 @@ export default function About() {
             className="text-base sm:text-lg text-white/80 font-light leading-relaxed max-w-2xl text-center"
             style={{ fontFamily: "'Inter', sans-serif" }}
           >
-            TEDxKLH is built on a simple premise: when visionary minds share space without boundaries, transformative ideas take root.
+            TEDxKLH 2026 gathers catalysts who refuse to stay the same shape. We explore what happens when ideas rebuild our world from the inside out.
           </motion.p>
         </div>
 
-        {/* Storytelling Grid: Magazine Narrative & Metrics */}
+        {/* Storytelling Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
           
-          {/* Left Narrative Timeline (lg:col-span-7) */}
+          {/* Left Narrative Timeline */}
           <div className="lg:col-span-7 space-y-12">
             {NARRATIVE_STEPS.map((st, i) => {
               const IconComp = st.icon;
@@ -102,7 +102,7 @@ export default function About() {
                     <span className="text-xs font-mono text-[#EB0028] tracking-widest uppercase">
                       PHASE {st.step}
                     </span>
-                    <h3 className="text-2xl font-bold text-white tracking-tight" style={{ fontFamily: "'Satoshi', 'Space Grotesk', sans-serif" }}>
+                    <h3 className="text-2xl font-bold text-white tracking-tight group-hover:text-glow transition-all" style={{ fontFamily: "'Satoshi', 'Space Grotesk', sans-serif" }}>
                       {st.title}
                     </h3>
                     <p className="text-sm text-white/60 font-light leading-relaxed" style={{ fontFamily: "'Inter', sans-serif" }}>
@@ -114,10 +114,10 @@ export default function About() {
             })}
           </div>
 
-          {/* Right Metrics Grid (lg:col-span-5) */}
+          {/* Right Metrics Grid */}
           <div className="lg:col-span-5 space-y-8 p-8 sm:p-12 rounded-[32px] border border-white/10 bg-black/60 backdrop-blur-xl">
             <h3 className="text-xs font-mono tracking-[0.25em] text-white/50 uppercase">
-              Impact Overview
+              METAMORPHOSIS IN NUMBERS
             </h3>
 
             <div className="grid grid-cols-2 gap-6">
@@ -135,10 +135,10 @@ export default function About() {
 
             <div className="pt-6 border-t border-white/10 space-y-2">
               <div className="text-xs font-bold text-white uppercase tracking-wider" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                INDEPENDENT TED OPERATING LICENSE
+                KLH UNIVERSITY, BOWRAMPET
               </div>
               <p className="text-xs text-white/40 font-light leading-relaxed" style={{ fontFamily: "'Inter', sans-serif" }}>
-                Organized under official license from TED, hosted at KL University Hyderabad campus to cultivate regional innovation.
+                Organized under official license from TED. A dedicated convergence space for visionary engineers, bio-designers, artists, and leaders.
               </p>
             </div>
           </div>

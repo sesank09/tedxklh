@@ -4,467 +4,526 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useRef, useState, useEffect, useMemo } from "react";
 import * as THREE from "three";
 
-function getParticleCount(): number {
-  if (typeof window === "undefined") return 2400;
-  const w = window.innerWidth;
-  if (w < 768) return 700;
-  if (w < 1200) return 1300;
-  return 2400;
-}
+const PARTICLE_COUNT = 4800;
 
-// Curl noise: 3D flow field calculation
-function curl(x: number, y: number, z: number, t: number) {
-  const eps = 0.0001;
-  const p = (px: number, py: number, pz: number) =>
-    Math.sin(px * 0.7 + t * 0.12) * Math.cos(py * 0.5 + t * 0.09) +
-    Math.sin(py * 0.6 + pz * 0.4 + t * 0.07) * Math.cos(pz * 0.8 + px * 0.3) +
-    Math.cos(pz * 0.5 + px * 0.6 + t * 0.05) * Math.sin(px * 0.4 + py * 0.7);
-  const dpdx = (p(x + eps, y, z) - p(x - eps, y, z)) / (2 * eps);
-  const dpdy = (p(x, y + eps, z) - p(x, y - eps, z)) / (2 * eps);
-  const dpdz = (p(x, y, z + eps) - p(x, y, z - eps)) / (2 * eps);
-  return { cx: dpdz - dpdy, cy: dpdx - dpdz, cz: dpdy - dpdx };
-}
-
-// 7 3D Morph Shapes (All edge-biased for safe text center zones)
-function buildMorphPositions(count: number): Float32Array[] {
-  const shapes: Float32Array[] = Array.from({ length: 7 }, () => new Float32Array(count * 3));
-  for (let i = 0; i < count; i++) {
-    const ang = Math.random() * Math.PI * 2;
-    const rad = 2.4 + Math.random() * 3.2;
-
-    // 0: Hero — Swirling Edge Nebula
-    shapes[0][i*3]   = Math.cos(ang) * rad * (0.85 + Math.random() * 0.35);
-    shapes[0][i*3+1] = Math.sin(ang) * rad * (0.75 + Math.random() * 0.3);
-    shapes[0][i*3+2] = (Math.random() - 0.5) * 3.5;
-
-    // 1: About — Flowing 3D Sine Wave
-    const wx = (Math.random() - 0.5) * 13;
-    shapes[1][i*3]   = wx;
-    shapes[1][i*3+1] = Math.sin(wx * 0.5) * 2.2 + (Math.random() - 0.5) * 0.5;
-    shapes[1][i*3+2] = Math.cos(wx * 0.4) * 1.5;
-
-    // 2: Theme — Rotating Double Helix Ribbon
-    const ht = (i / count) * Math.PI * 8;
-    const sr = 2.7 + (Math.random() - 0.5) * 0.5;
-    shapes[2][i*3]   = Math.cos(ht) * sr;
-    shapes[2][i*3+1] = Math.sin(ht) * sr;
-    shapes[2][i*3+2] = ht * 0.18 - 2.2;
-
-    // 3: Speakers — Constellation Clusters
-    const cluster = Math.floor(Math.random() * 6);
-    const ca = (cluster / 6) * Math.PI * 2;
-    const cr = 2.9 + Math.random() * 1.4;
-    shapes[3][i*3]   = Math.cos(ca) * cr + (Math.random() - 0.5) * 0.7;
-    shapes[3][i*3+1] = Math.sin(ca) * cr + (Math.random() - 0.5) * 0.7;
-    shapes[3][i*3+2] = (Math.random() - 0.5) * 2.5;
-
-    // 4: Schedule — 3D Quantum Matrix Grid
-    const gx = Math.round((Math.random() - 0.5) * 8) * 1.25;
-    const gy = Math.round((Math.random() - 0.5) * 4) * 1.25;
-    shapes[4][i*3]   = Math.abs(gx) < 2 ? (gx > 0 ? gx + 2.5 : gx - 2.5) : gx;
-    shapes[4][i*3+1] = Math.abs(gy) < 1.4 ? (gy > 0 ? gy + 1.8 : gy - 1.8) : gy;
-    shapes[4][i*3+2] = (Math.random() - 0.5) * 2;
-
-    // 5: Partners — Concentric Gravitational Rings
-    const rn = Math.floor(Math.random() * 4) + 1;
-    const ra = Math.random() * Math.PI * 2;
-    shapes[5][i*3]   = Math.cos(ra) * rn * 1.25;
-    shapes[5][i*3+1] = Math.sin(ra) * rn * 0.85;
-    shapes[5][i*3+2] = (Math.random() - 0.5) * 2;
-
-    // 6: Register — Serene Sanctuary Perimeter
-    const rs = 3.6 + Math.random() * 2.2;
-    const ra2 = Math.random() * Math.PI * 2;
-    shapes[6][i*3]   = Math.cos(ra2) * rs;
-    shapes[6][i*3+1] = Math.sin(ra2) * rs;
-    shapes[6][i*3+2] = (Math.random() - 0.5) * 2.5;
-  }
-  return shapes;
-}
-
-const MAX_LINES = 300;
-
-interface EngineProps {
-  scrollTarget: React.MutableRefObject<number>;
-  scrollCurrent: React.MutableRefObject<number>;
-  mouse: React.MutableRefObject<{ tx: number; ty: number; x: number; y: number }>;
-}
-
-function ParticleEngine({ scrollTarget, scrollCurrent, mouse }: EngineProps) {
-  const COUNT = useMemo(() => getParticleCount(), []);
-  const dustRef = useRef<THREE.Points>(null);
-  const linesRef = useRef<THREE.LineSegments>(null);
-  const energyRef = useRef<THREE.Points>(null);
-  const ringsRef = useRef<THREE.Group>(null);
-  const { camera } = useThree();
-
-  const velocities = useMemo(() => new Float32Array(COUNT * 3), [COUNT]);
-  const offsets = useMemo(() => {
-    const arr = new Float32Array(COUNT);
-    for (let i = 0; i < COUNT; i++) arr[i] = Math.random() * Math.PI * 2;
-    return arr;
-  }, [COUNT]);
-
-  const morphs = useMemo(() => buildMorphPositions(COUNT), [COUNT]);
-  const initPos = useMemo(() => {
-    const arr = new Float32Array(COUNT * 3);
-    for (let i = 0; i < COUNT * 3; i++) arr[i] = morphs[0][i];
-    return arr;
-  }, [COUNT, morphs]);
-
-  const ENERGY = Math.floor(COUNT * 0.035);
-  const energyPos = useMemo(() => {
-    const arr = new Float32Array(ENERGY * 3);
-    for (let i = 0; i < ENERGY; i++) {
-      const a = Math.random() * Math.PI * 2;
-      const r = 2.2 + Math.random() * 3.2;
-      arr[i*3]   = Math.cos(a) * r;
-      arr[i*3+1] = Math.sin(a) * r;
-      arr[i*3+2] = (Math.random() - 0.5) * 3.5;
+// ─────────────────────────────────────────────────────────────
+// 1. BUTTERFLY SHATTER & DISSOLUTION SHADER (REAL ARTWORK QUAD)
+// ─────────────────────────────────────────────────────────────
+const ButterflyShader = {
+  vertexShader: `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
     }
-    return arr;
-  }, [ENERGY]);
+  `,
+  fragmentShader: `
+    uniform sampler2D uTexture;
+    uniform float uDissolve; // 0.0 = solid, 1.0 = fully dissolved
+    varying vec2 vUv;
 
-  const linePositions = useMemo(() => new Float32Array(MAX_LINES * 6), []);
-  const lineOpacity = useRef(0);
+    // Fast 2D Voronoi / crystalline shard hash
+    float hash21(vec2 p) {
+      p = fract(p * vec2(234.34, 435.345));
+      p += dot(p, p + 34.23);
+      return fract(p.x * p.y);
+    }
+
+    void main() {
+      vec4 texColor = texture2D(uTexture, vUv);
+      
+      // Transparent on pure black backdrop
+      if (texColor.r < 0.025 && texColor.g < 0.025 && texColor.b < 0.025) {
+        discard;
+      }
+
+      // Center of butterfly is at UV (0.5, 0.5)
+      vec2 center = vec2(0.5, 0.5);
+      float distFromCenter = length((vUv - center) * vec2(1.15, 1.0));
+      
+      // Polygonal shard noise
+      vec2 grid = floor(vUv * 52.0);
+      float shardNoise = hash21(grid) * 0.16;
+      float edgeScore = distFromCenter + shardNoise;
+
+      // Dissolution threshold
+      float threshold = 0.60 - uDissolve * 0.68;
+      
+      if (edgeScore > threshold && uDissolve > 0.02) {
+        discard;
+      }
+
+      // Edge crystal glow when breaking apart
+      float edgeGlow = smoothstep(threshold - 0.04, threshold, edgeScore);
+      vec3 glowCol = vUv.x < 0.5 ? vec3(0.95, 0.98, 1.0) : vec3(1.0, 0.15, 0.25);
+      vec3 finalCol = mix(texColor.rgb, glowCol * 1.8, edgeGlow * smoothstep(0.02, 0.35, uDissolve) * 0.75);
+
+      // Smooth fade out of remaining center core past 80% dissolution
+      float alpha = texColor.a * (1.0 - smoothstep(0.75, 1.0, uDissolve));
+
+      gl_FragColor = vec4(finalCol, alpha);
+    }
+  `,
+};
+
+// ─────────────────────────────────────────────────────────────
+// 2. BUTTERFLY WING PARTICLES & COSMOS AMBIENT PARTICLES
+// ─────────────────────────────────────────────────────────────
+interface ParticleSystemsData {
+  bPositions: Float32Array;
+  bColors: Float32Array;
+  featherDist: Float32Array;
+  driftVectors: Float32Array;
+  ambientPositions: Float32Array;
+  ambientColors: Float32Array;
+  ambientSpeeds: Float32Array;
+}
+
+function buildParticleSystemsData(count: number): ParticleSystemsData {
+  const bPositions = new Float32Array(count * 3);
+  const bColors = new Float32Array(count * 3);
+  const featherDist = new Float32Array(count);
+  const driftVectors = new Float32Array(count * 3);
+
+  const ambientPositions = new Float32Array(count * 3);
+  const ambientColors = new Float32Array(count * 3);
+  const ambientSpeeds = new Float32Array(count);
+
+  for (let i = 0; i < count; i++) {
+    const i3 = i * 3;
+    const isLeft = i % 2 === 0;
+    const side = isLeft ? -1 : 1;
+
+    const isUpper = Math.random() < 0.65;
+    const u = Math.random();
+    const v = Math.random();
+
+    let wx = 0;
+    let wy = 0;
+    let wz = (Math.random() - 0.5) * 0.25;
+
+    if (isUpper) {
+      // Upper Wing
+      const angle = 0.14 + u * 1.35;
+      const radius = Math.pow(v, 0.45) * (2.85 + Math.sin(u * Math.PI * 3) * 0.4 + (1 - u) * 1.6);
+      wx = Math.cos(angle) * radius;
+      wy = Math.sin(angle) * radius + 0.45;
+    } else {
+      // Lower Wing
+      const angle = -0.14 - u * 1.15;
+      const radius = Math.pow(v, 0.5) * (2.05 + Math.cos(u * Math.PI * 2) * 0.35 + (1 - u) * 0.8);
+      wx = Math.cos(angle) * radius;
+      wy = Math.sin(angle) * radius - 0.05;
+    }
+
+    bPositions[i3] = side * wx;
+    bPositions[i3 + 1] = wy;
+    bPositions[i3 + 2] = wz;
+
+    // Distance from wing root (1 = outer tip, 0 = core)
+    const dRoot = Math.sqrt(wx * wx + (wy - 0.2) * (wy - 0.2)) / 4.4;
+    featherDist[i] = Math.min(1.0, Math.max(0.05, dRoot + (Math.random() - 0.5) * 0.08));
+
+    if (isLeft) {
+      const b = 0.85 + Math.random() * 0.15;
+      bColors[i3] = 0.95 * b; bColors[i3 + 1] = 0.98 * b; bColors[i3 + 2] = 1.0 * b;
+    } else {
+      const isBright = Math.random() < 0.35;
+      bColors[i3] = isBright ? 1.0 : 0.92;
+      bColors[i3 + 1] = isBright ? 0.22 : 0.02;
+      bColors[i3 + 2] = isBright ? 0.32 : 0.16;
+    }
+
+    // Outward expanding shard drift trajectory
+    const dAngle = Math.atan2(wy - 0.2, side * wx) + (Math.random() - 0.5) * 0.6;
+    const dMag = 2.4 + featherDist[i] * 4.8;
+    driftVectors[i3] = Math.cos(dAngle) * dMag + (Math.random() - 0.5) * 1.8;
+    driftVectors[i3 + 1] = Math.sin(dAngle) * dMag + (Math.random() - 0.5) * 1.5;
+    driftVectors[i3 + 2] = (Math.random() - 0.5) * 2.8;
+
+    // Deep ambient cosmos coordinates
+    ambientPositions[i3] = (Math.random() - 0.5) * 24.0;
+    ambientPositions[i3 + 1] = (Math.random() - 0.5) * 18.0;
+    ambientPositions[i3 + 2] = (Math.random() - 0.5) * 10.0 - 1.5;
+
+    const isRedEmber = Math.random() < 0.35;
+    if (isRedEmber) {
+      ambientColors[i3] = 0.95;
+      ambientColors[i3 + 1] = 0.08;
+      ambientColors[i3 + 2] = 0.22;
+    } else {
+      const lum = 0.5 + Math.random() * 0.5;
+      ambientColors[i3] = 0.85 * lum;
+      ambientColors[i3 + 1] = 0.90 * lum;
+      ambientColors[i3 + 2] = 1.0 * lum;
+    }
+    ambientSpeeds[i] = 0.3 + Math.random() * 0.7;
+  }
+
+  return { bPositions, bColors, featherDist, driftVectors, ambientPositions, ambientColors, ambientSpeeds };
+}
+
+// ─────────────────────────────────────────────────────────────
+// 3. CLEAN, CRISP RED & WHITE BACKSIDE TYPOGRAPHY PLANE
+// ─────────────────────────────────────────────────────────────
+function createTypographyTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement("canvas");
+  canvas.width = 2048;
+  canvas.height = 1024;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return new THREE.CanvasTexture(canvas);
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const cx = canvas.width / 2;
+  const cy = 500;
+
+  // Render "METAMORPHOSIS": META (White) + MORPHOSIS (Red)
+  ctx.font = "900 160px sans-serif, 'Space Grotesk', 'Satoshi'";
+  ctx.textBaseline = "middle";
+  ctx.letterSpacing = "16px";
+
+  const fullText = "METAMORPHOSIS";
+  const fullWidth = ctx.measureText(fullText).width;
+  const startX = cx - fullWidth / 2;
+
+  const leftPart = "META";
+  const leftWidth = ctx.measureText(leftPart).width;
+
+  // 1. Draw "META" (White / Silver with clean glow)
+  ctx.shadowColor = "rgba(255, 255, 255, 0.8)";
+  ctx.shadowBlur = 25;
+  ctx.fillStyle = "#FFFFFF";
+  ctx.textAlign = "left";
+  ctx.fillText(leftPart, startX, cy);
+
+  // 2. Draw "MORPHOSIS" (Ruby Red with vibrant glow)
+  ctx.shadowColor = "rgba(235, 0, 40, 0.95)";
+  ctx.shadowBlur = 35;
+  ctx.fillStyle = "#EB0028";
+  ctx.fillText("MORPHOSIS", startX + leftWidth, cy);
+
+  // Reset shadow
+  ctx.shadowBlur = 0;
+
+  // 3. Subtitle: "THE UNSEEN PROCESS OF BECOMING."
+  ctx.font = "600 30px sans-serif, 'Space Grotesk', 'Inter'";
+  ctx.letterSpacing = "14px";
+  ctx.textAlign = "center";
+  ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
+  ctx.fillText("THE UNSEEN PROCESS OF BECOMING.", cx, cy + 155);
+
+  // 4. Red horizontal accent line
+  ctx.shadowColor = "rgba(235, 0, 40, 0.9)";
+  ctx.shadowBlur = 15;
+  ctx.fillStyle = "#EB0028";
+  ctx.fillRect(cx - 100, cy + 205, 200, 4);
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.generateMipmaps = true;
+  tex.minFilter = THREE.LinearMipmapLinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+  return tex;
+}
+
+// ─────────────────────────────────────────────────────────────
+// 4. MAIN CINEMATIC WEBGL SCENE
+// ─────────────────────────────────────────────────────────────
+interface SceneProps {
+  scrollYRef: React.MutableRefObject<number>;
+}
+
+function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
+  const quadRef = useRef<THREE.Mesh>(null);
+  const shaderMatRef = useRef<THREE.ShaderMaterial>(null);
+  const textMeshRef = useRef<THREE.Mesh>(null);
+  const textMatRef = useRef<THREE.MeshBasicMaterial>(null);
+  const pointsRef = useRef<THREE.Points>(null);
+  const pMatRef = useRef<THREE.PointsMaterial>(null);
+  const { camera, viewport } = useThree();
+
+  // Load butterfly artwork texture
+  const butterflyTexture = useMemo(() => {
+    const loader = new THREE.TextureLoader();
+    const tex = loader.load("/butterfly-art.jpg");
+    tex.generateMipmaps = true;
+    tex.minFilter = THREE.LinearMipmapLinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+    return tex;
+  }, []);
+
+  // Crisp Red & White typography texture
+  const typographyTexture = useMemo(() => {
+    if (typeof document === "undefined") return new THREE.Texture();
+    return createTypographyTexture();
+  }, []);
+
+  const pData = useMemo(() => buildParticleSystemsData(PARTICLE_COUNT), []);
+
+  const curPositions = useMemo(() => new Float32Array(PARTICLE_COUNT * 3), []);
+  const curColors = useMemo(() => new Float32Array(PARTICLE_COUNT * 3), []);
 
   useFrame((state) => {
-    const t = state.clock.getElapsedTime();
-    scrollCurrent.current = THREE.MathUtils.lerp(scrollCurrent.current, scrollTarget.current, 0.03);
-    const s = scrollCurrent.current;
+    const scrollY = scrollYRef.current;
+    const time = state.clock.getElapsedTime();
+    const vpW = viewport.width;
+    const vpH = viewport.height;
+    const vh = typeof window !== "undefined" ? window.innerHeight : 800;
 
-    // Smooth mouse lerp
-    mouse.current.x = THREE.MathUtils.lerp(mouse.current.x, mouse.current.tx, 0.05);
-    mouse.current.y = THREE.MathUtils.lerp(mouse.current.y, mouse.current.ty, 0.05);
+    // Responsive scaling to fit mobile / narrow viewports without ANY cropping:
+    const textScale = Math.min(1.0, (vpW * 0.90) / 11.6);
+    const butterflyScale = Math.min(1.0, (vpW * 0.88) / 8.6);
 
-    // ─────────────────────────────────────────────────────────────
-    // SCROLL-CONTROLLED 3D CAMERA TRAVEL & PERSPECTIVE WARP
-    // ─────────────────────────────────────────────────────────────
-    // Smooth camera Z depth transition based on scroll progress
-    const camZ = 8.0 + Math.sin(s * Math.PI * 3) * 0.8 - s * 0.5;
-    const camX = Math.sin(s * Math.PI * 2) * 0.6 + mouse.current.x * 0.4;
-    const camY = Math.cos(s * Math.PI * 2) * 0.3 + mouse.current.y * 0.3;
+    // Dynamic scroll timeline normalized to viewport height:
+    const dissolveProgress = THREE.MathUtils.clamp(scrollY / (vh * 0.35), 0, 1);
 
-    camera.position.x = THREE.MathUtils.lerp(camera.position.x, camX, 0.04);
-    camera.position.y = THREE.MathUtils.lerp(camera.position.y, camY, 0.04);
-    camera.position.z = THREE.MathUtils.lerp(camera.position.z, camZ, 0.04);
+    // Metamorphosis text visibility window:
+    const fadeStart = vh * 0.12;
+    const peakStart = vh * 0.35;
+    const fadeOutStart = vh * 0.52;
+    const fadeOutEnd = vh * 0.72;
+
+    let textOpacity = 0;
+    if (scrollY >= fadeStart && scrollY <= fadeOutEnd) {
+      const fadeIn = THREE.MathUtils.smoothstep(scrollY, fadeStart, peakStart);
+      const fadeOut = 1.0 - THREE.MathUtils.smoothstep(scrollY, fadeOutStart, fadeOutEnd);
+      textOpacity = fadeIn * fadeOut;
+    }
+
+    // 1:1 Parallax upward scroll translation
+    const scrollYOffset = (scrollY / vh) * (vpH * 0.95);
+
+    // 1. Butterfly Shatter Shader
+    if (shaderMatRef.current) {
+      shaderMatRef.current.uniforms.uDissolve.value = dissolveProgress;
+    }
+
+    // 2. Butterfly Quad Position & Scale
+    if (quadRef.current) {
+      quadRef.current.scale.set(butterflyScale, butterflyScale, butterflyScale);
+      quadRef.current.position.y = 0.15 * butterflyScale + scrollYOffset * 0.6;
+      quadRef.current.visible = dissolveProgress < 0.99 && scrollY < vh * 0.55;
+    }
+
+    // 3. Crisp Red & White Backside METAMORPHOSIS Typography:
+    // STRICT RULE: If scrollY > fadeOutEnd, text is 100% INVISIBLE
+    if (textMatRef.current && textMeshRef.current) {
+      if (scrollY > fadeOutEnd || textOpacity <= 0.001) {
+        textMeshRef.current.visible = false;
+        textMatRef.current.opacity = 0;
+      } else {
+        textMeshRef.current.visible = true;
+        textMatRef.current.opacity = textOpacity;
+        textMeshRef.current.scale.set(textScale, textScale, textScale);
+        textMeshRef.current.position.y = -0.02 * textScale + scrollYOffset * 0.6;
+      }
+    }
+
+    // 4. Responsive Camera Drift & Mobile Portrait Aspect Handling
+    const aspect = state.viewport.aspect;
+    const isMobilePortrait = aspect < 1.0;
+    const baseZ = isMobilePortrait ? 8.8 : 7.2;
+
+    camera.position.z = baseZ - Math.min(scrollY / (vh * 0.8), 1.0) * 0.3;
+    camera.position.x = Math.sin(time * 0.18) * 0.05;
+    camera.position.y = Math.cos(time * 0.22) * 0.04;
     camera.lookAt(0, 0, 0);
 
-    // ─────────────────────────────────────────────────────────────
-    // SCROLL-CONTROLLED ROTATING QUANTUM ENERGY RINGS
-    // ─────────────────────────────────────────────────────────────
-    if (ringsRef.current) {
-      ringsRef.current.rotation.z = s * Math.PI * 4 + t * 0.05;
-      ringsRef.current.rotation.x = Math.sin(s * Math.PI * 2) * 0.5;
-      ringsRef.current.rotation.y = Math.cos(s * Math.PI * 2) * 0.5;
+    // 5. GPU Particles: Shards in hero -> Deep space ambient stardust in all other sections
+    if (!pointsRef.current || !pMatRef.current) return;
+    const posAttr = pointsRef.current.geometry.attributes.position as THREE.BufferAttribute;
+    const colAttr = pointsRef.current.geometry.attributes.color as THREE.BufferAttribute;
 
-      const ringScale = 1 + Math.sin(s * Math.PI * 2) * 0.25;
-      ringsRef.current.scale.set(ringScale, ringScale, ringScale);
+    const isDeepSection = scrollY > vh * 0.72;
+    if (isDeepSection) {
+      pMatRef.current.opacity = 0.28;
+      pMatRef.current.size = 0.020;
+    } else {
+      const tFade = THREE.MathUtils.clamp((scrollY - vh * 0.4) / (vh * 0.32), 0, 1);
+      pMatRef.current.opacity = THREE.MathUtils.lerp(0.75, 0.28, tFade);
+      pMatRef.current.size = THREE.MathUtils.lerp(0.032, 0.020, tFade);
     }
 
-    // Morph target blend
-    const sIdx = s * (morphs.length - 1);
-    const sA = Math.min(Math.floor(sIdx), morphs.length - 1);
-    const sB = Math.min(sA + 1, morphs.length - 1);
-    const tAB = sIdx - sA;
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      const i3 = i * 3;
+      const fDist = pData.featherDist[i];
 
-    const cursorX = mouse.current.x * 4.5;
-    const cursorY = mouse.current.y * 3.5;
+      const bx = pData.bPositions[i3] * butterflyScale;
+      const by = (pData.bPositions[i3 + 1] + 0.25) * butterflyScale;
+      const bz = pData.bPositions[i3 + 2];
 
-    if (!dustRef.current) return;
-    const pos = dustRef.current.geometry.attributes.position as THREE.BufferAttribute;
+      const dx = pData.driftVectors[i3] * butterflyScale;
+      const dy = pData.driftVectors[i3 + 1] * butterflyScale;
+      const dz = pData.driftVectors[i3 + 2];
 
-    for (let i = 0; i < COUNT; i++) {
-      const tx = THREE.MathUtils.lerp(morphs[sA][i*3],   morphs[sB][i*3],   tAB);
-      const ty = THREE.MathUtils.lerp(morphs[sA][i*3+1], morphs[sB][i*3+1], tAB);
-      const tz = THREE.MathUtils.lerp(morphs[sA][i*3+2], morphs[sB][i*3+2], tAB);
-      const cx = pos.getX(i), cy = pos.getY(i), cz = pos.getZ(i);
+      const ax = pData.ambientPositions[i3];
+      const ay = pData.ambientPositions[i3 + 1];
+      const az = pData.ambientPositions[i3 + 2];
+      const speed = pData.ambientSpeeds[i];
 
-      // Scroll speed dynamically amplifies curl noise intensity
-      const scrollSpeedFactor = 0.08 + Math.abs(scrollTarget.current - scrollCurrent.current) * 0.15;
-      const { cx: cvx, cy: cvy, cz: cvz } = curl(cx * 0.3, cy * 0.3, cz * 0.3, t * scrollSpeedFactor);
+      const dissolveStart = 0.05 + (1.0 - fDist) * 0.40;
 
-      velocities[i*3]   = velocities[i*3]   * 0.96 + (tx - cx) * 0.008 + cvx * 0.012;
-      velocities[i*3+1] = velocities[i*3+1] * 0.96 + (ty - cy) * 0.008 + cvy * 0.012;
-      velocities[i*3+2] = velocities[i*3+2] * 0.96 + (tz - cz) * 0.008 + cvz * 0.012;
+      let px = bx;
+      let py = by;
+      let pz = bz;
 
-      let nx = cx + velocities[i*3];
-      let ny = cy + velocities[i*3+1];
-      let nz = cz + velocities[i*3+2];
+      let r = pData.bColors[i3];
+      let g = pData.bColors[i3 + 1];
+      let b = pData.bColors[i3 + 2];
 
-      nx += Math.sin(t * 0.18 + offsets[i]) * 0.0025;
-      ny += Math.cos(t * 0.14 + offsets[i] * 1.3) * 0.0025;
+      if (isDeepSection) {
+        // Pure ambient floating stardust in all other sections
+        px = ax + Math.sin(time * speed * 0.25 + i * 0.4) * 0.6;
+        py = ay + Math.cos(time * speed * 0.20 + i * 0.3) * 0.6;
+        pz = az;
 
-      // Mouse repulsion
-      const mdx = nx - cursorX, mdy = ny - cursorY;
-      const distSq = mdx * mdx + mdy * mdy;
-      if (distSq < 3.24 && distSq > 0.00001) {
-        const mdist = Math.sqrt(distSq);
-        const repel = (1.8 - mdist) / 1.8 * 0.025;
-        nx += (mdx / mdist) * repel;
-        ny += (mdy / mdist) * repel;
-      }
+        r = pData.ambientColors[i3];
+        g = pData.ambientColors[i3 + 1];
+        b = pData.ambientColors[i3 + 2];
+      } else {
+        if (dissolveProgress <= dissolveStart) {
+          // Dormant inside solid butterfly
+          px = bx;
+          py = by + scrollYOffset * 0.6;
+          pz = -9999;
+        } else if (dissolveProgress <= 0.85) {
+          // Shatter outward
+          const tDis = (dissolveProgress - dissolveStart) / (0.85 - dissolveStart);
+          const easeDis = tDis * tDis * (3 - 2 * tDis);
 
-      pos.setXYZ(i, nx, ny, nz);
-    }
-    pos.needsUpdate = true;
+          px = bx + dx * easeDis;
+          py = by + dy * easeDis + scrollYOffset * 0.4;
+          pz = bz + dz * easeDis;
+        } else {
+          // Transition into ambient stardust
+          const tFlow = (scrollY - vh * 0.3) / (vh * 0.42);
+          const easeFlow = THREE.MathUtils.clamp(tFlow * tFlow, 0, 1);
 
-    // Dust material opacity scroll modulation
-    const mat = dustRef.current.material as THREE.PointsMaterial;
-    if (mat) {
-      const tgt = s < 0.1 ? 0.10 : s < 0.5 ? 0.08 : s < 0.85 ? 0.06 : 0.03;
-      mat.opacity = THREE.MathUtils.lerp(mat.opacity, tgt, 0.02);
-    }
+          const cloudX = bx + dx + Math.sin(time * speed + i) * 0.3;
+          const cloudY = by + dy + Math.cos(time * speed + i) * 0.3 + scrollYOffset * 0.4;
+          const cloudZ = bz + dz;
 
-    // Neural Network Lines
-    if (linesRef.current) {
-      const lineActive = s > 0.05 && s < 0.90;
-      const tlo = lineActive ? 0.15 * Math.min(s * 7, 1) * Math.min((0.92 - s) * 7, 1) : 0;
-      lineOpacity.current = THREE.MathUtils.lerp(lineOpacity.current, tlo, 0.04);
-      const lmat = linesRef.current.material as THREE.LineBasicMaterial;
-      if (lmat) lmat.opacity = lineOpacity.current;
+          const targetX = ax + Math.sin(time * speed * 0.3 + i) * 0.5;
+          const targetY = ay + Math.cos(time * speed * 0.25 + i) * 0.5;
+          const targetZ = az;
 
-      if (lineActive && lineOpacity.current > 0.005) {
-        const lpos = linesRef.current.geometry.attributes.position as THREE.BufferAttribute;
-        let li = 0;
-        const step = Math.max(1, Math.floor(COUNT / 100));
-        for (let i = 0; i < COUNT; i += step) {
-          if (li >= MAX_LINES * 6) break;
-          const ax = pos.getX(i), ay = pos.getY(i), az = pos.getZ(i);
-          for (let j = i + step; j < i + step * 12; j += step) {
-            if (j >= COUNT || li >= MAX_LINES * 6) break;
-            const bx = pos.getX(j), by = pos.getY(j), bz = pos.getZ(j);
-            const dx = ax - bx, dy = ay - by, dz = az - bz;
-            const dSq = dx * dx + dy * dy + dz * dz;
-            if (dSq < 1.3225) {
-              linePositions[li++] = ax; linePositions[li++] = ay; linePositions[li++] = az;
-              linePositions[li++] = bx; linePositions[li++] = by; linePositions[li++] = bz;
-            }
-          }
+          px = THREE.MathUtils.lerp(cloudX, targetX, easeFlow);
+          py = THREE.MathUtils.lerp(cloudY, targetY, easeFlow);
+          pz = THREE.MathUtils.lerp(cloudZ, targetZ, easeFlow);
+
+          r = THREE.MathUtils.lerp(pData.bColors[i3], pData.ambientColors[i3], easeFlow);
+          g = THREE.MathUtils.lerp(pData.bColors[i3 + 1], pData.ambientColors[i3 + 1], easeFlow);
+          b = THREE.MathUtils.lerp(pData.bColors[i3 + 2], pData.ambientColors[i3 + 2], easeFlow);
         }
-        lpos.needsUpdate = true;
       }
+
+      posAttr.setXYZ(i, px, py, pz);
+      colAttr.setXYZ(i, r, g, b);
     }
 
-    // Energy Particles
-    if (energyRef.current) {
-      const epos = energyRef.current.geometry.attributes.position as THREE.BufferAttribute;
-      for (let i = 0; i < ENERGY; i++) {
-        const ex = epos.getX(i), ey = epos.getY(i), ez = epos.getZ(i);
-        const { cx: ecx, cy: ecy } = curl(ex * 0.5, ey * 0.5, ez * 0.3, t * 0.3);
-        let nex = ex + ecx * 0.035, ney = ey + ecy * 0.035, nez = ez + 0.005;
-        if (Math.abs(nex) > 6.5) nex *= -0.5;
-        if (Math.abs(ney) > 4.5) ney *= -0.5;
-        if (Math.abs(nez) > 3.5) nez *= -0.5;
-        epos.setXYZ(i, nex, ney, nez);
-      }
-      epos.needsUpdate = true;
-      const emat = energyRef.current.material as THREE.PointsMaterial;
-      if (emat) emat.opacity = THREE.MathUtils.lerp(emat.opacity, s < 0.88 ? 0.50 : 0.08, 0.02);
-    }
-
-    // Scroll-controlled rotation speed
-    const rotSpeedY = 0.004 + s * 0.006;
-    dustRef.current.rotation.y = t * rotSpeedY + mouse.current.x * 0.03 + s * Math.PI * 0.5;
-    dustRef.current.rotation.x = t * 0.002 + mouse.current.y * 0.02;
+    posAttr.needsUpdate = true;
+    colAttr.needsUpdate = true;
   });
 
   return (
     <>
-      {/* Scroll-Controlled Quantum Energy Ring Group */}
-      <group ref={ringsRef}>
-        <mesh position={[0, 0, -2]}>
-          <ringGeometry args={[3.2, 3.23, 64]} />
-          <meshBasicMaterial color="#EB0028" transparent opacity={0.06} side={THREE.DoubleSide} depthWrite={false} />
-        </mesh>
-        <mesh position={[0, 0, -2.5]} rotation={[0.4, 0.2, 0]}>
-          <ringGeometry args={[4.2, 4.22, 64]} />
-          <meshBasicMaterial color="#FF3A5E" transparent opacity={0.04} side={THREE.DoubleSide} depthWrite={false} />
-        </mesh>
-      </group>
-
-      {/* Floating Particle Cloud */}
-      <points ref={dustRef} frustumCulled={false}>
-        <bufferGeometry>
-          <bufferAttribute attach="attributes-position" args={[initPos, 3]} />
-        </bufferGeometry>
-        <pointsMaterial
-          transparent color="#CCCCCC" size={0.025}
-          sizeAttenuation depthWrite={false} depthTest={false}
-          blending={THREE.AdditiveBlending} opacity={0.08}
+      {/* ── 1. BUTTERFLY ARTWORK SHATTER QUAD ── */}
+      <mesh ref={quadRef} position={[0, 0.15, 0]}>
+        <planeGeometry args={[8.6, 4.8, 64, 64]} />
+        <shaderMaterial
+          ref={shaderMatRef}
+          vertexShader={ButterflyShader.vertexShader}
+          fragmentShader={ButterflyShader.fragmentShader}
+          uniforms={{
+            uTexture: { value: butterflyTexture },
+            uDissolve: { value: 0.0 },
+          }}
+          transparent
+          depthWrite={false}
+          side={THREE.DoubleSide}
         />
-      </points>
-
-      {/* Neural Network Line Segments */}
-      <lineSegments ref={linesRef} frustumCulled={false}>
-        <bufferGeometry>
-          <bufferAttribute attach="attributes-position" args={[linePositions, 3]} />
-        </bufferGeometry>
-        <lineBasicMaterial
-          color="#EB0028" transparent opacity={0}
-          blending={THREE.AdditiveBlending} depthWrite={false} depthTest={false}
-        />
-      </lineSegments>
-
-      {/* Glowing Energy Flow Nodes */}
-      <points ref={energyRef} frustumCulled={false}>
-        <bufferGeometry>
-          <bufferAttribute attach="attributes-position" args={[energyPos, 3]} />
-        </bufferGeometry>
-        <pointsMaterial
-          transparent color="#EB0028" size={0.042}
-          sizeAttenuation depthWrite={false} depthTest={false}
-          blending={THREE.AdditiveBlending} opacity={0.45}
-        />
-      </points>
-    </>
-  );
-}
-
-function AuroraLayer({ scrollCurrent }: { scrollCurrent: React.MutableRefObject<number> }) {
-  const a1Ref = useRef<THREE.Mesh>(null);
-  const a2Ref = useRef<THREE.Mesh>(null);
-  useFrame((state) => {
-    const t = state.clock.getElapsedTime();
-    const s = scrollCurrent.current;
-    if (a1Ref.current) {
-      (a1Ref.current.material as THREE.MeshBasicMaterial).opacity = Math.max(0, 0.04 * (1 - s * 1.1));
-      a1Ref.current.rotation.z = Math.sin(t * 0.03 + s * 2) * 0.25;
-      a1Ref.current.position.y = Math.sin(t * 0.05 + s * 3) * 0.6 + 1.4;
-    }
-    if (a2Ref.current) {
-      (a2Ref.current.material as THREE.MeshBasicMaterial).opacity = Math.max(0, 0.025 * (1 - s * 0.8));
-      a2Ref.current.rotation.z = Math.cos(t * 0.028 + s * 2) * 0.18;
-      a2Ref.current.position.y = Math.cos(t * 0.04 + s * 2.5) * 0.5 - 1.4;
-    }
-  });
-  return (
-    <>
-      <mesh ref={a1Ref} position={[0, 1.4, -3]}>
-        <planeGeometry args={[20, 1.2]} />
-        <meshBasicMaterial color="#EB0028" transparent opacity={0.04}
-          blending={THREE.AdditiveBlending} depthWrite={false} side={THREE.DoubleSide} />
       </mesh>
-      <mesh ref={a2Ref} position={[0, -1.4, -3.5]}>
-        <planeGeometry args={[18, 0.7]} />
-        <meshBasicMaterial color="#CC1133" transparent opacity={0.025}
-          blending={THREE.AdditiveBlending} depthWrite={false} side={THREE.DoubleSide} />
+
+      {/* ── 2. GPU PARTICLES: SHARDS & STARDUST ── */}
+      <points ref={pointsRef}>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" args={[curPositions, 3]} />
+          <bufferAttribute attach="attributes-color" args={[curColors, 3]} />
+        </bufferGeometry>
+        <pointsMaterial
+          ref={pMatRef}
+          transparent
+          vertexColors
+          size={0.032}
+          sizeAttenuation
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+          opacity={0.75}
+        />
+      </points>
+
+      {/* ── 3. CLEAN, CRISP RED & WHITE BACKSIDE METAMORPHOSIS TYPOGRAPHY ── */}
+      <mesh ref={textMeshRef} position={[0, -0.02, 0.05]}>
+        <planeGeometry args={[11.6, 5.8]} />
+        <meshBasicMaterial
+          ref={textMatRef}
+          map={typographyTexture}
+          transparent
+          opacity={0}
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+        />
       </mesh>
     </>
   );
 }
 
-function VolumetricFog({ scrollCurrent }: { scrollCurrent: React.MutableRefObject<number> }) {
-  const ref = useRef<THREE.Mesh>(null);
-  useFrame((state) => {
-    const t = state.clock.getElapsedTime();
-    if (ref.current) {
-      ref.current.position.x = Math.sin(t * 0.012) * 0.7;
-      ref.current.position.y = Math.cos(t * 0.01) * 0.3;
-      (ref.current.material as THREE.MeshBasicMaterial).opacity = 0.03 * (1 - scrollCurrent.current * 0.7);
-    }
-  });
-  return (
-    <mesh ref={ref} position={[0, 0, -6]}>
-      <planeGeometry args={[26, 20]} />
-      <meshBasicMaterial color="#2A0008" transparent opacity={0.03}
-        blending={THREE.AdditiveBlending} depthWrite={false} />
-    </mesh>
-  );
-}
-
-interface SceneProps {
-  scrollTarget: React.MutableRefObject<number>;
-  scrollCurrent: React.MutableRefObject<number>;
-  mouse: React.MutableRefObject<{ tx: number; ty: number; x: number; y: number }>;
-}
-
-function Scene({ scrollTarget, scrollCurrent, mouse }: SceneProps) {
-  return (
-    <>
-      <fogExp2 attach="fog" args={["#040404", 0.025]} />
-      <VolumetricFog scrollCurrent={scrollCurrent} />
-      <AuroraLayer scrollCurrent={scrollCurrent} />
-      <ParticleEngine scrollTarget={scrollTarget} scrollCurrent={scrollCurrent} mouse={mouse} />
-    </>
-  );
-}
-
-function MouseSpotlight() {
-  const ref = useRef<HTMLDivElement>(null);
-  const pos = useRef({ x: -1000, y: -1000, tx: -1000, ty: -1000 });
-  const raf = useRef<number>(0);
-  useEffect(() => {
-    const onMove = (e: MouseEvent) => { pos.current.tx = e.clientX; pos.current.ty = e.clientY; };
-    window.addEventListener("mousemove", onMove, { passive: true });
-    const tick = () => {
-      pos.current.x += (pos.current.tx - pos.current.x) * 0.07;
-      pos.current.y += (pos.current.ty - pos.current.y) * 0.07;
-      if (ref.current) ref.current.style.transform = `translate(${pos.current.x - 200}px,${pos.current.y - 200}px)`;
-      raf.current = requestAnimationFrame(tick);
-    };
-    raf.current = requestAnimationFrame(tick);
-    return () => { window.removeEventListener("mousemove", onMove); cancelAnimationFrame(raf.current); };
-  }, []);
-  return (
-    <div ref={ref} style={{ position: "absolute", top: 0, left: 0, width: "400px", height: "400px", borderRadius: "50%", pointerEvents: "none", background: "radial-gradient(circle, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.008) 45%, transparent 70%)", willChange: "transform" }} />
-  );
-}
-
-function LightSweep() {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = ref.current; if (!el) return;
-    const sweep = () => {
-      el.style.transition = "none";
-      el.style.transform = "translateX(-130%) translateY(-130%) rotate(28deg)";
-      el.style.opacity = "1";
-      requestAnimationFrame(() => {
-        el.style.transition = "transform 3s cubic-bezier(0.25, 0.46, 0.45, 0.94)";
-        el.style.transform = "translateX(130%) translateY(130%) rotate(28deg)";
-        setTimeout(() => { el.style.opacity = "0"; }, 2800);
-      });
-    };
-    const timer = setTimeout(() => { sweep(); setInterval(sweep, 26000); }, 9000);
-    return () => clearTimeout(timer);
-  }, []);
-  return (
-    <div ref={ref} style={{ position: "absolute", top: 0, left: 0, width: "55%", height: "200%", background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.015) 50%, transparent 100%)", transform: "translateX(-130%) translateY(-130%) rotate(28deg)", opacity: 0, willChange: "transform, opacity", pointerEvents: "none" }} />
-  );
-}
-
+// ─────────────────────────────────────────────────────────────
+// 5. MAIN FIXED CANVAS EXPORT
+// ─────────────────────────────────────────────────────────────
 export default function Background3D() {
   const [mounted, setMounted] = useState(false);
-  const scrollTarget = useRef(0);
-  const scrollCurrent = useRef(0);
-  const mouse = useRef({ tx: 0, ty: 0, x: 0, y: 0 });
+  const scrollYRef = useRef(0);
+
   useEffect(() => {
     setMounted(true);
     const onScroll = () => {
-      const h = document.documentElement.scrollHeight - window.innerHeight || 1;
-      scrollTarget.current = Math.min(Math.max(window.scrollY / h, 0), 1);
+      scrollYRef.current = window.scrollY;
     };
-    const onMouse = (e: MouseEvent) => {
-      mouse.current.tx = (e.clientX / window.innerWidth) * 2 - 1;
-      mouse.current.ty = -(e.clientY / window.innerHeight) * 2 + 1;
-    };
+
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("mousemove", onMouse, { passive: true });
     onScroll();
-    return () => { window.removeEventListener("scroll", onScroll); window.removeEventListener("mousemove", onMouse); };
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
   if (!mounted) return null;
+
   return (
-    <div style={{ position: "fixed", inset: 0, width: "100%", height: "100%", overflow: "hidden", pointerEvents: "none", zIndex: -20 }}>
-      <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 85% 70% at 50% 25%, #0c0203 0%, #070103 35%, #040404 65%, #090102 100%)" }} />
-      <div className="noise-overlay opacity-[0.035]" />
-      <div style={{ position: "absolute", inset: 0, pointerEvents: "none", background: "radial-gradient(ellipse 50% 38% at 12% 18%, rgba(235,0,40,0.07) 0%, transparent 100%)" }} />
-      <div style={{ position: "absolute", inset: 0, pointerEvents: "none", background: "radial-gradient(ellipse 35% 28% at 90% 82%, rgba(200,10,30,0.04) 0%, transparent 100%)" }} />
-      <Canvas camera={{ position: [0, 0, 8], fov: 50 }} dpr={[1, 1.5]} gl={{ antialias: false, alpha: true, powerPreference: "high-performance" }} style={{ position: "absolute", inset: 0 }}>
-        <Scene scrollTarget={scrollTarget} scrollCurrent={scrollCurrent} mouse={mouse} />
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+        overflow: "hidden",
+        pointerEvents: "none",
+        zIndex: -20,
+        backgroundColor: "#000000",
+      }}
+    >
+      <Canvas
+        camera={{ position: [0, 0, 7.2], fov: 46 }}
+        dpr={[1, 1.5]}
+        gl={{
+          antialias: true,
+          alpha: false,
+          powerPreference: "high-performance",
+        }}
+        style={{ position: "absolute", inset: 0, background: "#000000" }}
+      >
+        <color attach="background" args={["#000000"]} />
+        <CinematicMetamorphosisScene scrollYRef={scrollYRef} />
       </Canvas>
-      <MouseSpotlight />
-      <LightSweep />
     </div>
   );
 }

@@ -18,43 +18,42 @@ export default function Venue() {
         {/* Left column: Venue metadata details */}
         <div className="w-full lg:w-1/2 space-y-8 flex flex-col justify-center">
           <div className="flex flex-col space-y-4">
-            <span className="text-[10px] uppercase tracking-[0.3em] font-semibold text-primary text-glow font-syne">
-              The Venue
+            <span className="text-[10px] uppercase tracking-[0.3em] font-semibold text-[#EB0028] text-glow font-mono">
+              THE TRANSFORMATION ARENA
             </span>
-            <h2 className="text-3xl md:text-5xl font-bold font-syne tracking-tight text-white uppercase">
-              KLH GRAND <br />
-              PAVILION
+            <h2 className="text-3xl md:text-5xl font-black tracking-tight text-white uppercase" style={{ fontFamily: "'Satoshi', 'Space Grotesk', sans-serif" }}>
+              KLH AUDITORIUM <br />
+              &amp; PAVILION
             </h2>
             <div className="flex items-center space-x-2 text-xs font-mono text-white/40">
-              <Compass className="w-3.5 h-3.5 text-primary" />
-              <span>COORDINATES: 3°08'42.1"N 101°41'14.6"E</span>
+              <Compass className="w-3.5 h-3.5 text-[#EB0028]" />
+              <span>COORDINATES: 17.5623° N, 78.3846° E · BOWRAMPET, HYDERABAD</span>
             </div>
           </div>
 
-          <p className="text-xs md:text-sm text-white/50 leading-relaxed font-light font-sans max-w-md">
-            Located in the heart of Kuala Lumpur's technological corridor. The KLH Grand Pavilion is a state-of-the-art 
-            architecture specifically structured to host volumetric presentations, immersive spatial sound systems, 
-            and high-density visual conferences.
+          <p className="text-xs md:text-sm text-white/60 leading-relaxed font-light font-sans max-w-md" style={{ fontFamily: "'Inter', sans-serif" }}>
+            KLH University, Bowrampet Campus. Designed to facilitate volumetric keynote staging, high-definition immersive audio acoustic arrays, and dedicated collaboration zones for our 100 curated delegates.
           </p>
 
           <div className="flex flex-col space-y-3 font-sans text-xs">
             <div className="flex items-start space-x-3">
-              <MapPin className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-              <span className="text-white/70">Level 4, Cyber Tech Spire, Jalan Horizon, Kuala Lumpur, Malaysia</span>
+              <MapPin className="w-4 h-4 text-[#EB0028] shrink-0 mt-0.5" />
+              <span className="text-white/80">ALEAP Industrial Area, Bowrampet, Hyderabad, Telangana 500043</span>
             </div>
           </div>
 
-          {/* Magnetic View on Google Maps placeholder */}
+          {/* Magnetic View on Google Maps */}
           <div className="pt-2">
             <Magnetic range={65} strength={0.35}>
               <a
-                href="https://maps.google.com"
+                href="https://www.google.com/maps/place/KLH+University,+Bowrampet/data=!4m2!3m1!1s0x0:0xc307c84e835d6187?sa=X&ved=1t:2428&ictx=111"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center space-x-2 text-xs font-bold font-syne tracking-[0.2em] uppercase text-white/80 hover:text-white border-b border-primary pb-1 group transition-colors duration-300"
+                className="inline-flex items-center space-x-2 text-xs font-bold tracking-[0.2em] uppercase text-white/80 hover:text-white border-b border-[#EB0028] pb-1 group transition-colors duration-300"
+                style={{ fontFamily: "'Space Grotesk', sans-serif" }}
               >
-                <span>Navigate to Venue</span>
-                <ArrowUpRight className="w-3.5 h-3.5 text-primary group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" />
+                <span>Navigate to Campus</span>
+                <ArrowUpRight className="w-3.5 h-3.5 text-[#EB0028] group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" />
               </a>
             </Magnetic>
           </div>
@@ -62,23 +61,23 @@ export default function Venue() {
 
         {/* Right column: Futuristic Sci-Fi SVG Map Vector */}
         <div className="w-full lg:w-1/2 flex items-center justify-center">
-          <div className="relative w-full max-w-[450px] aspect-square rounded-3xl border border-white/5 bg-white/[0.01] backdrop-blur-xl p-8 overflow-hidden group">
+          <div className="relative w-full max-w-[450px] aspect-square rounded-3xl border border-white/10 bg-black/60 backdrop-blur-xl p-8 overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
             
             {/* Ambient Red glow from map pin */}
-            <div className="absolute top-[40%] left-[60%] -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-primary/10 rounded-full blur-3xl pointer-events-none group-hover:bg-primary/15 transition-colors duration-500" />
+            <div className="absolute top-[40%] left-[60%] -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-[#EB0028]/15 rounded-full blur-3xl pointer-events-none group-hover:bg-[#EB0028]/25 transition-colors duration-500" />
             
             {/* Futuristic Vector Map Drawing */}
             <svg viewBox="0 0 200 200" className="w-full h-full stroke-white/10 stroke-[0.5] fill-none relative z-10">
               
               {/* Concentric Coordinate Scan Rings */}
-              <circle cx="120" cy="80" r="15" className="stroke-primary/40 stroke-[0.75] animate-pulse" />
-              <circle cx="120" cy="80" r="35" className="stroke-primary/20 stroke-[0.5] stroke-dasharray-[2_4] animate-[spin_20s_linear_infinite]" />
+              <circle cx="120" cy="80" r="15" className="stroke-[#EB0028]/40 stroke-[0.75] animate-pulse" />
+              <circle cx="120" cy="80" r="35" className="stroke-[#EB0028]/20 stroke-[0.5] stroke-dasharray-[2_4] animate-[spin_20s_linear_infinite]" />
               <circle cx="120" cy="80" r="60" className="stroke-white/5" />
               
               {/* Sci-fi radar scan line */}
               <motion.line 
                 x1="120" y1="80" x2="20" y2="180" 
-                className="stroke-primary/30 stroke-[0.75] origin-[120px_80px]"
+                className="stroke-[#EB0028]/40 stroke-[0.75] origin-[120px_80px]"
                 animate={{ rotate: 360 }}
                 transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
               />
@@ -89,20 +88,20 @@ export default function Venue() {
               <path d="M10,70 Q70,90 120,80 T180,30" className="stroke-white/15" />
               
               {/* Scanning crosshairs */}
-              <path d="M110,80 L130,80 M120,70 L120,90" className="stroke-primary stroke-[1]" />
+              <path d="M110,80 L130,80 M120,70 L120,90" className="stroke-[#EB0028] stroke-[1]" />
 
               {/* Glowing Coordinate Ping Node */}
-              <circle cx="120" cy="80" r="4" className="fill-primary stroke-white stroke-[1.5] shadow-[0_0_10px_rgba(235,0,40,0.8)]" />
+              <circle cx="120" cy="80" r="4" className="fill-[#EB0028] stroke-white stroke-[1.5] shadow-[0_0_10px_rgba(235,0,40,0.8)]" />
             </svg>
 
             {/* Scanning HUD labels */}
             <div className="absolute top-4 left-4 font-mono text-[8px] text-white/30 space-y-1">
-              <div>SYS.SCAN: ACTIVE</div>
-              <div>MATRIX: RESOLVED</div>
+              <div>SYS.METAMORPHOSIS: ACTIVE</div>
+              <div>VENUE.MATRIX: RESOLVED</div>
             </div>
 
-            <div className="absolute bottom-4 right-4 font-mono text-[8px] text-primary/60 text-glow">
-              TARGET LOCATED
+            <div className="absolute bottom-4 right-4 font-mono text-[8px] text-[#EB0028] text-glow">
+              KLH BOWRAMPET CAMPUS
             </div>
             
           </div>

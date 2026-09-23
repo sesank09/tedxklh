@@ -9,6 +9,7 @@ import About from "@/components/About";
 import Theme from "@/components/Theme";
 import Speakers from "@/components/Speakers";
 import Schedule from "@/components/Schedule";
+import Team from "@/components/Team";
 import Partners from "@/components/Partners";
 import Venue from "@/components/Venue";
 import FAQ from "@/components/FAQ";
@@ -37,12 +38,13 @@ export default function Home() {
           <Speakers />
           <Schedule />
 
-          {/* Spacing & Decorative Divider between Schedule and Partners */}
-          <div className="w-full py-16 flex items-center justify-center relative overflow-hidden pointer-events-none">
-            <div className="w-full max-w-4xl h-[1px] bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-            <div className="absolute w-3 h-3 rounded-full bg-primary/60 blur-[3px]" />
+          {/* Spacing & Decorative Divider between Schedule and Team */}
+          <div className="w-full py-12 sm:py-16 flex items-center justify-center relative overflow-hidden pointer-events-none">
+            <div className="w-full max-w-4xl h-[1px] bg-gradient-to-r from-transparent via-[#EB0028]/30 to-transparent" />
+            <div className="absolute w-3 h-3 rounded-full bg-[#EB0028]/60 blur-[3px]" />
           </div>
 
+          <Team />
           <Partners />
           <Venue />
           <FAQ />

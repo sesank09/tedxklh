@@ -109,11 +109,6 @@ html.lenis, html.lenis body { height: auto; }
 .lenis.lenis-stopped { overflow: hidden; }
 .lenis.lenis-scrolling iframe { pointer-events: none; }
 
-/* ───────── Cursor ───────── */
-@media (pointer: fine) {
-  body { cursor: none; }
-  a, button, [role="button"], input, select, textarea { cursor: none; }
-}
 
 /* ───────── Utilities ───────── */
 

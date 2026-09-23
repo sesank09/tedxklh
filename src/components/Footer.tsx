@@ -10,6 +10,7 @@ const NAV_LINKS = [
   { name: "Theme",    href: "#theme" },
   { name: "Speakers", href: "#speakers" },
   { name: "Schedule", href: "#schedule" },
+  { name: "Team",     href: "#team" },
   { name: "Partners", href: "#partners" },
   { name: "FAQ",      href: "#faq" },
 ];
@@ -134,7 +135,7 @@ export default function Footer() {
               </div>
               <div className="flex items-start gap-2.5">
                 <MapPin className="w-4 h-4 text-[#EB0028] shrink-0 mt-0.5" />
-                <span>KL University Hyderabad, India</span>
+                <span>KLH University, Bowrampet, Hyderabad 500043</span>
               </div>
             </div>
 

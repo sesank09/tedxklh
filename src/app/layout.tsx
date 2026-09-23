@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { Syne, Inter, Orbitron } from "next/font/google";
 import "./globals.css";
 import SmoothScroll from "@/components/SmoothScroll";
-import CustomCursor from "@/components/CustomCursor";
-import Background3D from "@/components/Background3D";
 
 const syne = Syne({
   subsets: ["latin"],
@@ -24,13 +22,13 @@ const orbitron = Orbitron({
 });
 
 export const metadata: Metadata = {
-  title: "TEDxKLH 2026 | BOUNDLESS",
-  description: "Experience the premium, futuristic, and unforgettable TEDxKLH event. Showcasing ground-breaking concepts, quantum designs, and boundary-pushing perspectives. Register now.",
-  keywords: ["TEDx", "TEDxKLH", "Event", "Conference", "Boundless", "Technology", "Design", "Entertainment"],
+  title: "TEDxKLH 2026 | METAMORPHOSIS — The Unseen Process of Becoming",
+  description: "Experience TEDxKLH 2026: METAMORPHOSIS. Exploring structural transformations across science, technology, human consciousness, and design. What happens when an idea refuses to stay the same shape.",
+  keywords: ["TEDx", "TEDxKLH", "Metamorphosis", "Transformation", "Conference", "Innovation", "Technology", "Design"],
   authors: [{ name: "TEDxKLH Team" }],
   openGraph: {
-    title: "TEDxKLH 2026 | BOUNDLESS",
-    description: "Experience the premium, futuristic, and unforgettable TEDxKLH event.",
+    title: "TEDxKLH 2026 | METAMORPHOSIS",
+    description: "The Unseen Process of Becoming · TEDxKLH Annual Flagship Conference 2026",
     type: "website",
     locale: "en_US",
   },
@@ -46,10 +44,8 @@ export default function RootLayout({
       lang="en"
       className={`${syne.variable} ${inter.variable} ${orbitron.variable} h-full antialiased scroll-smooth`}
     >
-      <body className="min-h-full bg-black text-white selection:bg-primary selection:text-white flex flex-col font-sans">
+      <body className="min-h-full bg-black text-white selection:bg-[#EB0028] selection:text-white flex flex-col font-sans">
         <SmoothScroll>
-          <Background3D />
-          <CustomCursor />
           <div className="noise-overlay" />
           
           <main className="relative z-10 flex-grow">

@@ -6,24 +6,24 @@ import { Plus, Minus, HelpCircle } from "lucide-react";
 
 const FAQ_ITEMS = [
   {
-    question: "What is TEDxKLH 2026?",
-    answer: "TEDxKLH is a local, independently organized event operated under license from TED. Our mission is to build a high-fidelity platform bringing together visionary thinkers, developers, designers, and researchers to share ideas under our annual theme: BOUNDLESS.",
+    question: "What is TEDxKLH 2026: METAMORPHOSIS?",
+    answer: "TEDxKLH is a local, independently organized event operated under license from TED. Our 2026 theme, METAMORPHOSIS: The Unseen Process of Becoming, explores structural and irreversible transformations across science, cognitive computing, planetary engineering, and art.",
   },
   {
     question: "When and where is the event taking place?",
-    answer: "The event is scheduled as a full-day conference experience at the KL University Hyderabad Campus. Attendees receive access to 12 keynote talks, networking mixers, interactive tech installations, and delegate dining lounges.",
+    answer: "The event is scheduled as a full-day conference experience at KLH University, Bowrampet Campus. Attendees receive access to keynote talks, deep-dive panel sessions, networking mixers, interactive tech installations, and delegate dining lounges.",
   },
   {
     question: "How do I secure a registration ticket pass?",
-    answer: "You can apply by filling out the application portal above. Because TEDxKLH maintains a strictly curated cohort of 100 attendees to maximize networking depth, applications are reviewed and approved in batches.",
+    answer: "You can apply by filling out the application portal below. Because TEDxKLH maintains a strictly curated cohort of 100 attendees to maximize discussion depth and catalyst potential, applications are reviewed and approved in batches.",
   },
   {
     question: "Will the talks be recorded and published online?",
-    answer: "Yes, all TEDxKLH talks are recorded in 4K resolution and will be uploaded to the official TEDx YouTube channel and the global TED website post-event.",
+    answer: "Yes, all TEDxKLH talks are recorded in 4K resolution and will be uploaded to the official TEDx YouTube channel and the global TED platform post-event.",
   },
   {
     question: "Are there sponsorship or speaker nomination openings?",
-    answer: "We welcome partners who align with our vision of boundless discovery. You can apply to be an official partner or nominate a speaker by contacting our curation team at tedx@klh.edu.in.",
+    answer: "We welcome partners who align with our vision of catalytic transformation and breakthrough thinking. You can apply to be an official partner or nominate a speaker by contacting our curation team at tedx@klh.edu.in.",
   },
 ];
 
@@ -38,12 +38,12 @@ export default function FAQ() {
       {/* Background Radial Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] max-w-[1440px] h-[500px] bg-[radial-gradient(ellipse_at_center,rgba(235,0,40,0.08),transparent_70%)] pointer-events-none" />
 
-      {/* Main Aligned Container (max-w-[1440px]) */}
+      {/* Main Aligned Container */}
       <div className="w-full max-w-[1440px] mx-auto space-y-16 relative z-20">
         
         {/* Section Title */}
         <div className="text-center max-w-3xl mx-auto space-y-4">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#EB0028]/30 bg-[#EB0028]/10 text-[#EB0028] text-xs font-mono tracking-widest uppercase">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#EB0028]/30 bg-[#EB0028]/10 text-[#EB0028] text-xs font-mono tracking-widest uppercase shadow-[0_0_15px_rgba(235,0,40,0.2)]">
             <HelpCircle className="w-3.5 h-3.5" />
             FREQUENTLY ASKED QUESTIONS
           </div>
@@ -51,7 +51,7 @@ export default function FAQ() {
             Got <span className="text-[#EB0028] text-glow">Questions?</span>
           </h2>
           <p className="text-xs sm:text-sm text-white/60 font-light max-w-xl mx-auto" style={{ fontFamily: "'Inter', sans-serif" }}>
-            Everything you need to know about TEDxKLH 2026, attendee selection, and conference guidelines.
+            Everything you need to know about TEDxKLH 2026: METAMORPHOSIS, attendee selection, and conference guidelines.
           </p>
         </div>
 
