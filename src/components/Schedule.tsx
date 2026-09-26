@@ -2,13 +2,12 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 interface ScheduleItem {
   time: string;
   act: string;
   title: string;
-  speaker: string;
   duration: string;
   location: string;
   category: string;
@@ -18,9 +17,8 @@ interface ScheduleItem {
 const SCHEDULE_ITEMS: ScheduleItem[] = [
   {
     time: "09:30 AM",
-    act: "ACT I · DISSOLUTION",
-    title: "Quantum Phase Shifts: When Matter Dissolves & Reassembles",
-    speaker: "Dr. Sarah Chen",
+    act: "Act I · Dissolution",
+    title: "Opening Keynote",
     duration: "45 Min",
     location: "Main Auditorium",
     category: "Keynote",
@@ -28,43 +26,39 @@ const SCHEDULE_ITEMS: ScheduleItem[] = [
   },
   {
     time: "10:45 AM",
-    act: "ACT II · THE CRUCIBLE",
-    title: "The Chrysalis City: Architecture that Refuses Static Form",
-    speaker: "Marcus Thorne",
+    act: "Act II · The Crucible",
+    title: "Session Talk",
     duration: "35 Min",
-    location: "Chrysalis Dome",
+    location: "Main Auditorium",
     category: "Session",
-    desc: "A vision for urban infrastructure engineered with living biomaterials, capable of autonomous structural metamorphosis in response to planetary flux.",
+    desc: "A vision for infrastructure engineered with living biomaterials, capable of autonomous structural metamorphosis in response to planetary flux.",
   },
   {
     time: "11:45 AM",
-    act: "ACT II · THE THRESHOLD",
-    title: "Synthetic Sentience: The Irreversible Emergence of Machine Minds",
-    speaker: "Prof. Elena Rostova",
+    act: "Act II · The Threshold",
+    title: "Panel Discussion",
     duration: "45 Min",
-    location: "Auditorium B",
+    location: "Main Auditorium",
     category: "Panel",
-    desc: "An in-depth inquiry into the threshold moment where artificial neural representations cross from predictive tools into sentient self-transforming agents.",
+    desc: "An in-depth inquiry into the threshold moment where emerging technologies cross from predictive tools into self-transforming agents.",
   },
   {
     time: "02:00 PM",
-    act: "ACT III · REORGANIZATION",
-    title: "Dissolving Boundaries: Sonic Metamorphosis & Spatial Echoes",
-    speaker: "Kavi Dev",
+    act: "Act III · Reorganization",
+    title: "Interactive Experience",
     duration: "30 Min",
-    location: "Resonance Hall",
+    location: "Main Auditorium",
     category: "Interactive",
-    desc: "An immersive spatial acoustic journey reconstructing how sound frequency alters human neural topology and creates collective cognitive reorganization.",
+    desc: "An immersive journey reconstructing how innovation alters human understanding and creates collective cognitive reorganization.",
   },
   {
     time: "03:15 PM",
-    act: "ACT IV · EMERGENCE",
-    title: "The Anthropocene Rebuild: Planetary Engineering from Within",
-    speaker: "Zoe Sterling",
+    act: "Act IV · Emergence",
+    title: "Closing Keynote",
     duration: "50 Min",
     location: "Main Auditorium",
     category: "Keynote Finale",
-    desc: "The grand closing keynote synthesizing the overarching thesis of Metamorphosis: human civilization cannot simply add decoration on top of history; we must actively rebuild from within.",
+    desc: "The grand closing keynote synthesizing the overarching thesis of Metamorphosis: we must actively rebuild from within.",
   },
 ];
 
@@ -74,118 +68,135 @@ export default function Schedule() {
   return (
     <section 
       id="schedule" 
-      className="relative w-full py-[140px] px-6 sm:px-12 lg:px-[72px] select-none overflow-hidden"
+      className="relative w-full py-32 sm:py-40 px-6 sm:px-12 lg:px-[72px] select-none overflow-hidden"
     >
       {/* Background Ambient Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85vw] max-w-[1440px] h-[650px] bg-[radial-gradient(ellipse_at_center,rgba(235,0,40,0.06),transparent_70%)] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85vw] max-w-[1440px] h-[650px] bg-[radial-gradient(ellipse_at_center,rgba(235,0,40,0.05),transparent_70%)] pointer-events-none" />
 
-      {/* Main Container */}
-      <div className="w-full max-w-[1440px] mx-auto space-y-[64px] relative z-20 flex flex-col items-center text-center">
+      <div className="w-full max-w-[1440px] mx-auto space-y-16 relative z-20">
         
-        {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-4">
+        {/* Chapter Header */}
+        <div className="max-w-4xl mx-auto space-y-6">
           <motion.div
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#EB0028]/30 bg-[#EB0028]/10 text-[#EB0028] text-xs font-mono tracking-widest uppercase shadow-[0_0_15px_rgba(235,0,40,0.2)]"
+            className="flex items-center gap-3"
           >
-            <Sparkles className="w-3.5 h-3.5" />
-            THE METAMORPHIC AGENDA
+            <span 
+              className="text-xs font-medium tracking-[0.25em] text-[#EB0028] uppercase"
+              style={{ fontFamily: "var(--font-dm-mono)" }}
+            >
+              CHAPTER 04 // THE SCHEDULE
+            </span>
+            <span className="h-px w-8 bg-[#EB0028]/40" />
           </motion.div>
 
-          <motion.h2
+          <motion.h2 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="text-4xl sm:text-[64px] font-black text-white tracking-tight uppercase leading-none"
-            style={{ fontFamily: "'Satoshi', 'Space Grotesk', sans-serif" }}
+            transition={{ delay: 0.05 }}
+            className="text-3xl sm:text-5xl md:text-6xl font-bold text-white tracking-tight leading-[1.15]"
+            style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}
           >
-            TIMELINE OF <span className="text-[#EB0028] text-glow">BECOMING</span>
+            Timeline of<br />
+            <span className="text-[#EB0028]">Becoming</span>
           </motion.h2>
-
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-            className="text-sm sm:text-lg text-white/70 font-light max-w-2xl mx-auto"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-          >
-            Four continuous acts chronicling the journey from structural breakdown to threshold synthesis and irreversible flight.
-          </motion.p>
         </div>
 
-        {/* Centered Schedule Cards Stack */}
-        <div className="w-full max-w-3xl mx-auto space-y-6 flex flex-col items-center">
-          {SCHEDULE_ITEMS.map((item, index) => {
-            const isExpanded = expandedIdx === index;
+        {/* Interactive Timeline */}
+        <div className="max-w-3xl mx-auto relative">
+          {/* Vertical timeline line */}
+          <div className="absolute left-6 sm:left-8 top-0 bottom-0 w-[1px] bg-gradient-to-b from-[#EB0028]/30 via-white/10 to-transparent" />
 
-            return (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                onClick={() => setExpandedIdx(isExpanded ? null : index)}
-                className={`w-full p-7 sm:p-9 rounded-[32px] border transition-all duration-300 overflow-hidden cursor-pointer space-y-5 text-center flex flex-col items-center justify-center shadow-[0_10px_40px_rgba(0,0,0,0.6)] ${
-                  isExpanded
-                    ? "border-[#EB0028]/50 bg-black/85 shadow-[0_10px_40px_rgba(235,0,40,0.2)]"
-                    : "border-white/10 bg-black/40 hover:border-white/25 hover:bg-black/60"
-                }`}
-              >
-                {/* Header Badge & Category */}
-                <div className="flex flex-wrap items-center justify-center gap-3">
-                  <span className="px-4 py-1.5 rounded-full border border-[#EB0028]/30 bg-[#EB0028]/10 text-[#EB0028] font-mono text-xs font-bold tracking-widest">
-                    {item.time}
-                  </span>
-                  <span className="text-xs font-mono text-white/60 uppercase tracking-widest">
-                    {item.act} · {item.duration}
-                  </span>
-                </div>
+          <div className="space-y-4">
+            {SCHEDULE_ITEMS.map((item, index) => {
+              const isExpanded = expandedIdx === index;
 
-                {/* Title & Speaker */}
-                <div className="space-y-2 max-w-xl mx-auto text-center">
-                  <h3
-                    className={`text-xl sm:text-2xl font-bold tracking-wide uppercase transition-colors ${
-                      isExpanded ? "text-[#EB0028]" : "text-white"
-                    }`}
-                    style={{ fontFamily: "'Satoshi', 'Space Grotesk', sans-serif" }}
-                  >
-                    {item.title}
-                  </h3>
-                  <p className="text-sm text-white/70 font-light" style={{ fontFamily: "'Inter', sans-serif" }}>
-                    Talk by <span className="text-white font-bold">{item.speaker}</span> · {item.location}
-                  </p>
-                </div>
+              return (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: index * 0.08 }}
+                  onClick={() => setExpandedIdx(isExpanded ? null : index)}
+                  className="relative pl-16 sm:pl-20 cursor-pointer group"
+                >
+                  {/* Timeline node */}
+                  <div className={`absolute left-4 sm:left-6 top-6 w-4 h-4 rounded-full border-2 transition-all duration-300 ${
+                    isExpanded 
+                      ? "border-[#EB0028] bg-[#EB0028] shadow-[0_0_12px_rgba(235,0,40,0.6)]"
+                      : "border-white/20 bg-black group-hover:border-[#EB0028]/50"
+                  }`} />
 
-                {/* Expand Chevron Icon */}
-                <div className={`w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-white/40 transition-transform ${
-                  isExpanded ? "border-[#EB0028] bg-[#EB0028]/20 text-[#EB0028] rotate-180" : ""
-                }`}>
-                  <ChevronDown className="w-4 h-4" />
-                </div>
+                  {/* Card */}
+                  <div className={`p-6 sm:p-7 rounded-xl border transition-all duration-400 ${
+                    isExpanded
+                      ? "border-[#EB0028]/30 bg-white/[0.025] shadow-[0_10px_30px_rgba(235,0,40,0.1)]"
+                      : "border-white/[0.05] bg-white/[0.01] hover:border-white/10 hover:bg-white/[0.015]"
+                  }`}>
+                    {/* Header */}
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="space-y-2 flex-1">
+                        <div className="flex flex-wrap items-center gap-3">
+                          <span 
+                            className="text-[11px] font-semibold tracking-[0.15em] text-[#EB0028]"
+                            style={{ fontFamily: "var(--font-dm-mono)" }}
+                          >
+                            {item.time}
+                          </span>
+                          <span 
+                            className="text-[10px] tracking-[0.15em] text-white/40 uppercase"
+                            style={{ fontFamily: "var(--font-dm-mono)" }}
+                          >
+                            {item.act} · {item.duration}
+                          </span>
+                        </div>
+                        <h3
+                          className={`text-lg sm:text-xl font-bold tracking-tight transition-colors ${
+                            isExpanded ? "text-white" : "text-white/80"
+                          }`}
+                          style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}
+                        >
+                          {item.title}
+                        </h3>
+                        <p 
+                          className="text-[12px] text-white/50 font-normal"
+                          style={{ fontFamily: "var(--font-manrope)" }}
+                        >
+                          {item.location} · Speaker to be announced
+                        </p>
+                      </div>
 
-                {/* Expandable Abstract */}
-                <AnimatePresence>
-                  {isExpanded && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="pt-5 border-t border-white/10 text-xs sm:text-sm text-white/70 font-light leading-relaxed max-w-xl mx-auto text-center"
-                      style={{ fontFamily: "'Inter', sans-serif" }}
-                    >
-                      {item.desc}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            );
-          })}
+                      <div className={`w-7 h-7 rounded-full border flex items-center justify-center shrink-0 transition-all ${
+                        isExpanded ? "border-[#EB0028]/50 text-[#EB0028] rotate-180" : "border-white/10 text-white/30"
+                      }`}>
+                        <ChevronDown className="w-3.5 h-3.5" />
+                      </div>
+                    </div>
+
+                    {/* Expandable content */}
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="pt-4 mt-4 border-t border-white/[0.05] text-xs sm:text-sm text-white/60 font-normal leading-relaxed"
+                          style={{ fontFamily: "var(--font-manrope)", fontWeight: 400 }}
+                        >
+                          {item.desc}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
 
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { ArrowUp, Mail, MapPin, Send, Check } from "lucide-react";
 import Magnetic from "./Magnetic";
 
@@ -10,9 +11,11 @@ const NAV_LINKS = [
   { name: "Theme",    href: "#theme" },
   { name: "Speakers", href: "#speakers" },
   { name: "Schedule", href: "#schedule" },
+  { name: "Venue",    href: "#venue" },
   { name: "Team",     href: "#team" },
   { name: "Partners", href: "#partners" },
   { name: "FAQ",      href: "#faq" },
+  { name: "Register", href: "#register" },
 ];
 
 const SOCIAL_LINKS = [
@@ -46,7 +49,7 @@ const SOCIAL_LINKS = [
     ),
   },
   {
-    label: "Youtube",
+    label: "YouTube",
     href: "https://youtube.com",
     icon: (
       <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
@@ -75,43 +78,57 @@ export default function Footer() {
   };
 
   return (
-    <footer id="contact" className="relative w-full min-h-[350px] border-t border-white/10 bg-black/90 backdrop-blur-2xl pt-24 pb-16 px-6 sm:px-10 lg:px-[64px] select-none overflow-hidden">
+    <footer id="contact" className="relative w-full border-t border-white/10 bg-black/95 backdrop-blur-2xl pt-24 pb-16 px-6 sm:px-10 lg:px-[64px] select-none overflow-hidden">
       
-      {/* Top glowing accent line matching max-w-[1440px] */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1440px] h-[1px] bg-gradient-to-r from-transparent via-[#EB0028]/60 to-transparent" />
+      {/* Top glowing accent line */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1400px] h-[1px] bg-gradient-to-r from-transparent via-[#EB0028]/50 to-transparent" />
 
-      {/* Main Aligned Container (max-w-[1440px]) */}
-      <div className="w-full max-w-[1440px] mx-auto space-y-16 relative z-20">
+      {/* Main Aligned Container */}
+      <div className="w-full max-w-[1400px] mx-auto space-y-16 relative z-20">
         
         {/* 4 Equally Spaced Grid Columns */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           
           {/* Column 1: Logo & Mission & License */}
           <div className="space-y-4">
-            <h2 className="text-2xl font-black tracking-widest text-white" style={{ fontFamily: "'Satoshi', 'Space Grotesk', sans-serif" }}>
-              TED<span className="text-[#EB0028] text-glow font-extrabold">X</span>
-              <span className="text-white/60 text-sm font-normal ml-0.5" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>KLH</span>
-            </h2>
-            <p className="text-xs text-white/60 font-light leading-relaxed" style={{ fontFamily: "'Inter', sans-serif" }}>
-              A local, independently organized TED event committed to sharing breakthrough ideas in technology, science, and design.
+            <div className="flex items-center">
+              <Image
+                src="/logo-white.png"
+                alt="TEDx KLH"
+                width={140}
+                height={38}
+                className="h-7 w-auto object-contain brightness-105"
+              />
+            </div>
+            <p 
+              className="text-xs text-white/60 font-normal leading-relaxed" 
+              style={{ fontFamily: "var(--font-manrope)", fontWeight: 400 }}
+            >
+              A local, independently organized TED event committed to sharing breakthrough ideas in technology, cognitive science, and design.
             </p>
-            <p className="text-[10px] text-white/30 font-mono uppercase tracking-widest leading-relaxed">
+            <p 
+              className="text-[10px] text-white/40 uppercase tracking-widest leading-relaxed"
+              style={{ fontFamily: "var(--font-dm-mono)" }}
+            >
               This independent TEDx event is operated under license from TED.
             </p>
           </div>
 
           {/* Column 2: Navigation Links */}
           <div className="space-y-4">
-            <h4 className="text-xs font-mono tracking-[0.2em] text-white/40 uppercase">
-              Navigation
+            <h4 
+              className="text-xs tracking-[0.2em] text-[#EB0028] uppercase font-semibold"
+              style={{ fontFamily: "var(--font-dm-mono)" }}
+            >
+              NAVIGATION
             </h4>
-            <ul className="space-y-2">
+            <ul className="grid grid-cols-2 gap-2">
               {NAV_LINKS.map(item => (
                 <li key={item.name}>
                   <a
                     href={item.href}
-                    className="text-xs font-medium text-white/70 hover:text-[#EB0028] transition-colors duration-200"
-                    style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+                    className="text-xs font-semibold text-white/70 hover:text-[#EB0028] transition-colors duration-200"
+                    style={{ fontFamily: "var(--font-sora)", fontWeight: 600 }}
                   >
                     {item.name}
                   </a>
@@ -122,20 +139,35 @@ export default function Footer() {
 
           {/* Column 3: Contact, Venue & Socials */}
           <div className="space-y-4">
-            <h4 className="text-xs font-mono tracking-[0.2em] text-white/40 uppercase">
-              Contact & Venue
+            <h4 
+              className="text-xs tracking-[0.2em] text-[#EB0028] uppercase font-semibold"
+              style={{ fontFamily: "var(--font-dm-mono)" }}
+            >
+              HEADQUARTERS
             </h4>
 
-            <div className="space-y-2.5 text-xs text-white/70 font-light" style={{ fontFamily: "'Inter', sans-serif" }}>
+            <div 
+              className="space-y-2.5 text-xs text-white/70 font-normal" 
+              style={{ fontFamily: "var(--font-manrope)", fontWeight: 400 }}
+            >
               <div className="flex items-center gap-2.5">
                 <Mail className="w-4 h-4 text-[#EB0028] shrink-0" />
-                <a href="mailto:tedx@klh.edu.in" className="hover:text-white transition-colors">
+                <a 
+                  href="mailto:tedx@klh.edu.in" 
+                  className="hover:text-white transition-colors"
+                  style={{ fontFamily: "var(--font-dm-mono)" }}
+                >
                   tedx@klh.edu.in
                 </a>
               </div>
               <div className="flex items-start gap-2.5">
                 <MapPin className="w-4 h-4 text-[#EB0028] shrink-0 mt-0.5" />
-                <span>KLH University, Bowrampet, Hyderabad 500043</span>
+                <span 
+                  className="text-[11px]"
+                  style={{ fontFamily: "var(--font-dm-mono)" }}
+                >
+                  KLH University, Bowrampet Campus, Hyderabad 500043
+                </span>
               </div>
             </div>
 
@@ -159,11 +191,17 @@ export default function Footer() {
 
           {/* Column 4: Newsletter */}
           <div className="space-y-4">
-            <h4 className="text-xs font-mono tracking-[0.2em] text-white/40 uppercase">
-              Newsletter
+            <h4 
+              className="text-xs tracking-[0.2em] text-[#EB0028] uppercase font-semibold"
+              style={{ fontFamily: "var(--font-dm-mono)" }}
+            >
+              CURATOR DISPATCH
             </h4>
-            <p className="text-xs text-white/60 font-light leading-relaxed" style={{ fontFamily: "'Inter', sans-serif" }}>
-              Stay updated with speaker reveals, event schedules, and delegate announcements.
+            <p 
+              className="text-xs text-white/60 font-normal leading-relaxed" 
+              style={{ fontFamily: "var(--font-manrope)", fontWeight: 400 }}
+            >
+              Receive curated insights, keynote reveals, and conference updates directly to your inbox.
             </p>
 
             <form onSubmit={handleSubscribe} className="space-y-2">
@@ -173,18 +211,21 @@ export default function Footer() {
                   placeholder="Enter email address"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  className="w-full h-[46px] pl-4 pr-12 rounded-xl border border-white/10 bg-white/[0.03] text-white placeholder-white/20 text-xs focus:outline-none focus:border-[#EB0028] transition-all"
-                  style={{ fontFamily: "'Inter', sans-serif" }}
+                  className="w-full h-[44px] pl-4 pr-12 rounded-xl border border-white/10 bg-white/[0.03] text-white placeholder-white/30 text-xs focus:outline-none focus:border-[#EB0028] transition-all"
+                  style={{ fontFamily: "var(--font-manrope)", fontWeight: 400 }}
                 />
                 <button
                   type="submit"
-                  className="absolute right-1.5 px-3 py-1.5 rounded-lg bg-[#EB0028] hover:bg-[#FF3D5A] text-white flex items-center justify-center transition-colors cursor-pointer"
+                  className="absolute right-1.5 px-3 py-1.5 rounded-lg bg-[#EB0028] hover:bg-[#ff1a3c] text-white flex items-center justify-center transition-colors cursor-pointer"
                 >
                   {subscribed ? <Check className="w-3.5 h-3.5" /> : <Send className="w-3.5 h-3.5" />}
                 </button>
               </div>
               {subscribed && (
-                <span className="text-[10px] font-mono text-[#EB0028]">
+                <span 
+                  className="text-[10px] text-[#EB0028] font-medium"
+                  style={{ fontFamily: "var(--font-dm-mono)" }}
+                >
                   ✓ Subscribed successfully!
                 </span>
               )}
@@ -197,14 +238,17 @@ export default function Footer() {
         <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
         {/* Bottom Row */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/40 font-light" style={{ fontFamily: "'Inter', sans-serif" }}>
-          <p>© {new Date().getFullYear()} TEDxKLH. All rights reserved.</p>
+        <div 
+          className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/50 font-normal" 
+          style={{ fontFamily: "var(--font-manrope)", fontWeight: 400 }}
+        >
+          <p>© {new Date().getFullYear()} TEDxKLH. All rights reserved. Independently organized under TED license.</p>
 
           <Magnetic range={45} strength={0.28}>
             <button
               onClick={handleScrollToTop}
               aria-label="Back to top"
-              className="w-11 h-11 rounded-full border border-white/10 bg-white/[0.03] hover:bg-[#EB0028]/20 hover:border-[#EB0028]/60 flex items-center justify-center text-white/70 hover:text-[#EB0028] transition-all duration-300 cursor-pointer shadow-md group"
+              className="w-10 h-10 rounded-full border border-white/10 bg-white/[0.03] hover:bg-[#EB0028]/20 hover:border-[#EB0028]/60 flex items-center justify-center text-white/70 hover:text-[#EB0028] transition-all duration-300 cursor-pointer shadow-md group"
             >
               <ArrowUp className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" />
             </button>

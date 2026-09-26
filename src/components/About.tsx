@@ -1,31 +1,15 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Sparkles, Dna, Orbit, Sparkle } from "lucide-react";
 
-const NARRATIVE_STEPS = [
-  {
-    step: "01",
-    title: "Structural Dissolution",
-    desc: "Every paradigm shift begins with the courage to let go of the obsolete form. Before a breakthrough can emerge, existing models must dissolve.",
-    icon: Sparkle,
-  },
-  {
-    step: "02",
-    title: "The Imaginal Crucible",
-    desc: "Disconnected disciplines collide within the chrysalis—where artificial intelligence, synthetic biology, philosophical ethics, and spatial acoustics synthesize anew.",
-    icon: Dna,
-  },
-  {
-    step: "03",
-    title: "Irreversible Emergence",
-    desc: "Metamorphosis is structural, total, and permanent. Ideas born on this stage leave the room transformed, catalyzing change across communities and continents.",
-    icon: Orbit,
-  },
+const STATEMENTS = [
+  { text: "Ideas change.", delay: 0 },
+  { text: "People change.", delay: 0.15 },
+  { text: "Systems change.", delay: 0.3 },
 ];
 
 const METRICS = [
-  { val: "12+",   label: "Keynote Pioneers" },
+  { val: "12+",   label: "Speakers" },
   { val: "100",   label: "Curated Delegates" },
   { val: "4",     label: "Transformation Acts" },
   { val: "100%",  label: "Non-Profit License" },
@@ -38,112 +22,109 @@ export default function About() {
       className="relative w-full pt-10 pb-28 sm:pt-16 sm:pb-36 px-4 sm:px-8 md:px-12 select-none overflow-hidden"
     >
       {/* Radial Background Accent */}
-      <div className="absolute top-1/3 left-10 w-[450px] h-[450px] bg-[radial-gradient(ellipse_at_center,rgba(235,0,40,0.08),transparent_70%)] pointer-events-none" />
+      <div className="absolute top-1/3 left-10 w-[450px] h-[450px] bg-[radial-gradient(ellipse_at_center,rgba(235,0,40,0.06),transparent_70%)] pointer-events-none" />
 
-      {/* Main Container */}
       <div className="w-full max-w-[1440px] mx-auto space-y-24 relative z-20">
         
-        {/* Section Header */}
-        <div className="max-w-3xl mx-auto text-center space-y-4 flex flex-col items-center justify-center">
+        {/* Chapter Header — Visual First */}
+        <div className="max-w-4xl mx-auto space-y-6">
           <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#EB0028]/30 bg-[#EB0028]/10 text-[#EB0028] text-xs font-mono tracking-widest uppercase shadow-[0_0_15px_rgba(235,0,40,0.2)]"
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            THE NARRATIVE
-          </motion.div>
-
-          <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="text-4xl sm:text-6xl font-black text-white tracking-tight uppercase text-center"
-            style={{ fontFamily: "'Satoshi', 'Space Grotesk', sans-serif" }}
+            className="flex items-center gap-3"
           >
-            THE ANATOMY OF <span className="text-[#EB0028] text-glow">TRANSFORMATION</span>
+            <span 
+              className="text-xs font-medium tracking-[0.25em] text-[#EB0028] uppercase"
+              style={{ fontFamily: "var(--font-dm-mono)" }}
+            >
+              CHAPTER 01 // THE NARRATIVE
+            </span>
+            <span className="h-px w-8 bg-[#EB0028]/40" />
+          </motion.div>
+
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.05 }}
+            className="text-3xl sm:text-5xl md:text-6xl font-bold text-white tracking-tight leading-[1.15]"
+            style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}
+          >
+            The Anatomy of<br />
+            <span className="text-[#EB0028]">Transformation</span>
           </motion.h2>
 
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-            className="text-base sm:text-lg text-white/80 font-light leading-relaxed max-w-2xl text-center"
-            style={{ fontFamily: "'Inter', sans-serif" }}
+            transition={{ delay: 0.12 }}
+            className="text-base sm:text-lg text-white/70 font-normal leading-relaxed max-w-2xl"
+            style={{ fontFamily: "var(--font-manrope)", fontWeight: 400 }}
           >
-            TEDxKLH 2026 gathers catalysts who refuse to stay the same shape. We explore what happens when ideas rebuild our world from the inside out.
+            TEDxKLH 2026 gathers catalysts who refuse to stay the same shape. 
+            We explore what happens when ideas rebuild our world from the inside out.
           </motion.p>
         </div>
 
-        {/* Storytelling Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
-          
-          {/* Left Narrative Timeline */}
-          <div className="lg:col-span-7 space-y-12">
-            {NARRATIVE_STEPS.map((st, i) => {
-              const IconComp = st.icon;
-              return (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 25 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.15 }}
-                  className="flex items-start gap-6 group"
+        {/* Cinematic Visual Statements */}
+        <div className="max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-12">
+            {STATEMENTS.map((s, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: s.delay, duration: 0.6 }}
+                className="text-center sm:text-left"
+              >
+                <h3 
+                  className="text-xl sm:text-2xl md:text-3xl font-bold text-white tracking-tight"
+                  style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}
                 >
-                  <div className="w-12 h-12 rounded-2xl border border-white/10 bg-white/[0.02] group-hover:bg-[#EB0028]/15 group-hover:border-[#EB0028]/40 flex items-center justify-center text-[#EB0028] shrink-0 transition-all duration-300 shadow-sm">
-                    <IconComp className="w-6 h-6" />
-                  </div>
-
-                  <div className="space-y-2 border-b border-white/10 pb-8 w-full">
-                    <span className="text-xs font-mono text-[#EB0028] tracking-widest uppercase">
-                      PHASE {st.step}
-                    </span>
-                    <h3 className="text-2xl font-bold text-white tracking-tight group-hover:text-glow transition-all" style={{ fontFamily: "'Satoshi', 'Space Grotesk', sans-serif" }}>
-                      {st.title}
-                    </h3>
-                    <p className="text-sm text-white/60 font-light leading-relaxed" style={{ fontFamily: "'Inter', sans-serif" }}>
-                      {st.desc}
-                    </p>
-                  </div>
-                </motion.div>
-              );
-            })}
+                  {s.text}
+                </h3>
+                <div className="mt-3 w-10 h-[2px] bg-[#EB0028]/60 mx-auto sm:mx-0" />
+              </motion.div>
+            ))}
           </div>
-
-          {/* Right Metrics Grid */}
-          <div className="lg:col-span-5 space-y-8 p-8 sm:p-12 rounded-[32px] border border-white/10 bg-black/60 backdrop-blur-xl">
-            <h3 className="text-xs font-mono tracking-[0.25em] text-white/50 uppercase">
-              METAMORPHOSIS IN NUMBERS
-            </h3>
-
-            <div className="grid grid-cols-2 gap-6">
-              {METRICS.map((m, idx) => (
-                <div key={idx} className="space-y-1">
-                  <div className="text-3xl sm:text-5xl font-black text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                    {m.val}
-                  </div>
-                  <div className="text-xs text-white/50 font-light uppercase tracking-wider" style={{ fontFamily: "'Inter', sans-serif" }}>
-                    {m.label}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="pt-6 border-t border-white/10 space-y-2">
-              <div className="text-xs font-bold text-white uppercase tracking-wider" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                KLH UNIVERSITY, BOWRAMPET
-              </div>
-              <p className="text-xs text-white/40 font-light leading-relaxed" style={{ fontFamily: "'Inter', sans-serif" }}>
-                Organized under official license from TED. A dedicated convergence space for visionary engineers, bio-designers, artists, and leaders.
-              </p>
-            </div>
-          </div>
-
         </div>
+
+        {/* Metrics — Animated Numbers Grid */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="max-w-4xl mx-auto p-8 sm:p-10 rounded-2xl border border-white/[0.06] bg-white/[0.015]"
+        >
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8">
+            {METRICS.map((m, idx) => (
+              <motion.div 
+                key={idx} 
+                className="text-center space-y-1.5"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1 }}
+              >
+                <div 
+                  className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight"
+                  style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}
+                >
+                  {m.val}
+                </div>
+                <div 
+                  className="text-[10px] text-white/50 font-medium uppercase tracking-[0.18em]"
+                  style={{ fontFamily: "var(--font-dm-mono)" }}
+                >
+                  {m.label}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
 
       </div>
     </section>
