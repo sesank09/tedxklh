@@ -102,17 +102,6 @@ export default function Preloader({ onComplete }: PreloaderProps) {
     // ─────────────────────────────────────────────────────────────
     // 3. OFFICIAL TEDx KLH UNIVERSITY LOGO (Dynamic Canvas Texture)
     // ─────────────────────────────────────────────────────────────
-    // Letter boundaries in UV coordinates (0.0 to 1.0)
-    // Total Canvas: 2048 x 512
-    const LOGO_SECTIONS = [
-      { name: "T", x0: 0.12, x1: 0.20 },
-      { name: "E", x0: 0.20, x1: 0.28 },
-      { name: "D", x0: 0.28, x1: 0.36 },
-      { name: "X", x0: 0.36, x1: 0.44 },
-      { name: "KLH", x0: 0.44, x1: 0.62 },
-      { name: "UNIVERSITY", x0: 0.62, x1: 0.88 },
-    ];
-
     const createLogoTexture = (): { texture: THREE.CanvasTexture; canvas: HTMLCanvasElement; ctx: CanvasRenderingContext2D } => {
       const canvas = document.createElement("canvas");
       canvas.width = 2048;
@@ -136,12 +125,42 @@ export default function Preloader({ onComplete }: PreloaderProps) {
       logoCtx.clearRect(0, 0, 2048, 512);
 
       const cy = 256;
-      const startX = 260;
+
+      // Measure letter widths to center the entire logo horizontally on the 2048px canvas
+      logoCtx.font = "800 135px 'Sora', sans-serif";
+      const tWidth = logoCtx.measureText("T").width;
+      const eWidth = logoCtx.measureText("E").width;
+      const dWidth = logoCtx.measureText("D").width;
+      const tedTotalWidth = tWidth + eWidth + dWidth + 4;
+      const xMarkWidth = logoCtx.measureText("x").width;
+
+      logoCtx.font = "700 92px 'Sora', sans-serif";
+      const klhWidth = logoCtx.measureText("KLH").width;
+
+      logoCtx.font = "600 58px 'Sora', sans-serif";
+      const uWidth = logoCtx.measureText("University").width;
+
+      const gapDx = 4;
+      const gapXK = 24;
+      const gapKU = 18;
+
+      const totalLogoWidth = tedTotalWidth + gapDx + xMarkWidth + gapXK + klhWidth + gapKU + uWidth;
+      const startX = Math.round((2048 - totalLogoWidth) / 2);
+
+      // Dynamic Letter boundaries in UV coordinates (0.0 to 1.0)
+      const secT = { x0: startX / 2048, x1: (startX + tWidth) / 2048 };
+      const secE = { x0: (startX + tWidth) / 2048, x1: (startX + tWidth + eWidth) / 2048 };
+      const secD = { x0: (startX + tWidth + eWidth) / 2048, x1: (startX + tedTotalWidth) / 2048 };
+      const secX = { x0: (startX + tedTotalWidth + gapDx) / 2048, x1: (startX + tedTotalWidth + gapDx + xMarkWidth) / 2048 };
+      const secKLH = { x0: (startX + tedTotalWidth + gapDx + xMarkWidth + gapXK) / 2048, x1: (startX + tedTotalWidth + gapDx + xMarkWidth + gapXK + klhWidth) / 2048 };
+      const secU = { x0: (startX + tedTotalWidth + gapDx + xMarkWidth + gapXK + klhWidth + gapKU) / 2048, x1: (startX + totalLogoWidth) / 2048 };
+
+      const sections = [secT, secE, secD, secX, secKLH, secU];
 
       // Calculate letter brightness based on butterfly position
       const getLetterAlpha = (secIdx: number) => {
         if (allLit) return 1.0;
-        const sec = LOGO_SECTIONS[secIdx];
+        const sec = sections[secIdx];
         if (sweepU >= sec.x1) return 1.0; // Already passed
         if (sweepU >= sec.x0) {
           return 0.15 + ((sweepU - sec.x0) / (sec.x1 - sec.x0)) * 0.85; // Currently crossing
@@ -161,16 +180,12 @@ export default function Preloader({ onComplete }: PreloaderProps) {
       logoCtx.shadowBlur = tAlpha > 0.6 ? 24 : 0;
       logoCtx.fillText("T", startX, cy - 20);
 
-      const tWidth = logoCtx.measureText("T").width;
-
       // 'E'
       const eAlpha = getLetterAlpha(1);
       logoCtx.fillStyle = `rgba(255, 255, 255, ${eAlpha})`;
       logoCtx.shadowColor = `rgba(255, 255, 255, ${eAlpha > 0.6 ? 0.7 : 0})`;
       logoCtx.shadowBlur = eAlpha > 0.6 ? 24 : 0;
       logoCtx.fillText("E", startX + tWidth + 2, cy - 20);
-
-      const eWidth = logoCtx.measureText("E").width;
 
       // 'D'
       const dAlpha = getLetterAlpha(2);
@@ -179,18 +194,13 @@ export default function Preloader({ onComplete }: PreloaderProps) {
       logoCtx.shadowBlur = dAlpha > 0.6 ? 24 : 0;
       logoCtx.fillText("D", startX + tWidth + eWidth + 4, cy - 20);
 
-      const dWidth = logoCtx.measureText("D").width;
-      const tedTotalWidth = tWidth + eWidth + dWidth + 6;
-
       // 2. Draw "x" (Signature Ruby Red TEDx Mark)
       const xAlpha = getLetterAlpha(3);
       const isXPulsing = xPulse > 0.05;
       logoCtx.fillStyle = `rgba(235, 0, 40, ${Math.min(1.0, xAlpha + xPulse * 0.4)})`;
       logoCtx.shadowColor = `rgba(235, 0, 40, ${xAlpha > 0.5 || isXPulsing ? 0.95 : 0})`;
       logoCtx.shadowBlur = isXPulsing ? 45 + xPulse * 30 : (xAlpha > 0.5 ? 28 : 0);
-      logoCtx.fillText("x", startX + tedTotalWidth + 2, cy - 20);
-
-      const xMarkWidth = logoCtx.measureText("x").width;
+      logoCtx.fillText("x", startX + tedTotalWidth + gapDx, cy - 20);
 
       // 3. Draw "KLH" (White, Medium/Bold)
       const klhAlpha = getLetterAlpha(4);
@@ -198,9 +208,7 @@ export default function Preloader({ onComplete }: PreloaderProps) {
       logoCtx.fillStyle = `rgba(255, 255, 255, ${klhAlpha * 0.95})`;
       logoCtx.shadowColor = `rgba(255, 255, 255, ${klhAlpha > 0.6 ? 0.6 : 0})`;
       logoCtx.shadowBlur = klhAlpha > 0.6 ? 20 : 0;
-      logoCtx.fillText("KLH", startX + tedTotalWidth + xMarkWidth + 28, cy - 20);
-
-      const klhWidth = logoCtx.measureText("KLH").width;
+      logoCtx.fillText("KLH", startX + tedTotalWidth + gapDx + xMarkWidth + gapXK, cy - 20);
 
       // 4. Draw "University" (Refined White Subtext)
       const uAlpha = getLetterAlpha(5);
@@ -208,7 +216,7 @@ export default function Preloader({ onComplete }: PreloaderProps) {
       logoCtx.fillStyle = `rgba(255, 255, 255, ${uAlpha * 0.85})`;
       logoCtx.shadowColor = `rgba(255, 255, 255, ${uAlpha > 0.6 ? 0.5 : 0})`;
       logoCtx.shadowBlur = uAlpha > 0.6 ? 16 : 0;
-      logoCtx.fillText("University", startX + tedTotalWidth + xMarkWidth + klhWidth + 48, cy - 14);
+      logoCtx.fillText("University", startX + tedTotalWidth + gapDx + xMarkWidth + gapXK + klhWidth + gapKU, cy - 14);
 
       // 5. Official License Line: "x = independently organized TED event"
       const subAlpha = allLit ? 0.65 : Math.max(0.08, sweepU * 0.5);
@@ -596,34 +604,29 @@ export default function Preloader({ onComplete }: PreloaderProps) {
     // ─────────────────────────────────────────────────────────────
     // 6. EXACT FLIGHT PATH & LOGO CROSSING KINEMATICS
     // ─────────────────────────────────────────────────────────────
-    // Spline Waypoints:
-    // P0: Distant darkness (x: -3.2, y: 1.2, z: -12.0)
-    // P1: Approach left of 'T' (x: -2.3, y: 0.35, z: -2.5)
-    // P2: Alignment before 'T' (x: -1.95, y: 0.05, z: 0.35)
-    // P3: Crossing 'TED' (x: -0.95, y: 0.02, z: 0.38)
-    // P4: Crossing 'x' (x: -0.42, y: -0.02, z: 0.40) [Pulse moment!]
-    // P5: Crossing 'KLH' (x: 0.45, y: 0.04, z: 0.38)
-    // P6: Crossing 'University' (x: 1.85, y: 0.06, z: 0.35)
-    // P7: End of logo hover pause (x: 2.35, y: 0.25, z: 0.5)
-    // P8: Turn toward camera / foreground (x: 0.1, y: -0.1, z: 2.8)
-    // P9: Fly through camera (x: -0.15, y: 0.35, z: 8.5)
-    const flightSpline = new THREE.CatmullRomCurve3(
-      [
-        new THREE.Vector3(-3.2, 1.2, -12.0),
-        new THREE.Vector3(-2.3, 0.35, -2.5),
-        new THREE.Vector3(-1.95, 0.05, 0.35),
-        new THREE.Vector3(-0.95, 0.02, 0.38),
-        new THREE.Vector3(-0.42, -0.02, 0.40),
-        new THREE.Vector3(0.45, 0.04, 0.38),
-        new THREE.Vector3(1.85, 0.06, 0.35),
-        new THREE.Vector3(2.35, 0.25, 0.5),
-        new THREE.Vector3(0.1, -0.1, 2.8),
-        new THREE.Vector3(-0.15, 0.35, 8.5),
-      ],
-      false,
-      "centripetal",
-      0.5
-    );
+    // Dynamic Spline Waypoints (Aligned to centered TEDx KLH University logo across all viewports):
+    const createFlightSpline = (s: number) => {
+      return new THREE.CatmullRomCurve3(
+        [
+          new THREE.Vector3(-1.35 * s, 0.8, -10.0),
+          new THREE.Vector3(-1.45 * s, 0.25, -2.0),
+          new THREE.Vector3(-1.25 * s, 0.08, 0.35),
+          new THREE.Vector3(-0.80 * s, 0.03, 0.38),
+          new THREE.Vector3(-0.42 * s, -0.02, 0.40),
+          new THREE.Vector3(0.08 * s, 0.04, 0.38),
+          new THREE.Vector3(0.75 * s, 0.06, 0.36),
+          new THREE.Vector3(1.30 * s, 0.18, 0.45),
+          new THREE.Vector3(0.35 * s, 0.0, 2.5),
+          new THREE.Vector3(0.0, 0.25, 8.5),
+        ],
+        false,
+        "centripetal",
+        0.5
+      );
+    };
+
+    let currentScale = 1.0;
+    let flightSpline = createFlightSpline(currentScale);
 
     const startAnimationTime = performance.now();
     const TOTAL_SEQUENCE_MS = 4900;
@@ -713,10 +716,10 @@ export default function Preloader({ onComplete }: PreloaderProps) {
       butterflyRoot.position.set(pos.x, pos.y + bodyBob, pos.z);
 
       // Responsive Dynamic Scaling (Smaller near logo, large when approaching camera)
-      let scaleMult = 0.38;
+      let scaleMult = 0.38 * Math.max(0.7, currentScale);
       if (progressNorm > 0.75) {
         const sT = (progressNorm - 0.75) / 0.25;
-        scaleMult = 0.38 + Math.pow(sT, 1.5) * 0.95;
+        scaleMult = scaleMult + Math.pow(sT, 1.5) * 0.95;
       }
       butterflyRoot.scale.set(scaleMult, scaleMult, scaleMult);
 
@@ -730,14 +733,16 @@ export default function Preloader({ onComplete }: PreloaderProps) {
       // ─────────────────────────────────────────────────────────────
       // LOGO ILLUMINATION & THE 'X' PULSE MOMENT
       // ─────────────────────────────────────────────────────────────
-      // Map butterfly's X coordinate (-2.6 to +2.6) to Logo UV (0.0 to 1.0)
-      const sweepUV = THREE.MathUtils.clamp((pos.x + 2.4) / 4.6, 0.0, 1.0);
+      // Map butterfly's X coordinate to Logo UV (0.0 to 1.0)
+      const sweepUV = THREE.MathUtils.clamp((pos.x / (5.2 * currentScale)) + 0.5, 0.0, 1.0);
 
-      // Calculate Red 'X' Pulse when butterfly is near X (x ≈ -0.42)
-      const distToX = Math.abs(pos.x - (-0.42));
+      // Calculate Red 'X' Pulse when butterfly is near X (x ≈ -0.42 * currentScale)
+      const targetXX = -0.42 * currentScale;
+      const distToX = Math.abs(pos.x - targetXX);
+      const pulseThreshold = 0.35 * currentScale;
       let xPulse = 0;
-      if (progressNorm >= 0.46 && progressNorm <= 0.60 && distToX < 0.45) {
-        xPulse = Math.sin((1.0 - distToX / 0.45) * Math.PI);
+      if (progressNorm >= 0.40 && progressNorm <= 0.65 && distToX < pulseThreshold) {
+        xPulse = Math.sin((1.0 - distToX / pulseThreshold) * Math.PI);
       }
 
       const allLettersLit = progressNorm >= 0.72;
@@ -814,9 +819,15 @@ export default function Preloader({ onComplete }: PreloaderProps) {
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
 
-      // Adjust logo mesh size responsively for mobile screens
-      const isMobile = w < 640;
-      logoMesh.scale.set(isMobile ? 0.72 : 1.0, isMobile ? 0.72 : 1.0, 1.0);
+      // Perfectly center and fit logo mesh responsively on any viewport (mobile to ultrawide)
+      const aspect = w / h;
+      const visibleWidthAtZ0 = 2 * Math.tan((40 * Math.PI) / 360) * 7.6 * aspect; // ~5.53 * aspect
+      const targetLogoWidth = Math.min(5.2, visibleWidthAtZ0 * 0.86);
+      const responsiveScale = Math.max(0.35, Math.min(1.0, targetLogoWidth / 5.2));
+
+      logoMesh.scale.set(responsiveScale, responsiveScale, 1.0);
+      currentScale = responsiveScale;
+      flightSpline = createFlightSpline(currentScale);
     };
 
     window.addEventListener("resize", handleResize);
