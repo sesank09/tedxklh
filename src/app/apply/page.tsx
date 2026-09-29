@@ -16,45 +16,30 @@ import {
   CheckCircle2,
   Calendar,
   MapPin,
-  Clock,
   Download,
-  Share2,
   Home,
-  Info,
-  AlertCircle,
-  FileText,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Magnetic from "@/components/Magnetic";
 
 interface FormData {
-  // Step 1: Personal
+  // Phase 1: Personal
   firstName: string;
   lastName: string;
   email: string;
   phone: string;
-  whatsapp: string;
-  city: string;
   organization: string;
+  city: string;
 
-  // Step 2: Delegate Details
-  role: string;
-  field: string;
-  year: string;
-  linkedin: string;
-  motivation: string;
-  dietary: string;
-
-  // Step 3: Payment
+  // Phase 2: Payment
   utrNumber: string;
   screenshotBase64: string | null;
   screenshotName: string | null;
   screenshotSize: string | null;
 
-  // Step 4: Terms
+  // Phase 3: Terms
   termsAccepted: boolean;
 }
 
@@ -63,15 +48,8 @@ const INITIAL_FORM: FormData = {
   lastName: "",
   email: "",
   phone: "",
-  whatsapp: "",
-  city: "",
   organization: "",
-  role: "Student Delegate",
-  field: "Computer Science & AI",
-  year: "3rd Year",
-  linkedin: "",
-  motivation: "",
-  dietary: "None",
+  city: "",
   utrNumber: "",
   screenshotBase64: null,
   screenshotName: null,
@@ -80,10 +58,9 @@ const INITIAL_FORM: FormData = {
 };
 
 const STEPS = [
-  { id: 1, name: "PERSONAL", title: "Personal Information", desc: "Identity and direct contact coordinates" },
-  { id: 2, name: "DETAILS", title: "Delegate Profile", desc: "Academic, professional and motivation background" },
-  { id: 3, name: "PAYMENT", title: "Payment & Verification", desc: "12-digit UTR reference & official screenshot" },
-  { id: 4, name: "CONFIRM", title: "Summary & Protocols", desc: "Verify application and accept summit charter" },
+  { id: 1, name: "PERSONAL", title: "Personal Information", desc: "Identity and contact coordinates" },
+  { id: 2, name: "PAYMENT", title: "Payment & Verification", desc: "12-digit UTR reference & screenshot" },
+  { id: 3, name: "CONFIRM", title: "Review & Dispatch", desc: "Verify application and accept charter" },
 ];
 
 const METRICS = [
@@ -107,7 +84,7 @@ export default function ApplyPage() {
   // Restore autosaved draft
   useEffect(() => {
     try {
-      const saved = localStorage.getItem("tedxklh_apply_draft_v1");
+      const saved = localStorage.getItem("tedxklh_apply_draft_v2");
       if (saved) {
         setForm(JSON.parse(saved));
       }
@@ -120,7 +97,7 @@ export default function ApplyPage() {
     const updated = { ...form, [field]: val };
     setForm(updated);
     try {
-      localStorage.setItem("tedxklh_apply_draft_v1", JSON.stringify(updated));
+      localStorage.setItem("tedxklh_apply_draft_v2", JSON.stringify(updated));
     } catch (e) {
       console.error(e);
     }
@@ -189,7 +166,7 @@ export default function ApplyPage() {
     setTimeout(() => setCopiedUpi(false), 2200);
   };
 
-  // Step Validation
+  // Step Validation for 3 Phases
   const validateStep = (currentStep: number): boolean => {
     const errs: Record<string, string> = {};
 
@@ -199,15 +176,9 @@ export default function ApplyPage() {
       if (!form.email.trim() || !/^\S+@\S+\.\S+$/.test(form.email)) errs.email = "Valid official email is required";
       const digits = form.phone.replace(/\D/g, "");
       if (!digits || digits.length < 10) errs.phone = "Valid 10-digit phone number is required";
-      if (!form.city.trim()) errs.city = "Current city is required";
       if (!form.organization.trim()) errs.organization = "College / University or Organization is required";
+      if (!form.city.trim()) errs.city = "Current city is required";
     } else if (currentStep === 2) {
-      if (!form.role.trim()) errs.role = "Please select your primary role";
-      if (!form.field.trim()) errs.field = "Field of study/interest is required";
-      if (!form.motivation.trim() || form.motivation.trim().length < 15) {
-        errs.motivation = "Please provide at least 1-2 sentences on your motivation to attend";
-      }
-    } else if (currentStep === 3) {
       const cleanUtr = form.utrNumber.trim();
       if (!/^\d{12}$/.test(cleanUtr)) {
         errs.utrNumber = "UTR Number must be exactly 12 numeric digits";
@@ -215,7 +186,7 @@ export default function ApplyPage() {
       if (!form.screenshotBase64) {
         errs.screenshot = "Payment screenshot upload is required for transaction verification";
       }
-    } else if (currentStep === 4) {
+    } else if (currentStep === 3) {
       if (!form.termsAccepted) {
         errs.termsAccepted = "You must agree to the TEDx Code of Conduct & Summit Guidelines";
       }
@@ -227,9 +198,9 @@ export default function ApplyPage() {
 
   const handleNext = () => {
     if (validateStep(step)) {
-      if (step < 4) {
+      if (step < 3) {
         setStep(step + 1);
-        window.scrollTo({ top: 300, behavior: "smooth" });
+        window.scrollTo({ top: 320, behavior: "smooth" });
       } else {
         handleSubmit();
       }
@@ -239,12 +210,12 @@ export default function ApplyPage() {
   const handlePrev = () => {
     if (step > 1) {
       setStep(step - 1);
-      window.scrollTo({ top: 300, behavior: "smooth" });
+      window.scrollTo({ top: 320, behavior: "smooth" });
     }
   };
 
   const handleSubmit = () => {
-    if (!validateStep(4)) return;
+    if (!validateStep(3)) return;
     if (isSubmitting) return;
 
     setIsSubmitting(true);
@@ -255,7 +226,7 @@ export default function ApplyPage() {
       setIsSubmitting(false);
       setIsSubmitted(true);
       try {
-        localStorage.removeItem("tedxklh_apply_draft_v1");
+        localStorage.removeItem("tedxklh_apply_draft_v2");
       } catch (e) {}
 
       confetti({
@@ -264,7 +235,7 @@ export default function ApplyPage() {
         origin: { y: 0.55 },
         colors: ["#EB0028", "#FFFFFF", "#FF454A", "#1a1a1a"],
       });
-      window.scrollTo({ top: 120, behavior: "smooth" });
+      window.scrollTo({ top: 140, behavior: "smooth" });
     }, 1800);
   };
 
@@ -301,7 +272,8 @@ export default function ApplyPage() {
 
       <Navbar />
 
-      <main className="relative z-10 pt-32 sm:pt-40 pb-28 px-4 sm:px-8 md:px-12 max-w-[1440px] mx-auto space-y-12">
+      {/* Main Container with generous top spacing to prevent any overlap with floating navbar */}
+      <main className="relative z-10 pt-36 sm:pt-44 md:pt-48 pb-28 px-4 sm:px-8 md:px-12 max-w-[1440px] mx-auto space-y-12">
         {/* Page Hero Header */}
         <motion.div
           initial={{ opacity: 0, y: 25 }}
@@ -381,7 +353,7 @@ export default function ApplyPage() {
                 ))}
               </div>
 
-              {/* Protocol Flow Card */}
+              {/* Protocol Flow Card (3 Phases) */}
               <div className="p-6 rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl space-y-4">
                 <h3
                   className="text-xs tracking-[0.2em] text-[#EB0028] uppercase font-bold"
@@ -463,7 +435,7 @@ export default function ApplyPage() {
               </div>
             </motion.div>
 
-            {/* RIGHT COLUMN (8 cols): 4-Step Registration Form */}
+            {/* RIGHT COLUMN (8 cols): 3-Phase Registration Form */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -483,7 +455,7 @@ export default function ApplyPage() {
                         className="text-xs font-bold tracking-[0.2em] text-[#EB0028] uppercase"
                         style={{ fontFamily: "var(--font-dm-mono)" }}
                       >
-                        STEP 0{step} OF 04 · {STEPS[step - 1].name}
+                        STEP 0{step} OF 03 · {STEPS[step - 1].name}
                       </span>
                     </div>
 
@@ -491,12 +463,12 @@ export default function ApplyPage() {
                       className="text-[11px] text-white/40 tracking-wider uppercase"
                       style={{ fontFamily: "var(--font-dm-mono)" }}
                     >
-                      {Math.round((step / 4) * 100)}% COMPLETE
+                      {Math.round((step / 3) * 100)}% COMPLETE
                     </span>
                   </div>
 
-                  {/* 4 Steps Indicator Tabs */}
-                  <div className="grid grid-cols-4 gap-2 sm:gap-3">
+                  {/* 3 Steps Indicator Tabs */}
+                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
                     {STEPS.map((s) => {
                       const isCurrent = step === s.id;
                       const isDone = step > s.id;
@@ -516,7 +488,7 @@ export default function ApplyPage() {
                           }`}
                           style={{ fontFamily: "var(--font-dm-mono)" }}
                         >
-                          <span className="hidden sm:inline">0{s.id}. </span>
+                          <span>0{s.id}. </span>
                           <span>{s.name}</span>
                         </button>
                       );
@@ -527,7 +499,7 @@ export default function ApplyPage() {
                 {/* Step Form Panes */}
                 <div className="pt-8">
                   <AnimatePresence mode="wait">
-                    {/* STEP 1: PERSONAL INFORMATION */}
+                    {/* PHASE 1: PERSONAL INFORMATION */}
                     {step === 1 && (
                       <motion.div
                         key="step1"
@@ -662,121 +634,10 @@ export default function ApplyPage() {
                       </motion.div>
                     )}
 
-                    {/* STEP 2: DELEGATE DETAILS */}
+                    {/* PHASE 2: PAYMENT VERIFICATION */}
                     {step === 2 && (
                       <motion.div
                         key="step2"
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -12 }}
-                        transition={{ duration: 0.3 }}
-                        className="space-y-6"
-                      >
-                        <div>
-                          <h2
-                            className="text-xl font-bold text-white uppercase tracking-tight"
-                            style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}
-                          >
-                            Delegate Profile &amp; Motivation
-                          </h2>
-                          <p className="text-xs text-white/50 mt-1" style={{ fontFamily: "var(--font-manrope)" }}>
-                            Tell us about your background so we can curate your conference experience.
-                          </p>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                          {/* Role Selection */}
-                          <div className="space-y-2">
-                            <label className="text-xs uppercase text-white/80 font-medium tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
-                              Delegate Category *
-                            </label>
-                            <select
-                              value={form.role}
-                              onChange={(e) => updateField("role", e.target.value)}
-                              className="w-full h-12 px-4 rounded-xl border border-white/10 bg-neutral-900 text-white text-sm focus:outline-none focus:border-[#EB0028] transition-all"
-                              style={{ fontFamily: "var(--font-manrope)" }}
-                            >
-                              <option value="Student Delegate">Student Delegate</option>
-                              <option value="Faculty / Academician">Faculty / Academician</option>
-                              <option value="Industry Professional">Industry Professional</option>
-                              <option value="Startup Founder / Innovator">Startup Founder / Innovator</option>
-                              <option value="Creative / Designer / Artist">Creative / Designer / Artist</option>
-                            </select>
-                          </div>
-
-                          {/* Field / Department */}
-                          <div className="space-y-2">
-                            <label className="text-xs uppercase text-white/80 font-medium tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
-                              Field / Department *
-                            </label>
-                            <input
-                              type="text"
-                              value={form.field}
-                              onChange={(e) => updateField("field", e.target.value)}
-                              placeholder="e.g. AI & Data Science / Biotechnology"
-                              className={`w-full h-12 px-4 rounded-xl border bg-white/[0.03] text-white text-sm placeholder-white/25 focus:outline-none transition-all ${
-                                errors.field ? "border-[#EB0028] ring-1 ring-[#EB0028]" : "border-white/10 focus:border-[#EB0028]"
-                              }`}
-                              style={{ fontFamily: "var(--font-manrope)" }}
-                            />
-                            {errors.field && <span className="text-[11px] text-[#EB0028] block">{errors.field}</span>}
-                          </div>
-
-                          {/* Year of Study / Experience */}
-                          <div className="space-y-2">
-                            <label className="text-xs uppercase text-white/80 font-medium tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
-                              Year of Study / Seniority
-                            </label>
-                            <input
-                              type="text"
-                              value={form.year}
-                              onChange={(e) => updateField("year", e.target.value)}
-                              placeholder="e.g. 3rd Year / 4 Years Exp."
-                              className="w-full h-12 px-4 rounded-xl border border-white/10 bg-white/[0.03] text-white text-sm placeholder-white/25 focus:outline-none focus:border-[#EB0028] transition-all"
-                              style={{ fontFamily: "var(--font-manrope)" }}
-                            />
-                          </div>
-
-                          {/* LinkedIn / Portfolio Profile (Optional) */}
-                          <div className="space-y-2">
-                            <label className="text-xs uppercase text-white/80 font-medium tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
-                              LinkedIn / Portfolio URL (Optional)
-                            </label>
-                            <input
-                              type="url"
-                              value={form.linkedin}
-                              onChange={(e) => updateField("linkedin", e.target.value)}
-                              placeholder="https://linkedin.com/in/username"
-                              className="w-full h-12 px-4 rounded-xl border border-white/10 bg-white/[0.03] text-white text-sm placeholder-white/25 focus:outline-none focus:border-[#EB0028] transition-all"
-                              style={{ fontFamily: "var(--font-manrope)" }}
-                            />
-                          </div>
-                        </div>
-
-                        {/* Motivation Statement */}
-                        <div className="space-y-2">
-                          <label className="text-xs uppercase text-white/80 font-medium tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
-                            Why do you want to attend TEDx KLH 2026 (METAMORPHOSIS)? *
-                          </label>
-                          <textarea
-                            rows={3}
-                            value={form.motivation}
-                            onChange={(e) => updateField("motivation", e.target.value)}
-                            placeholder="Share your interest in this year's Metamorphosis theme and what you hope to experience or learn..."
-                            className={`w-full p-4 rounded-xl border bg-white/[0.03] text-white text-sm placeholder-white/25 focus:outline-none transition-all resize-none ${
-                              errors.motivation ? "border-[#EB0028] ring-1 ring-[#EB0028]" : "border-white/10 focus:border-[#EB0028]"
-                            }`}
-                            style={{ fontFamily: "var(--font-manrope)" }}
-                          />
-                          {errors.motivation && <span className="text-[11px] text-[#EB0028] block">{errors.motivation}</span>}
-                        </div>
-                      </motion.div>
-                    )}
-
-                    {/* STEP 3: PAYMENT VERIFICATION */}
-                    {step === 3 && (
-                      <motion.div
-                        key="step3"
                         initial={{ opacity: 0, y: 12 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -12 }}
@@ -968,10 +829,10 @@ export default function ApplyPage() {
                       </motion.div>
                     )}
 
-                    {/* STEP 4: REVIEW & CONFIRMATION */}
-                    {step === 4 && (
+                    {/* PHASE 3: REVIEW & CONFIRMATION */}
+                    {step === 3 && (
                       <motion.div
-                        key="step4"
+                        key="step3"
                         initial={{ opacity: 0, y: 12 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -12 }}
@@ -1009,11 +870,7 @@ export default function ApplyPage() {
                               <span className="text-[10px] text-white/40 uppercase font-mono block">Organization &amp; City</span>
                               <span className="font-semibold text-white">{form.organization} · {form.city}</span>
                             </div>
-                            <div>
-                              <span className="text-[10px] text-white/40 uppercase font-mono block">Category &amp; Field</span>
-                              <span className="font-semibold text-white">{form.role} ({form.field})</span>
-                            </div>
-                            <div>
+                            <div className="sm:col-span-2">
                               <span className="text-[10px] text-white/40 uppercase font-mono block">UTR Number</span>
                               <span className="font-semibold text-[#EB0028] font-mono tracking-wider">{form.utrNumber}</span>
                             </div>
@@ -1084,14 +941,14 @@ export default function ApplyPage() {
                             <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                             <span>VERIFYING &amp; SUBMITTING...</span>
                           </div>
-                        ) : step === 4 ? (
+                        ) : step === 3 ? (
                           <div className="flex items-center gap-2 relative z-10">
                             <span>SUBMIT APPLICATION</span>
                             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                           </div>
                         ) : (
                           <div className="flex items-center gap-2 relative z-10">
-                            <span>CONTINUE TO STEP 0{step + 1}</span>
+                            <span>CONTINUE TO PAYMENT (STEP 02)</span>
                             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                           </div>
                         )}

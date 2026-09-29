@@ -35,17 +35,18 @@ export default function Hero() {
           transition={{ duration: 0.9, delay: 0.2 }}
           className="flex flex-col items-center"
         >
-          <div className="flex items-center justify-center gap-2 sm:gap-4 select-none">
+          <div className="flex flex-col items-center justify-center select-none text-center">
             <h1
-              className="text-5xl sm:text-7xl md:text-8xl font-extrabold text-white tracking-tight flex items-baseline"
+              className="text-5xl sm:text-7xl md:text-8xl font-extrabold text-white tracking-tight flex items-baseline justify-center"
               style={{ 
                 fontFamily: "var(--font-sora)", 
                 fontWeight: 800,
                 letterSpacing: "-0.04em",
                 textTransform: "none",
+                lineHeight: 1,
               }}
             >
-              TED
+              <span>TED</span>
               <span
                 className="text-[#EB0028]"
                 style={{
@@ -59,31 +60,20 @@ export default function Hero() {
               >
                 x
               </span>
+              <span>KLH</span>
             </h1>
 
-            <div className="flex flex-col items-center justify-center">
-              <span
-                className="text-5xl sm:text-7xl md:text-8xl font-extrabold text-white tracking-tight leading-none"
-                style={{
-                  fontFamily: "var(--font-sora)",
-                  fontWeight: 800,
-                  letterSpacing: "-0.04em",
-                }}
-              >
-                KLH
-              </span>
-              <span
-                className="text-[9px] sm:text-[11px] md:text-[13px] font-semibold text-white/70 uppercase mt-1.5 sm:mt-2"
-                style={{
-                  fontFamily: "var(--font-sora)",
-                  letterSpacing: "0.38em",
-                  textIndent: "0.38em",
-                  fontWeight: 600,
-                }}
-              >
-                BOWRAMPET
-              </span>
-            </div>
+            <span
+              className="text-[10px] sm:text-xs md:text-sm font-semibold text-white/70 uppercase tracking-[0.38em] mt-2 sm:mt-3"
+              style={{
+                fontFamily: "var(--font-sora)",
+                letterSpacing: "0.38em",
+                textIndent: "0.38em",
+                fontWeight: 600,
+              }}
+            >
+              BOWRAMPET
+            </span>
           </div>
         </motion.div>
 
