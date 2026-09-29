@@ -123,7 +123,6 @@ export async function POST(req: NextRequest) {
     }
 
     // 6. Upload Screenshot to Private Storage Bucket
-    const fileExt = screenshot.name.split(".").pop()?.toLowerCase() || "jpg";
     const tempId = crypto.randomUUID();
     const storagePath = `${tempId}/payment-${Date.now()}.${fileExt}`;
     const fileBuffer = Buffer.from(await screenshot.arrayBuffer());
