@@ -16,6 +16,8 @@ const NAV_LINKS = [
   { name: "Partners", href: "/#partners" },
   { name: "FAQ",      href: "/#faq" },
   { name: "Apply Pass", href: "/apply" },
+  { name: "Track Status", href: "/application-status" },
+  { name: "Admin Portal", href: "/admin/login" },
 ];
 
 const SOCIAL_LINKS = [
