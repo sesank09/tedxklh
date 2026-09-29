@@ -950,8 +950,19 @@ export default function ApplyPage() {
                     )}
                   </AnimatePresence>
 
+                  {/* Global Submit Error Banner */}
+                  {submitError && (
+                    <div className="p-4 rounded-xl border border-red-500/50 bg-red-500/15 text-red-300 text-xs flex items-start gap-2.5 shadow-lg mt-6">
+                      <span className="text-base shrink-0 leading-none">⚠️</span>
+                      <div className="space-y-1">
+                        <div className="font-bold uppercase tracking-wider text-red-200">Submission Notice</div>
+                        <div>{submitError}</div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Form Action Controls: Back & Next / Submit */}
-                  <div className="flex items-center justify-between gap-4 pt-8 border-t border-white/10 mt-8">
+                  <div className="flex items-center justify-between gap-4 pt-8 border-t border-white/10 mt-6">
                     {step > 1 ? (
                       <button
                         type="button"

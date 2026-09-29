@@ -70,10 +70,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const validMimeTypes = ["image/png", "image/jpeg", "image/jpg"];
-    if (!validMimeTypes.includes(screenshot.type)) {
+    const validMimeTypes = ["image/png", "image/jpeg", "image/jpg", "image/webp", "image/pjpeg", "image/heic", "image/heif"];
+    const fileExt = screenshot.name.split(".").pop()?.toLowerCase() || "jpg";
+    const validExtensions = ["png", "jpg", "jpeg", "webp", "heic", "heif"];
+
+    const isValidType = validMimeTypes.includes(screenshot.type.toLowerCase()) || validExtensions.includes(fileExt);
+
+    if (!isValidType) {
       return NextResponse.json(
-        { error: "Payment screenshot must be a JPG or PNG image." },
+        { error: "Payment screenshot must be an image file (JPG, PNG, or WEBP)." },
         { status: 400 }
       );
     }
