@@ -57,7 +57,7 @@ export default function Partners() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.12 }}
-            className="text-sm sm:text-base text-white/70 font-normal max-w-xl leading-relaxed"
+            className="text-sm sm:text-base text-white/70 font-normal max-w-xl leading-relaxed mx-auto sm:mx-0"
             style={{ fontFamily: "var(--font-manrope)", fontWeight: 400 }}
           >
             Visionary institutions and enterprises partnering with TEDxKLH to support ideas that reshape our world.

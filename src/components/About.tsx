@@ -94,7 +94,7 @@ export default function About() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.12 }}
-            className="text-base sm:text-lg text-white/70 font-normal leading-relaxed max-w-2xl"
+            className="text-base sm:text-lg text-white/70 font-normal leading-relaxed max-w-2xl mx-auto sm:mx-0"
             style={{ fontFamily: "var(--font-manrope)", fontWeight: 400 }}
           >
             TEDxKLH 2026 gathers thinkers and builders who refuse to stay the same shape.

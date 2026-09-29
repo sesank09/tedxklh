@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform, useReducedMotion } from "framer-motion";
@@ -219,7 +219,7 @@ export default function Speakers() {
             Voices of<br /><span className="text-[#EB0028]">Transformation</span>
           </motion.h2>
           <motion.p initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.12 }}
-            className="text-sm sm:text-base text-white/70 font-normal max-w-xl leading-relaxed" style={{ fontFamily: "var(--font-manrope)", fontWeight: 400 }}>
+            className="text-sm sm:text-base text-white/70 font-normal max-w-xl leading-relaxed mx-auto sm:mx-0" style={{ fontFamily: "var(--font-manrope)", fontWeight: 400 }}>
             Twelve curated catalysts sharing breakthrough ideas at the intersection of technology, design, and human potential.
           </motion.p>
         </div>

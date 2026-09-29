@@ -75,7 +75,7 @@ export default function FAQ() {
           </motion.h2>
 
           <p 
-            className="text-sm sm:text-base text-white/70 font-normal max-w-xl leading-relaxed" 
+            className="text-sm sm:text-base text-white/70 font-normal max-w-xl leading-relaxed mx-auto sm:mx-0" 
             style={{ fontFamily: "var(--font-manrope)", fontWeight: 400 }}
           >
             Essential guidance regarding attendee curation, pass allocation, venue logistics, and conference protocols.

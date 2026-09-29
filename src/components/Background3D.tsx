@@ -237,12 +237,13 @@ function createTypographyTexture(): THREE.CanvasTexture {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   const cx = canvas.width / 2;
-  const cy = 500;
+  const cy = 480;
 
   // Render "METAMORPHOSIS": META (White) + MORPHOSIS (Red) with Bebas Neue
-  ctx.font = "400 175px 'Bebas Neue', 'Impact', sans-serif";
+  // Large 260px font for crisp edge-to-edge presence on all devices including iPhones
+  ctx.font = "400 260px 'Bebas Neue', 'Impact', sans-serif";
   ctx.textBaseline = "middle";
-  ctx.letterSpacing = "14px";
+  ctx.letterSpacing = "6px";
 
   const fullText = "METAMORPHOSIS";
   const fullWidth = ctx.measureText(fullText).width;
@@ -252,15 +253,15 @@ function createTypographyTexture(): THREE.CanvasTexture {
   const leftWidth = ctx.measureText(leftPart).width;
 
   // 1. Draw "META" (White / Silver with clean glow)
-  ctx.shadowColor = "rgba(255, 255, 255, 0.7)";
-  ctx.shadowBlur = 20;
+  ctx.shadowColor = "rgba(255, 255, 255, 0.85)";
+  ctx.shadowBlur = 28;
   ctx.fillStyle = "#FFFFFF";
   ctx.textAlign = "left";
   ctx.fillText(leftPart, startX, cy);
 
   // 2. Draw "MORPHOSIS" (Ruby Red with vibrant glow)
-  ctx.shadowColor = "rgba(235, 0, 40, 0.9)";
-  ctx.shadowBlur = 30;
+  ctx.shadowColor = "rgba(235, 0, 40, 0.95)";
+  ctx.shadowBlur = 40;
   ctx.fillStyle = "#EB0028";
   ctx.fillText("MORPHOSIS", startX + leftWidth, cy);
 
@@ -268,17 +269,17 @@ function createTypographyTexture(): THREE.CanvasTexture {
   ctx.shadowBlur = 0;
 
   // 3. Subtitle: "THE UNSEEN PROCESS OF BECOMING."
-  ctx.font = "500 28px 'Manrope', 'Helvetica Neue', sans-serif";
-  ctx.letterSpacing = "12px";
+  ctx.font = "600 36px 'Manrope', 'Helvetica Neue', sans-serif";
+  ctx.letterSpacing = "8px";
   ctx.textAlign = "center";
-  ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
-  ctx.fillText("THE UNSEEN PROCESS OF BECOMING.", cx, cy + 155);
+  ctx.fillStyle = "rgba(255, 255, 255, 0.92)";
+  ctx.fillText("THE UNSEEN PROCESS OF BECOMING.", cx, cy + 185);
 
   // 4. Red horizontal accent line
-  ctx.shadowColor = "rgba(235, 0, 40, 0.9)";
-  ctx.shadowBlur = 15;
+  ctx.shadowColor = "rgba(235, 0, 40, 0.95)";
+  ctx.shadowBlur = 20;
   ctx.fillStyle = "#EB0028";
-  ctx.fillRect(cx - 100, cy + 205, 200, 4);
+  ctx.fillRect(cx - 140, cy + 240, 280, 5);
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.generateMipmaps = true;
@@ -331,9 +332,17 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
     const vpH = viewport.height;
     const vh = typeof window !== "undefined" ? window.innerHeight : 800;
 
-    // Responsive scaling to fit mobile / narrow viewports without ANY cropping:
-    const textScale = Math.min(1.0, (vpW * 0.90) / 11.6);
-    const butterflyScale = Math.min(1.0, (vpW * 0.88) / 8.6);
+    const isMobile = vpW < 7.6 || (typeof window !== "undefined" && window.innerWidth < 768);
+
+    // Responsive scaling to fit mobile / iPhone / all screens boldly without clipping:
+    // On iPhone / mobile viewports, scale so the typography fills ~92% of screen width
+    const textScale = isMobile 
+      ? Math.max(0.35, Math.min(1.2, (vpW * 0.94) / 10.2))
+      : Math.min(1.0, (vpW * 0.88) / 11.2);
+
+    const butterflyScale = isMobile
+      ? Math.max(0.38, Math.min(1.15, (vpW * 0.92) / 8.2))
+      : Math.min(1.0, (vpW * 0.86) / 8.6);
 
     // Dynamic scroll timeline normalized to viewport height:
     const dissolveProgress = THREE.MathUtils.clamp(scrollY / (vh * 0.35), 0, 1);
