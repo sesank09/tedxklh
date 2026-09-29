@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Users, Sparkles } from "lucide-react";
 
 const DEPARTMENTS = ["All", "Leadership", "Curation", "Production", "Design", "Operations"] as const;
 
@@ -9,18 +10,18 @@ interface TeamMember {
   id: string;
   role: string;
   department: typeof DEPARTMENTS[number];
-  initials: string;
+  code: string;
 }
 
 const TEAM_MEMBERS: TeamMember[] = [
-  { id: "lead-01", role: "Lead Organizer & Licensee", department: "Leadership", initials: "01" },
-  { id: "lead-02", role: "Co-Organizer & Executive Director", department: "Leadership", initials: "02" },
-  { id: "curation-01", role: "Head of Speaker Curation", department: "Curation", initials: "03" },
-  { id: "design-01", role: "Creative Director & Visual Lead", department: "Design", initials: "04" },
-  { id: "prod-01", role: "Technical & Production Director", department: "Production", initials: "05" },
-  { id: "ops-01", role: "Head of Marketing & Outreach", department: "Operations", initials: "06" },
-  { id: "prod-02", role: "Web Systems & Digital Experience Lead", department: "Production", initials: "07" },
-  { id: "ops-02", role: "Head of Sponsorships & Logistics", department: "Operations", initials: "08" },
+  { id: "lead-01", role: "Lead Organizer & Licensee", department: "Leadership", code: "DIR-01" },
+  { id: "lead-02", role: "Co-Organizer & Executive Director", department: "Leadership", code: "DIR-02" },
+  { id: "curation-01", role: "Head of Speaker Curation", department: "Curation", code: "CUR-01" },
+  { id: "design-01", role: "Creative Director & Visual Lead", department: "Design", code: "DSN-01" },
+  { id: "prod-01", role: "Technical & Production Director", department: "Production", code: "PRD-01" },
+  { id: "ops-01", role: "Head of Marketing & Outreach", department: "Operations", code: "OPS-01" },
+  { id: "prod-02", role: "Digital Experience & Systems Lead", department: "Production", code: "PRD-02" },
+  { id: "ops-02", role: "Head of Logistics & Partnerships", department: "Operations", code: "OPS-02" },
 ];
 
 export default function Team() {
@@ -33,26 +34,26 @@ export default function Team() {
   return (
     <section 
       id="team" 
-      className="relative w-full py-28 sm:py-36 px-4 sm:px-8 md:px-12 select-none overflow-hidden"
+      className="relative w-full py-28 sm:py-40 px-4 sm:px-8 md:px-12 select-none overflow-hidden"
     >
       {/* Background Radial Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85vw] max-w-[1440px] h-[650px] bg-[radial-gradient(ellipse_at_center,rgba(235,0,40,0.05),transparent_70%)] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85vw] max-w-[1400px] h-[650px] bg-[radial-gradient(ellipse_at_center,rgba(235,0,40,0.05),transparent_70%)] pointer-events-none" />
 
-      <div className="w-full max-w-[1440px] mx-auto space-y-16 relative z-20">
+      <div className="w-full max-w-[1400px] mx-auto space-y-16 relative z-20">
         
         {/* Chapter Header */}
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="max-w-4xl mx-auto space-y-6 text-center sm:text-left">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="flex items-center gap-3"
+            className="flex items-center justify-center sm:justify-start gap-3"
           >
             <span 
               className="text-xs font-medium tracking-[0.25em] text-[#EB0028] uppercase"
               style={{ fontFamily: "var(--font-dm-mono)" }}
             >
-              CHAPTER 06 // THE TEAM
+              CHAPTER 05 // THE ORGANIZERS
             </span>
             <span className="h-px w-8 bg-[#EB0028]/40" />
           </motion.div>
@@ -62,15 +63,26 @@ export default function Team() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.05 }}
-            className="text-3xl sm:text-5xl md:text-6xl font-bold text-white tracking-tight leading-[1.15]"
-            style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}
+            className="text-4xl sm:text-6xl md:text-7xl font-extrabold text-white tracking-tight uppercase leading-[1.05]"
+            style={{ fontFamily: "var(--font-sora)", fontWeight: 800 }}
           >
             The Minds Behind<br />
             <span className="text-[#EB0028]">Metamorphosis</span>
           </motion.h2>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.12 }}
+            className="text-sm sm:text-base text-white/70 font-normal max-w-xl leading-relaxed"
+            style={{ fontFamily: "var(--font-manrope)", fontWeight: 400 }}
+          >
+            The dedicated team of student organizers, curators, and technologists bringing TEDxKLH 2026 to life.
+          </motion.p>
         </div>
 
-        {/* Department Filter */}
+        {/* Department Filter Pills */}
         <div className="flex items-center justify-start sm:justify-center overflow-x-auto pb-2 sm:pb-0 gap-2 scrollbar-none">
           {DEPARTMENTS.map((dept) => {
             const isActive = activeDept === dept;
@@ -80,8 +92,8 @@ export default function Team() {
                 onClick={() => setActiveDept(dept)}
                 className={`px-4 py-2 rounded-full text-[11px] uppercase tracking-[0.15em] whitespace-nowrap transition-all duration-300 border cursor-pointer ${
                   isActive
-                    ? "bg-[#EB0028] border-[#EB0028] text-white shadow-[0_0_15px_rgba(235,0,40,0.3)]"
-                    : "bg-white/[0.02] border-white/[0.06] text-white/50 hover:text-white hover:border-white/15"
+                    ? "bg-[#EB0028] border-[#EB0028] text-white shadow-[0_0_20px_rgba(235,0,40,0.4)] font-bold"
+                    : "bg-white/[0.02] border-white/[0.08] text-white/50 hover:text-white hover:border-white/20"
                 }`}
                 style={{ fontFamily: "var(--font-dm-mono)" }}
               >
@@ -91,10 +103,10 @@ export default function Team() {
           })}
         </div>
 
-        {/* Team Grid */}
+        {/* Team Cards Grid */}
         <motion.div 
           layout
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch"
         >
           <AnimatePresence mode="popLayout">
             {filteredMembers.map((member, idx) => (
@@ -104,52 +116,55 @@ export default function Team() {
                 initial={{ opacity: 0, scale: 0.94, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.94, y: 20 }}
-                transition={{ duration: 0.35, delay: idx * 0.05 }}
-                className="group relative rounded-xl border border-white/[0.06] bg-white/[0.015] p-6 flex flex-col justify-between overflow-hidden hover:border-[#EB0028]/30 hover:bg-white/[0.025] hover:-translate-y-1 transition-all duration-400"
+                transition={{ duration: 0.35, delay: idx * 0.04 }}
+                className="group relative rounded-3xl border border-white/[0.08] bg-black/60 backdrop-blur-xl p-6 flex flex-col justify-between overflow-hidden hover:border-[#EB0028]/50 hover:bg-black/85 hover:-translate-y-2 transition-all duration-500 shadow-[0_15px_40px_rgba(0,0,0,0.7)]"
               >
-                {/* Top sheen */}
-                <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#EB0028]/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                {/* Top Sheen Line */}
+                <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#EB0028]/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
                 <div className="space-y-5">
                   <div className="flex items-center justify-between">
                     <span 
-                      className="text-[10px] tracking-[0.2em] uppercase text-[#EB0028] font-medium"
+                      className="text-[10px] tracking-[0.2em] uppercase text-[#EB0028] font-semibold bg-[#EB0028]/10 px-2.5 py-0.5 rounded border border-[#EB0028]/25"
                       style={{ fontFamily: "var(--font-dm-mono)" }}
                     >
-                      // {member.department}
+                      {member.department}
+                    </span>
+                    <span 
+                      className="text-[10px] tracking-[0.15em] text-white/30 font-mono"
+                    >
+                      {member.code}
                     </span>
                   </div>
 
-                  {/* Avatar Placeholder */}
-                  <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-gradient-to-b from-white/[0.04] to-black/40 border border-white/[0.04] flex items-center justify-center">
-                    <div className="flex flex-col items-center justify-center gap-2">
-                      <div className="w-14 h-14 rounded-full border border-white/10 group-hover:border-[#EB0028]/30 flex items-center justify-center bg-black/40 transition-colors">
-                        <span 
-                          className="text-lg font-bold text-white/30 group-hover:text-[#EB0028]/80 transition-colors"
-                          style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}
-                        >
-                          {member.initials}
-                        </span>
+                  {/* Team Portrait Area */}
+                  <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-gradient-to-b from-white/[0.03] to-black/60 border border-white/[0.06] flex items-center justify-center group-hover:border-[#EB0028]/30 transition-colors">
+                    <div className="flex flex-col items-center justify-center gap-2.5">
+                      <div className="w-14 h-14 rounded-2xl border border-white/10 group-hover:border-[#EB0028]/50 flex items-center justify-center bg-black/50 text-white/30 group-hover:text-[#EB0028] group-hover:scale-105 transition-all duration-400">
+                        <Users className="w-6 h-6" />
                       </div>
                       <span 
-                        className="text-[9px] text-white/25 uppercase tracking-[0.2em]"
+                        className="text-[10px] text-white/40 uppercase tracking-[0.2em] font-medium"
                         style={{ fontFamily: "var(--font-dm-mono)" }}
                       >
-                        Coming Soon
+                        TEAM PHOTO
                       </span>
                     </div>
+
+                    {/* Soft Crimson Edge Highlight on Hover */}
+                    <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-[inset_0_0_20px_rgba(235,0,40,0.25)]" />
                   </div>
 
-                  {/* Role */}
+                  {/* Role Info */}
                   <div className="space-y-1">
                     <h3 
-                      className="text-base font-bold text-white/40"
+                      className="text-base sm:text-lg font-bold text-white/50 group-hover:text-white transition-colors"
                       style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}
                     >
-                      To Be Announced
+                      Member Profile
                     </h3>
                     <p 
-                      className="text-[11px] font-semibold text-[#EB0028]/80 uppercase tracking-wider leading-snug"
+                      className="text-xs font-semibold text-[#EB0028] uppercase tracking-wider leading-snug"
                       style={{ fontFamily: "var(--font-manrope)", fontWeight: 600 }}
                     >
                       {member.role}
@@ -157,13 +172,13 @@ export default function Team() {
                   </div>
                 </div>
 
-                {/* Footer */}
-                <div className="pt-4 mt-4 border-t border-white/[0.04] flex items-center justify-between">
-                  <span 
-                    className="text-[9px] text-white/30 tracking-[0.15em] uppercase"
-                    style={{ fontFamily: "var(--font-dm-mono)" }}
-                  >
+                {/* Footer Tag */}
+                <div className="pt-4 mt-4 border-t border-white/[0.06] flex items-center justify-between text-[9px] text-white/30">
+                  <span style={{ fontFamily: "var(--font-dm-mono)" }}>
                     TEDxKLH 2026
+                  </span>
+                  <span className="text-[#EB0028]/60 font-mono">
+                    // CONFIRMED
                   </span>
                 </div>
               </motion.div>

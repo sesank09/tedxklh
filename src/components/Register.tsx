@@ -216,7 +216,7 @@ export default function Register() {
 
   const handleSubmit = () => {
     setIsSubmitting(true);
-    const generatedId = `TEDXKLH-2026-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+    const generatedId = `TEDxKLH-2026-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
     setPassId(generatedId);
 
     setTimeout(() => {

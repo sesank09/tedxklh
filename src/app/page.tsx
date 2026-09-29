@@ -5,10 +5,10 @@ import Preloader from "@/components/Preloader";
 import Navbar from "@/components/Navbar";
 import Background3D from "@/components/Background3D";
 import Hero from "@/components/Hero";
+import EventDateBanner from "@/components/EventDateBanner";
 import About from "@/components/About";
 import Theme from "@/components/Theme";
 import Speakers from "@/components/Speakers";
-import Schedule from "@/components/Schedule";
 import Venue from "@/components/Venue";
 import Team from "@/components/Team";
 import Partners from "@/components/Partners";
@@ -28,16 +28,38 @@ export default function Home() {
         <Background3D />
 
         <Navbar />
+        
+        {/* Hero Section — Approved & Unchanged */}
         <Hero />
+        
+        {/* Event Date & Location Transition Banner */}
+        <EventDateBanner />
+        
+        {/* Chapter 01: Visual Narrative Sequence */}
         <About />
+        
+        {/* Chapter 02: Geometric Metamorphosis Visual */}
         <Theme />
+        
+        {/* Chapter 03: The 12-Card Speaker Gallery */}
         <Speakers />
-        <Schedule />
+        
+        {/* Chapter 04: The Venue & Coordinates */}
         <Venue />
+        
+        {/* Chapter 05: The Team */}
         <Team />
+        
+        {/* Chapter 06: Collaborators */}
         <Partners />
+        
+        {/* Chapter 07: Protocols & Inquiries */}
         <FAQ />
+        
+        {/* Delegate Pass Application Portal */}
         <Register />
+        
+        {/* Official Licensed Footer */}
         <Footer />
       </div>
     </>

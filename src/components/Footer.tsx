@@ -10,7 +10,6 @@ const NAV_LINKS = [
   { name: "About",    href: "#about" },
   { name: "Theme",    href: "#theme" },
   { name: "Speakers", href: "#speakers" },
-  { name: "Schedule", href: "#schedule" },
   { name: "Venue",    href: "#venue" },
   { name: "Team",     href: "#team" },
   { name: "Partners", href: "#partners" },
@@ -20,7 +19,7 @@ const NAV_LINKS = [
 
 const SOCIAL_LINKS = [
   {
-    label: "Twitter",
+    label: "Twitter / X",
     href: "https://twitter.com",
     icon: (
       <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
@@ -36,15 +35,6 @@ const SOCIAL_LINKS = [
         <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
         <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
         <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-      </svg>
-    ),
-  },
-  {
-    label: "LinkedIn",
-    href: "https://linkedin.com",
-    icon: (
-      <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
-        <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.779-1.75-1.75s.784-1.75 1.75-1.75 1.75.779 1.75 1.75-.784 1.75-1.75 1.75zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
       </svg>
     ),
   },
@@ -78,18 +68,18 @@ export default function Footer() {
   };
 
   return (
-    <footer id="contact" className="relative w-full border-t border-white/10 bg-black/95 backdrop-blur-2xl pt-24 pb-16 px-6 sm:px-10 lg:px-[64px] select-none overflow-hidden">
+    <footer id="contact" className="relative w-full border-t border-white/10 bg-black/95 backdrop-blur-2xl pt-24 pb-16 px-4 sm:px-8 md:px-12 select-none overflow-hidden">
       
       {/* Top glowing accent line */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-[1400px] h-[1px] bg-gradient-to-r from-transparent via-[#EB0028]/50 to-transparent" />
 
-      {/* Main Aligned Container */}
+      {/* Main Container */}
       <div className="w-full max-w-[1400px] mx-auto space-y-16 relative z-20">
         
-        {/* 4 Equally Spaced Grid Columns */}
+        {/* 4 Grid Columns */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
           
-          {/* Column 1: Logo & Mission & License */}
+          {/* Column 1: Logo & Mission & Official License */}
           <div className="space-y-4">
             <div className="flex items-center">
               <Image
@@ -101,13 +91,13 @@ export default function Footer() {
               />
             </div>
             <p 
-              className="text-xs text-white/60 font-normal leading-relaxed" 
+              className="text-xs text-white/70 font-normal leading-relaxed" 
               style={{ fontFamily: "var(--font-manrope)", fontWeight: 400 }}
             >
-              A local, independently organized TED event committed to sharing breakthrough ideas in technology, cognitive science, and design.
+              A local, independently organized TED event committed to sharing breakthrough ideas in technology, science, and design.
             </p>
             <p 
-              className="text-[10px] text-white/40 uppercase tracking-widest leading-relaxed"
+              className="text-[11px] text-[#EB0028] font-semibold uppercase tracking-wider leading-relaxed"
               style={{ fontFamily: "var(--font-dm-mono)" }}
             >
               This independent TEDx event is operated under license from TED.
@@ -137,7 +127,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Column 3: Contact, Venue & Socials */}
+          {/* Column 3: Headquarters & Socials */}
           <div className="space-y-4">
             <h4 
               className="text-xs tracking-[0.2em] text-[#EB0028] uppercase font-semibold"
@@ -189,7 +179,7 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Column 4: Newsletter */}
+          {/* Column 4: Newsletter Dispatch */}
           <div className="space-y-4">
             <h4 
               className="text-xs tracking-[0.2em] text-[#EB0028] uppercase font-semibold"
@@ -201,7 +191,7 @@ export default function Footer() {
               className="text-xs text-white/60 font-normal leading-relaxed" 
               style={{ fontFamily: "var(--font-manrope)", fontWeight: 400 }}
             >
-              Receive curated insights, keynote reveals, and conference updates directly to your inbox.
+              Receive curated keynote reveals, speaker announcements, and conference protocols.
             </p>
 
             <form onSubmit={handleSubscribe} className="space-y-2">
