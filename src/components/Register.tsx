@@ -49,9 +49,9 @@ const INITIAL_FORM: FormData = {
   whatsapp: "",
   city: "",
   organization: "KL University Hyderabad",
-  role: "Student",
-  field: "Computer Science & Engineering",
-  year: "3rd Year",
+  role: "Delegate",
+  field: "Technology & Design",
+  year: "2026",
   linkedin: "",
   portfolio: "",
   motivation: "",
@@ -69,10 +69,9 @@ const STATS = [
 ];
 
 const TIMELINE = [
-  { step: "01", title: "Profile Submission", desc: "Submit personal & academic background." },
-  { step: "02", title: "Experience & Curation", desc: "Share your vision & perspective." },
-  { step: "03", title: "Payment & Verification", desc: "Provide 12-digit UTR & screenshot." },
-  { step: "04", title: "Confirmation & Pass", desc: "Review summary and generate delegate pass." },
+  { step: "01", title: "Identity & Profile", desc: "Submit personal & contact details." },
+  { step: "02", title: "Payment & Verification", desc: "Provide 12-digit UTR & screenshot." },
+  { step: "03", title: "Confirmation & Pass", desc: "Review summary and generate delegate pass." },
 ];
 
 const BENEFITS = [
@@ -84,7 +83,7 @@ const BENEFITS = [
 ];
 
 export default function Register() {
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [form, setForm] = useState<FormData>(INITIAL_FORM);
   const [savedAt, setSavedAt] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -173,13 +172,6 @@ export default function Register() {
       if (!form.phone.trim() || form.phone.replace(/\D/g, "").length < 10) newErrors.phone = "Valid 10-digit phone is required";
       if (!form.city.trim()) newErrors.city = "City is required";
     } else if (currentStep === 2) {
-      if (!form.organization.trim()) newErrors.organization = "Organization / University is required";
-      if (!form.role.trim()) newErrors.role = "Role / Designation is required";
-      if (!form.field.trim()) newErrors.field = "Field of study / Domain is required";
-      if (!form.motivation.trim() || form.motivation.trim().length < 20) {
-        newErrors.motivation = "Please write at least 20 characters explaining your interest.";
-      }
-    } else if (currentStep === 3) {
       const cleanUtr = form.utrNumber.replace(/\s+/g, "");
       if (!/^\d{12}$/.test(cleanUtr)) {
         newErrors.utrNumber = "UTR transaction number must be exactly 12 numeric digits";
@@ -187,7 +179,7 @@ export default function Register() {
       if (!form.screenshotBase64) {
         newErrors.screenshot = "Payment screenshot upload is required for verification";
       }
-    } else if (currentStep === 4) {
+    } else if (currentStep === 3) {
       if (!form.termsAccepted) {
         newErrors.termsAccepted = "You must accept the Delegate Code of Conduct & Guidelines";
       }
@@ -199,8 +191,8 @@ export default function Register() {
 
   const handleNext = () => {
     if (validateStep(step)) {
-      if (step < 4) {
-        setStep((step + 1) as any);
+      if (step < 3) {
+        setStep((step + 1) as 1 | 2 | 3);
         window.scrollTo({ top: document.getElementById("register")?.offsetTop ? document.getElementById("register")!.offsetTop + 100 : 0, behavior: "smooth" });
       } else {
         handleSubmit();
@@ -210,7 +202,7 @@ export default function Register() {
 
   const handlePrev = () => {
     if (step > 1) {
-      setStep((step - 1) as any);
+      setStep((step - 1) as 1 | 2 | 3);
     }
   };
 
@@ -384,7 +376,7 @@ export default function Register() {
                       <div className="flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-[#EB0028] animate-ping" />
                         <span className="text-xs font-mono tracking-widest text-[#EB0028] uppercase font-bold">
-                          PHASE {step} OF 4
+                          PHASE {step} OF 3
                         </span>
                       </div>
                       {savedAt && (
@@ -394,13 +386,12 @@ export default function Register() {
                       )}
                     </div>
 
-                    {/* Step Tabs */}
-                    <div className="grid grid-cols-4 gap-2">
+                    {/* Step Tabs: 3 Steps (Identity -> Payment -> Review) */}
+                    <div className="grid grid-cols-3 gap-2 sm:gap-3">
                       {[
                         { num: 1, label: "Identity" },
-                        { num: 2, label: "Background" },
-                        { num: 3, label: "Payment" },
-                        { num: 4, label: "Review" },
+                        { num: 2, label: "Payment" },
+                        { num: 3, label: "Review" },
                       ].map((s) => {
                         const isCurrent = step === s.num;
                         const isDone = step > s.num;
@@ -409,17 +400,17 @@ export default function Register() {
                             key={s.num}
                             type="button"
                             onClick={() => {
-                              if (isDone) setStep(s.num as any);
+                              if (isDone) setStep(s.num as 1 | 2 | 3);
                             }}
-                            className={`py-2.5 px-2 rounded-xl border text-[11px] font-mono uppercase tracking-wider transition-all duration-200 text-center ${
+                            className={`py-2.5 px-3 rounded-xl border text-[11px] font-mono uppercase tracking-wider transition-all duration-200 text-center ${
                               isCurrent
-                                ? "border-[#EB0028] bg-[#EB0028]/15 text-[#EB0028] shadow-[0_0_15px_rgba(235,0,40,0.2)]"
+                                ? "border-[#EB0028] bg-[#EB0028]/15 text-[#EB0028] shadow-[0_0_15px_rgba(235,0,40,0.2)] font-bold"
                                 : isDone
                                 ? "border-white/20 bg-white/5 text-white cursor-pointer hover:border-white/40"
                                 : "border-white/5 bg-white/[0.01] text-white/30 cursor-not-allowed"
                             }`}
                           >
-                            <span className="hidden sm:inline">{s.num}. </span>
+                            <span>{s.num}. </span>
                             {s.label}
                           </button>
                         );
@@ -429,7 +420,7 @@ export default function Register() {
 
                   {/* Form Step Contents */}
                   <AnimatePresence mode="wait">
-                    {/* STEP 1: Personal Profile */}
+                    {/* STEP 1: Personal Identity & Contact */}
                     {step === 1 && (
                       <motion.div
                         key="step1"
@@ -543,135 +534,10 @@ export default function Register() {
                       </motion.div>
                     )}
 
-                    {/* STEP 2: Academic / Professional Background */}
+                    {/* STEP 2: Payment Verification & UTR */}
                     {step === 2 && (
                       <motion.div
                         key="step2"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.25 }}
-                        className="space-y-6"
-                      >
-                        <div className="border-b border-white/5 pb-4">
-                          <h3 className="text-lg font-bold text-white uppercase tracking-tight" style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}>
-                            Academic &amp; Professional Background
-                          </h3>
-                          <p className="text-xs text-white/50 font-normal mt-1" style={{ fontFamily: "var(--font-manrope)", fontWeight: 400 }}>
-                            Our curation board reviews candidate background to craft a balanced, multidisciplinary cohort.
-                          </p>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div className="space-y-1.5">
-                            <label className="text-xs uppercase text-white/70 font-medium" style={{ fontFamily: "var(--font-dm-mono)" }}>Institution / Organization *</label>
-                            <input
-                              type="text"
-                              value={form.organization}
-                              onChange={(e) => updateForm("organization", e.target.value)}
-                              placeholder="e.g. KL University / Microsoft"
-                              style={{ fontFamily: "var(--font-manrope)" }}
-                              className={`w-full px-4 py-3 rounded-xl bg-white/[0.03] border text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#EB0028] transition-colors ${
-                                errors.organization ? "border-red-500" : "border-white/10"
-                              }`}
-                            />
-                            {errors.organization && <span className="text-[10px] text-red-400 font-medium" style={{ fontFamily: "var(--font-dm-mono)" }}>{errors.organization}</span>}
-                          </div>
-
-                          <div className="space-y-1.5">
-                            <label className="text-xs uppercase text-white/70 font-medium" style={{ fontFamily: "var(--font-dm-mono)" }}>Role / Designation *</label>
-                            <input
-                              type="text"
-                              value={form.role}
-                              onChange={(e) => updateForm("role", e.target.value)}
-                              placeholder="e.g. Student / Software Engineer"
-                              style={{ fontFamily: "var(--font-manrope)" }}
-                              className={`w-full px-4 py-3 rounded-xl bg-white/[0.03] border text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#EB0028] transition-colors ${
-                                errors.role ? "border-red-500" : "border-white/10"
-                              }`}
-                            />
-                            {errors.role && <span className="text-[10px] text-red-400 font-medium" style={{ fontFamily: "var(--font-dm-mono)" }}>{errors.role}</span>}
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div className="space-y-1.5">
-                            <label className="text-xs uppercase text-white/70 font-medium" style={{ fontFamily: "var(--font-dm-mono)" }}>Field of Study / Department *</label>
-                            <input
-                              type="text"
-                              value={form.field}
-                              onChange={(e) => updateForm("field", e.target.value)}
-                              placeholder="e.g. Computer Science, Biotechnology"
-                              style={{ fontFamily: "var(--font-manrope)" }}
-                              className={`w-full px-4 py-3 rounded-xl bg-white/[0.03] border text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#EB0028] transition-colors ${
-                                errors.field ? "border-red-500" : "border-white/10"
-                              }`}
-                            />
-                            {errors.field && <span className="text-[10px] text-red-400 font-medium" style={{ fontFamily: "var(--font-dm-mono)" }}>{errors.field}</span>}
-                          </div>
-
-                          <div className="space-y-1.5">
-                            <label className="text-xs uppercase text-white/70 font-medium" style={{ fontFamily: "var(--font-dm-mono)" }}>Year of Study / Experience</label>
-                            <input
-                              type="text"
-                              value={form.year}
-                              onChange={(e) => updateForm("year", e.target.value)}
-                              placeholder="e.g. 3rd Year / 4 Years Exp"
-                              style={{ fontFamily: "var(--font-manrope)" }}
-                              className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#EB0028] transition-colors"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div className="space-y-1.5">
-                            <label className="text-xs uppercase text-white/70 font-medium" style={{ fontFamily: "var(--font-dm-mono)" }}>LinkedIn Profile URL</label>
-                            <input
-                              type="url"
-                              value={form.linkedin}
-                              onChange={(e) => updateForm("linkedin", e.target.value)}
-                              placeholder="https://linkedin.com/in/username"
-                              style={{ fontFamily: "var(--font-manrope)" }}
-                              className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#EB0028] transition-colors"
-                            />
-                          </div>
-
-                          <div className="space-y-1.5">
-                            <label className="text-xs uppercase text-white/70 font-medium" style={{ fontFamily: "var(--font-dm-mono)" }}>Portfolio / GitHub / Website</label>
-                            <input
-                              type="url"
-                              value={form.portfolio}
-                              onChange={(e) => updateForm("portfolio", e.target.value)}
-                              placeholder="https://yourportfolio.com"
-                              style={{ fontFamily: "var(--font-manrope)" }}
-                              className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#EB0028] transition-colors"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="space-y-1.5">
-                          <label className="text-xs uppercase text-white/70 font-medium" style={{ fontFamily: "var(--font-dm-mono)" }}>
-                            Why do you want to attend METAMORPHOSIS? *
-                          </label>
-                          <textarea
-                            rows={3}
-                            value={form.motivation}
-                            onChange={(e) => updateForm("motivation", e.target.value)}
-                            placeholder="Share an idea you are passionate about, or what you hope to experience at TEDxKLH 2026..."
-                            style={{ fontFamily: "var(--font-manrope)" }}
-                            className={`w-full px-4 py-3 rounded-xl bg-white/[0.03] border text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#EB0028] transition-colors resize-none ${
-                              errors.motivation ? "border-red-500" : "border-white/10"
-                            }`}
-                          />
-                          {errors.motivation && <span className="text-[10px] text-red-400 font-medium" style={{ fontFamily: "var(--font-dm-mono)" }}>{errors.motivation}</span>}
-                        </div>
-                      </motion.div>
-                    )}
-
-                    {/* STEP 3: Payment Verification & UTR */}
-                    {step === 3 && (
-                      <motion.div
-                        key="step3"
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
@@ -833,10 +699,10 @@ export default function Register() {
                       </motion.div>
                     )}
 
-                    {/* STEP 4: Review & Final Confirmation */}
-                    {step === 4 && (
+                    {/* STEP 3: Review & Final Confirmation */}
+                    {step === 3 && (
                       <motion.div
-                        key="step4"
+                        key="step3"
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
@@ -865,21 +731,12 @@ export default function Register() {
                           </div>
 
                           <div className="p-4 rounded-xl border border-white/10 bg-white/[0.02] space-y-2">
-                            <span className="text-[10px] text-[#EB0028] uppercase font-bold" style={{ fontFamily: "var(--font-dm-mono)" }}>02. ACADEMIC / ORG</span>
+                            <span className="text-[10px] text-[#EB0028] uppercase font-bold" style={{ fontFamily: "var(--font-dm-mono)" }}>02. PAYMENT VERIFICATION</span>
                             <div className="text-xs space-y-1 text-white/80" style={{ fontFamily: "var(--font-dm-mono)" }}>
-                              <div><span className="text-white/40">Org:</span> {form.organization}</div>
-                              <div><span className="text-white/40">Role:</span> {form.role}</div>
-                              <div><span className="text-white/40">Field:</span> {form.field}</div>
-                              <div><span className="text-white/40">Year:</span> {form.year}</div>
+                              <div><span className="text-white/40">Amount:</span> ₹499</div>
+                              <div><span className="text-white/40">UTR Number:</span> <span className="tracking-widest font-bold text-white">{form.utrNumber}</span></div>
+                              <div><span className="text-white/40">Screenshot:</span> {form.screenshotName || "Attached"}</div>
                             </div>
-                          </div>
-                        </div>
-
-                        <div className="p-4 rounded-xl border border-white/10 bg-white/[0.02] space-y-2">
-                          <span className="text-[10px] text-[#EB0028] uppercase font-bold" style={{ fontFamily: "var(--font-dm-mono)" }}>03. PAYMENT VERIFICATION</span>
-                          <div className="text-xs space-y-1 text-white/80" style={{ fontFamily: "var(--font-dm-mono)" }}>
-                            <div><span className="text-white/40">UTR Number:</span> <span className="tracking-widest font-bold text-white">{form.utrNumber}</span></div>
-                            <div><span className="text-white/40">Screenshot:</span> {form.screenshotName || "Attached"}</div>
                           </div>
                         </div>
 
@@ -928,14 +785,14 @@ export default function Register() {
                           <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                           Processing...
                         </>
-                      ) : step === 4 ? (
+                      ) : step === 3 ? (
                         <>
                           Confirm &amp; Generate Pass
                           <Check className="w-4 h-4" />
                         </>
                       ) : (
                         <>
-                          Continue to Step {step + 1}
+                          Continue to Payment
                           <ArrowRight className="w-4 h-4" />
                         </>
                       )}
