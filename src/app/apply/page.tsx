@@ -97,14 +97,14 @@ export default function ApplyPage() {
   }, []);
 
   const updateField = (field: keyof FormData, val: any) => {
-    const updated = { ...form, [field]: val };
-    setForm(updated);
+    setForm((prev) => {
+      const updated = { ...prev, [field]: val };
+      try {
+        localStorage.setItem("tedxklh_apply_draft_v2", JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
+    });
     setSubmitError(null);
-    try {
-      localStorage.setItem("tedxklh_apply_draft_v2", JSON.stringify(updated));
-    } catch (e) {
-      console.error(e);
-    }
 
     if (errors[field]) {
       setErrors((prev) => {
@@ -121,11 +121,19 @@ export default function ApplyPage() {
     updateField("utrNumber", clean);
   };
 
-  // File upload validation & handler
+  // File upload validation & handler with atomic state update
   const processFile = (file: File) => {
-    const validTypes = ["image/jpeg", "image/png", "image/jpg"];
-    if (!validTypes.includes(file.type)) {
-      setErrors((prev) => ({ ...prev, screenshot: "Please upload a valid JPG or PNG image file." }));
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next.screenshot;
+      return next;
+    });
+
+    const fileExt = file.name.split(".").pop()?.toLowerCase() || "";
+    const isImage = file.type.startsWith("image/") || ["png", "jpg", "jpeg", "webp", "heic", "heif"].includes(fileExt);
+
+    if (!isImage) {
+      setErrors((prev) => ({ ...prev, screenshot: "Please upload a valid image file (JPG, PNG, or WEBP)." }));
       return;
     }
 
@@ -136,12 +144,22 @@ export default function ApplyPage() {
 
     setScreenshotFile(file);
     const sizeFormatted = (file.size / (1024 * 1024)).toFixed(2) + " MB";
+
     const reader = new FileReader();
     reader.onload = () => {
       const base64 = reader.result as string;
-      updateField("screenshotBase64", base64);
-      updateField("screenshotName", file.name);
-      updateField("screenshotSize", sizeFormatted);
+      setForm((prev) => {
+        const updated = {
+          ...prev,
+          screenshotBase64: base64,
+          screenshotName: file.name,
+          screenshotSize: sizeFormatted,
+        };
+        try {
+          localStorage.setItem("tedxklh_apply_draft_v2", JSON.stringify(updated));
+        } catch (e) {}
+        return updated;
+      });
     };
     reader.readAsDataURL(file);
   };
@@ -160,9 +178,18 @@ export default function ApplyPage() {
 
   const removeFile = () => {
     setScreenshotFile(null);
-    updateField("screenshotBase64", null);
-    updateField("screenshotName", null);
-    updateField("screenshotSize", null);
+    setForm((prev) => {
+      const updated = {
+        ...prev,
+        screenshotBase64: null,
+        screenshotName: null,
+        screenshotSize: null,
+      };
+      try {
+        localStorage.setItem("tedxklh_apply_draft_v2", JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
+    });
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -817,7 +844,7 @@ export default function ApplyPage() {
                               <input
                                 ref={fileInputRef}
                                 type="file"
-                                accept="image/png, image/jpeg, image/jpg, image/webp"
+                                accept="image/*"
                                 onChange={handleFileInput}
                                 className="hidden"
                               />
@@ -881,7 +908,7 @@ export default function ApplyPage() {
                               <input
                                 ref={fileInputRef}
                                 type="file"
-                                accept="image/png, image/jpeg, image/jpg, image/webp"
+                                accept="image/*"
                                 onChange={handleFileInput}
                                 className="hidden"
                               />
