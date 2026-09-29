@@ -182,6 +182,31 @@ export default function ApplicationDetailPage({
     }
   };
 
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteApplication = async () => {
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`/api/admin/applications/${applicationId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        router.push("/admin/applications");
+      } else {
+        setMessage({ type: "error", text: "Failed to delete application record." });
+        setShowDeleteModal(false);
+      }
+    } catch (err) {
+      console.error("Delete error:", err);
+      setMessage({ type: "error", text: "Network error deleting application." });
+      setShowDeleteModal(false);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+
   if (loading) {
     return (
       <div className="py-24 text-center space-y-3 font-mono text-xs text-white/50">
@@ -594,9 +619,64 @@ export default function ApplicationDetailPage({
             </div>
           </div>
 
+          {/* Danger Zone: Delete Application */}
+          <div className="p-6 rounded-3xl border border-red-500/20 bg-red-950/10 backdrop-blur-2xl space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-red-400">Danger Zone</h4>
+                <p className="text-[11px] text-white/50">Permanently delete this application and remove receipt file.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(true)}
+                className="px-3.5 py-2 rounded-xl bg-red-600/20 hover:bg-red-600/30 text-red-300 border border-red-500/30 text-xs font-mono uppercase tracking-wider transition-colors cursor-pointer"
+              >
+                Delete Record
+              </button>
+            </div>
+          </div>
+
         </div>
 
       </div>
+
+      {/* Confirmation Delete Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+          <div className="w-full max-w-md p-6 rounded-3xl border border-red-500/30 bg-neutral-950 text-white space-y-5 shadow-2xl">
+            <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400 mx-auto">
+              <AlertCircle className="w-6 h-6" />
+            </div>
+
+            <div className="text-center space-y-2">
+              <h3 className="text-lg font-bold uppercase tracking-tight">Confirm Deletion</h3>
+              <p className="text-xs text-white/60">
+                Are you sure you want to permanently delete application <span className="text-white font-bold font-mono">{application.application_number}</span> ({application.first_name} {application.last_name})? This cannot be undone.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(false)}
+                disabled={isDeleting}
+                className="w-1/2 py-2.5 rounded-xl border border-white/15 hover:bg-white/5 text-white/70 text-xs font-semibold uppercase tracking-wider transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteApplication}
+                disabled={isDeleting}
+                className="w-1/2 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold uppercase tracking-wider transition-colors shadow-[0_0_20px_rgba(239,68,68,0.4)] disabled:opacity-50"
+              >
+                {isDeleting ? "Deleting..." : "Confirm Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
 
       {/* Screenshot Fullscreen Lightbox Modal */}
       {isScreenshotModalOpen && signedScreenshotUrl && (

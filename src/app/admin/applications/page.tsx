@@ -8,12 +8,11 @@ import {
   ArrowUpDown,
   ChevronLeft,
   ChevronRight,
-  ExternalLink,
   RefreshCw,
   Eye,
-  CheckCircle2,
-  XCircle,
-  Clock,
+  Trash2,
+  AlertTriangle,
+  Radio,
 } from "lucide-react";
 
 interface ApplicationItem {
@@ -49,8 +48,12 @@ export default function AdminApplicationsPage() {
   const [sortBy, setSortBy] = useState("newest");
   const [loading, setLoading] = useState(true);
 
-  const fetchApplications = useCallback(async () => {
-    setLoading(true);
+  // Delete State
+  const [deleteTarget, setDeleteTarget] = useState<ApplicationItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const fetchApplications = useCallback(async (isBackground = false) => {
+    if (!isBackground) setLoading(true);
     try {
       const params = new URLSearchParams({
         page: page.toString(),
@@ -78,12 +81,41 @@ export default function AdminApplicationsPage() {
 
   useEffect(() => {
     fetchApplications();
+    const interval = setInterval(() => {
+      fetchApplications(true);
+    }, 8000);
+
+    return () => clearInterval(interval);
   }, [fetchApplications]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setPage(1);
     fetchApplications();
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+
+    try {
+      const res = await fetch(`/api/admin/applications/${deleteTarget.id}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        setApplications((prev) => prev.filter((a) => a.id !== deleteTarget.id));
+        setTotalCount((prev) => Math.max(0, prev - 1));
+        setDeleteTarget(null);
+      } else {
+        alert("Failed to delete application record.");
+      }
+    } catch (err) {
+      console.error("Delete error:", err);
+      alert("Network error deleting application.");
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -114,10 +146,16 @@ export default function AdminApplicationsPage() {
     <div className="space-y-6">
       {/* Title & Stats summary */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-6">
-        <div>
-          <span className="text-[11px] font-mono text-[#EB0028] uppercase tracking-widest font-bold block">
-            DELEGATE MANAGEMENT
-          </span>
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-mono text-[#EB0028] uppercase tracking-widest font-bold">
+              DELEGATE MANAGEMENT
+            </span>
+            <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-[10px] font-mono font-bold flex items-center gap-1.5 animate-pulse">
+              <Radio className="w-3 h-3 text-emerald-400" />
+              LIVE
+            </span>
+          </div>
           <h1
             className="text-2xl sm:text-3xl font-bold text-white tracking-tight uppercase"
             style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}
@@ -128,7 +166,7 @@ export default function AdminApplicationsPage() {
 
         <button
           onClick={() => fetchApplications()}
-          className="px-4 py-2 rounded-full border border-white/10 hover:border-white/25 text-white/70 hover:text-white text-xs font-mono uppercase tracking-wider flex items-center gap-2 transition-colors cursor-pointer self-start sm:self-auto"
+          className="px-4 py-2 rounded-full border border-white/10 hover:border-white/25 text-white/70 hover:text-white text-xs font-mono uppercase tracking-wider flex items-center gap-2 transition-colors cursor-pointer self-start sm:self-auto bg-white/[0.02]"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-[#EB0028]" : ""}`} />
           <span>Refresh</span>
@@ -145,7 +183,7 @@ export default function AdminApplicationsPage() {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search ID, Name, Email, Phone..."
+              placeholder="Search ID, Name, Email, Phone, UTR..."
               className="w-full h-10 pl-10 pr-4 rounded-xl border border-white/10 bg-white/[0.03] text-xs text-white placeholder-white/30 focus:outline-none focus:border-[#EB0028] transition-all"
               style={{ fontFamily: "var(--font-manrope)" }}
             />
@@ -162,7 +200,7 @@ export default function AdminApplicationsPage() {
               }}
               className="w-full h-10 px-3 rounded-xl border border-white/10 bg-neutral-900 text-xs text-white focus:outline-none focus:border-[#EB0028]"
             >
-              <option value="all">All Applications</option>
+              <option value="all">All Statuses</option>
               <option value="submitted">Submitted</option>
               <option value="under_review">Under Review</option>
               <option value="approved">Approved</option>
@@ -223,11 +261,11 @@ export default function AdminApplicationsPage() {
                 <th className="py-3 px-3">Payment</th>
                 <th className="py-3 px-3">Status</th>
                 <th className="py-3 px-3">Delegate ID</th>
-                <th className="py-3 px-3 text-right">Action</th>
+                <th className="py-3 px-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {loading ? (
+              {loading && applications.length === 0 ? (
                 <tr>
                   <td colSpan={9} className="py-12 text-center text-white/40 font-mono">
                     <div className="w-6 h-6 border-2 border-[#EB0028] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
@@ -238,14 +276,14 @@ export default function AdminApplicationsPage() {
                 <tr>
                   <td colSpan={9} className="py-14 text-center text-white/40 font-mono space-y-1">
                     <p className="text-sm font-semibold text-white/60">No matching applications found</p>
-                    <p className="text-xs text-white/30">Try clearing filters or search keywords.</p>
+                    <p className="text-xs text-white/30">When new applications arrive, they will appear here live.</p>
                   </td>
                 </tr>
               ) : (
                 applications.map((app) => {
                   const utr = app.payment_verifications?.[0]?.utr_number || "—";
                   return (
-                    <tr key={app.id} className="hover:bg-white/[0.02] transition-colors">
+                    <tr key={app.id} className="hover:bg-white/[0.02] transition-colors group">
                       <td className="py-3.5 px-3 font-mono font-bold text-[#EB0028]">
                         {app.application_number}
                       </td>
@@ -285,13 +323,22 @@ export default function AdminApplicationsPage() {
                         {app.delegate_id || "—"}
                       </td>
                       <td className="py-3.5 px-3 text-right">
-                        <Link
-                          href={`/admin/applications/${app.id}`}
-                          className="px-3 py-1.5 rounded-lg border border-white/15 hover:border-[#EB0028] bg-white/[0.03] hover:bg-[#EB0028]/15 text-white hover:text-[#EB0028] transition-all font-mono text-[11px] inline-flex items-center gap-1"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                          <span>Review</span>
-                        </Link>
+                        <div className="flex items-center justify-end gap-2">
+                          <Link
+                            href={`/admin/applications/${app.id}`}
+                            className="px-3 py-1.5 rounded-lg border border-white/15 hover:border-[#EB0028] bg-white/[0.03] hover:bg-[#EB0028]/15 text-white hover:text-[#EB0028] transition-all font-mono text-[11px] inline-flex items-center gap-1"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>Review</span>
+                          </Link>
+                          <button
+                            onClick={() => setDeleteTarget(app)}
+                            title="Delete submission"
+                            className="p-1.5 rounded-lg border border-red-500/20 bg-red-500/5 hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-colors cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -326,6 +373,43 @@ export default function AdminApplicationsPage() {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Delete Modal */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className="w-full max-w-md p-6 rounded-3xl border border-red-500/30 bg-neutral-950 text-white space-y-5 shadow-2xl">
+            <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400 mx-auto">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+
+            <div className="text-center space-y-2">
+              <h3 className="text-lg font-bold uppercase tracking-tight">Delete Application Record</h3>
+              <p className="text-xs text-white/60">
+                Are you sure you want to permanently delete application <span className="text-white font-bold font-mono">{deleteTarget.application_number}</span> ({deleteTarget.first_name} {deleteTarget.last_name})? This will also remove the payment receipt from storage.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                disabled={isDeleting}
+                className="w-1/2 py-2.5 rounded-xl border border-white/15 hover:bg-white/5 text-white/70 text-xs font-semibold uppercase tracking-wider transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="w-1/2 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold uppercase tracking-wider transition-colors shadow-[0_0_20px_rgba(239,68,68,0.4)] disabled:opacity-50"
+              >
+                {isDeleting ? "Deleting..." : "Confirm Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

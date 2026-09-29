@@ -778,8 +778,14 @@ export default function ApplyPage() {
 
                         {/* PAYMENT SCREENSHOT UPLOAD */}
                         <div className="space-y-2">
-                          <label className="text-xs uppercase text-white/90 font-bold tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
-                            Payment Screenshot Upload *
+                          <label className="text-xs uppercase text-white/90 font-bold tracking-wider flex items-center justify-between" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                            <span>Payment Screenshot Upload *</span>
+                            {form.screenshotBase64 && (
+                              <span className="text-emerald-400 text-[10px] font-mono flex items-center gap-1">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                                ATTACHED &amp; READY
+                              </span>
+                            )}
                           </label>
 
                           {!form.screenshotBase64 ? (
@@ -805,65 +811,81 @@ export default function ApplyPage() {
                                   Drag &amp; drop payment screenshot, or <span className="text-[#EB0028]">Browse</span>
                                 </div>
                                 <div className="text-[11px] text-white/40 font-mono">
-                                  PNG, JPG, or JPEG · Maximum 5 MB
+                                  PNG, JPG, JPEG, or WEBP · Maximum 5 MB
                                 </div>
                               </div>
                               <input
                                 ref={fileInputRef}
                                 type="file"
-                                accept="image/png, image/jpeg, image/jpg"
+                                accept="image/png, image/jpeg, image/jpg, image/webp"
                                 onChange={handleFileInput}
                                 className="hidden"
                               />
                             </div>
                           ) : (
-                            /* Uploaded Preview Card */
-                            <div className="p-4 rounded-2xl border border-white/15 bg-white/[0.03] flex items-center justify-between gap-4">
-                              <div className="flex items-center gap-3.5 overflow-hidden">
-                                {form.screenshotBase64 && (
-                                  <div className="w-12 h-12 rounded-lg overflow-hidden border border-white/20 shrink-0 relative">
+                            /* Uploaded Preview Card with Unmistakable Success Indication */
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0.98 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              className="p-5 rounded-2xl border-2 border-emerald-500/40 bg-emerald-950/20 backdrop-blur-xl space-y-3 relative overflow-hidden shadow-[0_0_25px_rgba(16,185,129,0.12)]"
+                            >
+                              <div className="flex items-center justify-between border-b border-emerald-500/20 pb-3">
+                                <div className="flex items-center gap-2 text-emerald-400 text-xs font-bold font-mono uppercase tracking-wider">
+                                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                                  <span>RECEIPT SUCCESSFULLY ATTACHED</span>
+                                </div>
+                                <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30">
+                                  READY TO SUBMIT
+                                </span>
+                              </div>
+
+                              <div className="flex items-center justify-between gap-4">
+                                <div className="flex items-center gap-4 overflow-hidden">
+                                  <div className="w-16 h-16 rounded-xl overflow-hidden border border-emerald-500/30 shrink-0 relative bg-black/40 shadow-inner group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img
                                       src={form.screenshotBase64}
                                       alt="Screenshot Preview"
-                                      className="w-full h-full object-cover"
+                                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                                     />
                                   </div>
-                                )}
-                                <div className="space-y-0.5 overflow-hidden">
-                                  <div className="text-xs font-semibold text-white truncate max-w-[220px] sm:max-w-xs">
-                                    {form.screenshotName}
+                                  <div className="space-y-1 overflow-hidden">
+                                    <div className="text-xs font-bold text-white truncate max-w-[200px] sm:max-w-xs">
+                                      {form.screenshotName}
+                                    </div>
+                                    <div className="text-[11px] text-emerald-300/80 font-mono">
+                                      {form.screenshotSize} · Valid Image Format
+                                    </div>
                                   </div>
-                                  <div className="text-[10px] text-white/50 font-mono">
-                                    {form.screenshotSize} · Verified format
-                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-2 shrink-0">
+                                  <button
+                                    type="button"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="text-xs text-white/80 hover:text-white px-3 py-1.5 rounded-lg border border-white/20 bg-white/10 hover:bg-white/20 transition-all font-semibold cursor-pointer"
+                                  >
+                                    Change Image
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={removeFile}
+                                    title="Remove image"
+                                    className="p-1.5 rounded-lg border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-colors cursor-pointer"
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </button>
                                 </div>
                               </div>
 
-                              <div className="flex items-center gap-2 shrink-0">
-                                <button
-                                  type="button"
-                                  onClick={() => fileInputRef.current?.click()}
-                                  className="text-xs text-white/60 hover:text-white px-2.5 py-1 rounded-lg border border-white/10 bg-white/5 transition-colors"
-                                >
-                                  Replace
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={removeFile}
-                                  className="p-1.5 rounded-lg border border-white/10 hover:border-red-500/50 text-white/60 hover:text-red-400 transition-colors"
-                                >
-                                  <X className="w-4 h-4" />
-                                </button>
-                                <input
-                                  ref={fileInputRef}
-                                  type="file"
-                                  accept="image/png, image/jpeg, image/jpg"
-                                  onChange={handleFileInput}
-                                  className="hidden"
-                                />
-                              </div>
-                            </div>
+                              <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/png, image/jpeg, image/jpg, image/webp"
+                                onChange={handleFileInput}
+                                className="hidden"
+                              />
+                            </motion.div>
                           )}
 
                           {errors.screenshot && (

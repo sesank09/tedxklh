@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import {
   Users,
@@ -11,7 +11,13 @@ import {
   ArrowRight,
   TrendingUp,
   RefreshCw,
+  Trash2,
+  Volume2,
+  VolumeX,
+  Radio,
+  AlertTriangle,
 } from "lucide-react";
+import { playNotificationChime } from "@/lib/utils/audio";
 
 interface StatsData {
   total: number;
@@ -46,17 +52,40 @@ export default function AdminDashboardPage() {
   const [recentApps, setRecentApps] = useState<ApplicationSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [latestAlert, setLatestAlert] = useState<string | null>(null);
 
-  const fetchData = async () => {
+  // Deletion modal state
+  const [deleteTarget, setDeleteTarget] = useState<ApplicationSummary | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Track previous count to trigger audio notification on new submissions
+  const prevCountRef = useRef<number | null>(null);
+
+  const fetchData = async (isBackground = false) => {
+    if (!isBackground) setRefreshing(true);
     try {
       const [statsRes, appsRes] = await Promise.all([
         fetch("/api/admin/stats"),
-        fetch("/api/admin/applications?limit=5&sortBy=newest"),
+        fetch("/api/admin/applications?limit=6&sortBy=newest"),
       ]);
 
       if (statsRes.ok) {
         const statsData = await statsRes.json();
-        if (statsData.stats) setStats(statsData.stats);
+        if (statsData.stats) {
+          const newTotal = statsData.stats.total;
+
+          // Check if new submission arrived
+          if (prevCountRef.current !== null && newTotal > prevCountRef.current) {
+            if (soundEnabled) {
+              playNotificationChime();
+            }
+            setLatestAlert(`New delegate submission detected! Total: ${newTotal}`);
+            setTimeout(() => setLatestAlert(null), 7000);
+          }
+          prevCountRef.current = newTotal;
+          setStats(statsData.stats);
+        }
       }
 
       if (appsRes.ok) {
@@ -71,13 +100,38 @@ export default function AdminDashboardPage() {
     }
   };
 
+  // Initial fetch and auto-polling every 5 seconds
   useEffect(() => {
     fetchData();
-  }, []);
+    const interval = setInterval(() => {
+      fetchData(true);
+    }, 5000);
 
-  const handleRefresh = () => {
-    setRefreshing(true);
-    fetchData();
+    return () => clearInterval(interval);
+  }, [soundEnabled]);
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+
+    try {
+      const res = await fetch(`/api/admin/applications/${deleteTarget.id}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        setRecentApps((prev) => prev.filter((a) => a.id !== deleteTarget.id));
+        setStats((prev) => ({ ...prev, total: Math.max(0, prev.total - 1) }));
+        setDeleteTarget(null);
+      } else {
+        alert("Failed to delete application record.");
+      }
+    } catch (err) {
+      console.error("Delete error:", err);
+      alert("Network error deleting application.");
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const statCards = [
@@ -86,7 +140,7 @@ export default function AdminDashboardPage() {
       val: stats.total,
       icon: <Users className="w-5 h-5 text-white" />,
       color: "border-white/10 bg-white/[0.02]",
-      badge: "Cohort Target: 100",
+      badge: "Live Cohort",
     },
     {
       title: "PENDING REVIEW",
@@ -120,37 +174,81 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-8">
+      {/* Live Audio Alert Toast Banner */}
+      {latestAlert && (
+        <div className="p-4 rounded-2xl border border-[#EB0028]/60 bg-[#EB0028]/20 backdrop-blur-2xl text-white flex items-center justify-between shadow-[0_0_30px_rgba(235,0,40,0.35)] animate-pulse">
+          <div className="flex items-center gap-3">
+            <span className="text-xl">🔔</span>
+            <div className="space-y-0.5">
+              <span className="text-xs font-bold uppercase tracking-wider font-mono text-[#EB0028]">
+                LIVE APPLICATION ALERT
+              </span>
+              <p className="text-sm font-semibold">{latestAlert}</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setLatestAlert(null)}
+            className="text-xs font-mono uppercase text-white/70 hover:text-white px-3 py-1 rounded-lg border border-white/20 bg-white/10"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {/* Header Row */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-6">
-        <div>
-          <span
-            className="text-[11px] font-mono text-[#EB0028] uppercase tracking-widest font-bold block"
-          >
-            TEDx KLH 2026 // METAMORPHOSIS
-          </span>
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-mono text-[#EB0028] uppercase tracking-widest font-bold">
+              TEDx KLH 2026 // METAMORPHOSIS
+            </span>
+            <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-[10px] font-mono font-bold flex items-center gap-1.5 animate-pulse">
+              <Radio className="w-3 h-3 text-emerald-400" />
+              LIVE FEED
+            </span>
+          </div>
           <h1
             className="text-2xl sm:text-3xl font-bold text-white tracking-tight uppercase"
             style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}
           >
-            Delegate Management Overview
+            Delegate Management Portal
           </h1>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* Sound Toggle */}
           <button
-            onClick={handleRefresh}
+            onClick={() => {
+              setSoundEnabled(!soundEnabled);
+              if (!soundEnabled) playNotificationChime();
+            }}
+            className={`px-3 py-2 rounded-xl border text-xs font-mono flex items-center gap-1.5 transition-all cursor-pointer ${
+              soundEnabled
+                ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400"
+                : "border-white/10 bg-white/5 text-white/50"
+            }`}
+            title={soundEnabled ? "Sound Notification Active" : "Sound Muted"}
+          >
+            {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+            <span className="hidden sm:inline">{soundEnabled ? "Chime On" : "Muted"}</span>
+          </button>
+
+          {/* Refresh button */}
+          <button
+            onClick={() => fetchData()}
             disabled={refreshing}
-            className="p-2.5 rounded-full border border-white/10 hover:border-white/25 text-white/60 hover:text-white transition-colors cursor-pointer"
+            className="p-2.5 rounded-xl border border-white/10 hover:border-white/25 text-white/70 hover:text-white transition-colors cursor-pointer bg-white/[0.02]"
             title="Refresh Metrics"
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin text-[#EB0028]" : ""}`} />
           </button>
+
           <Link
             href="/admin/applications"
             className="px-5 py-2.5 rounded-full bg-[#EB0028] hover:bg-[#ff1a3c] text-white font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-[0_0_20px_rgba(235,0,40,0.35)] transition-all cursor-pointer"
             style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}
           >
-            <span>Manage All Applications</span>
+            <span>Manage All ({stats.total})</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
@@ -164,9 +262,7 @@ export default function AdminDashboardPage() {
             className={`p-5 rounded-2xl border ${card.color} backdrop-blur-xl space-y-3 relative overflow-hidden transition-all hover:border-white/25`}
           >
             <div className="flex items-center justify-between">
-              <span
-                className="text-[10px] uppercase font-mono text-white/50 tracking-wider font-semibold"
-              >
+              <span className="text-[10px] uppercase font-mono text-white/50 tracking-wider font-semibold">
                 {card.title}
               </span>
               {card.icon}
@@ -195,7 +291,7 @@ export default function AdminDashboardPage() {
               Recent Submissions
             </h2>
             <p className="text-xs text-white/50" style={{ fontFamily: "var(--font-manrope)" }}>
-              Latest delegate applications received through the portal.
+              Auto-syncs in real time with audio alerts for new registrations.
             </p>
           </div>
           <Link
@@ -217,7 +313,7 @@ export default function AdminDashboardPage() {
                 <th className="py-3 px-3">Organization / City</th>
                 <th className="py-3 px-3">Payment</th>
                 <th className="py-3 px-3">Status</th>
-                <th className="py-3 px-3 text-right">Action</th>
+                <th className="py-3 px-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -230,15 +326,15 @@ export default function AdminDashboardPage() {
               ) : recentApps.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-12 text-center text-white/40 font-mono space-y-2">
-                    <p className="text-sm">0 Applications in Database</p>
+                    <p className="text-sm font-semibold text-white/60">0 Applications in Database</p>
                     <p className="text-xs text-white/30">
-                      When users submit delegate applications on /apply, they will appear here.
+                      When attendees register on /apply, new submissions will ring and appear here instantly.
                     </p>
                   </td>
                 </tr>
               ) : (
                 recentApps.map((app) => (
-                  <tr key={app.id} className="hover:bg-white/[0.02] transition-colors">
+                  <tr key={app.id} className="hover:bg-white/[0.02] transition-colors group">
                     <td className="py-3.5 px-3 font-mono font-bold text-[#EB0028]">
                       {app.application_number}
                     </td>
@@ -278,12 +374,21 @@ export default function AdminDashboardPage() {
                       </span>
                     </td>
                     <td className="py-3.5 px-3 text-right">
-                      <Link
-                        href={`/admin/applications/${app.id}`}
-                        className="px-3 py-1.5 rounded-lg border border-white/15 hover:border-[#EB0028] bg-white/[0.03] hover:bg-[#EB0028]/10 text-white hover:text-[#EB0028] transition-colors font-mono text-[11px]"
-                      >
-                        Inspect →
-                      </Link>
+                      <div className="flex items-center justify-end gap-2">
+                        <Link
+                          href={`/admin/applications/${app.id}`}
+                          className="px-3 py-1.5 rounded-lg border border-white/15 hover:border-[#EB0028] bg-white/[0.03] hover:bg-[#EB0028]/10 text-white hover:text-[#EB0028] transition-colors font-mono text-[11px]"
+                        >
+                          Review →
+                        </Link>
+                        <button
+                          onClick={() => setDeleteTarget(app)}
+                          title="Delete submission"
+                          className="p-1.5 rounded-lg border border-red-500/20 bg-red-500/5 hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-colors cursor-pointer"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -292,6 +397,43 @@ export default function AdminDashboardPage() {
           </table>
         </div>
       </div>
+
+      {/* Confirmation Delete Modal */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className="w-full max-w-md p-6 rounded-3xl border border-red-500/30 bg-neutral-950 text-white space-y-5 shadow-2xl">
+            <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400 mx-auto">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+
+            <div className="text-center space-y-2">
+              <h3 className="text-lg font-bold uppercase tracking-tight">Delete Application Record</h3>
+              <p className="text-xs text-white/60">
+                Are you sure you want to permanently delete application <span className="text-white font-bold font-mono">{deleteTarget.application_number}</span> ({deleteTarget.first_name} {deleteTarget.last_name})? This will also remove the payment receipt from storage.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                disabled={isDeleting}
+                className="w-1/2 py-2.5 rounded-xl border border-white/15 hover:bg-white/5 text-white/70 text-xs font-semibold uppercase tracking-wider transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="w-1/2 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold uppercase tracking-wider transition-colors shadow-[0_0_20px_rgba(239,68,68,0.4)] disabled:opacity-50"
+              >
+                {isDeleting ? "Deleting..." : "Confirm Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
