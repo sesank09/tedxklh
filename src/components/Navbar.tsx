@@ -108,9 +108,9 @@ export default function Navbar() {
                   <Image
                     src="/logo-white.png"
                     alt="TEDx KLH"
-                    width={130}
-                    height={36}
-                    className="h-6 sm:h-7 w-auto object-contain brightness-105 group-hover:opacity-90 transition-opacity"
+                    width={200}
+                    height={56}
+                    className="h-8 sm:h-10 md:h-11 w-auto object-contain brightness-110 group-hover:opacity-90 transition-all duration-300 drop-shadow-[0_2px_12px_rgba(255,255,255,0.15)]"
                     priority
                   />
                 </a>
