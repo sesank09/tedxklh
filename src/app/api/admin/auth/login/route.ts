@@ -5,25 +5,31 @@ import { getAdminClient } from "@/lib/supabase/admin";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const email = (body.email || "").trim().toLowerCase();
+    let rawIdentifier = (body.email || body.username || body.identifier || "").trim();
     const password = body.password || "";
 
-    if (!email || !password) {
+    if (!rawIdentifier || !password) {
       return NextResponse.json(
-        { error: "Email and password are required." },
+        { error: "Username/Email and password are required." },
         { status: 400 }
       );
     }
 
+    // Map username 'TedxKlh' or 'tedxklh' to the designated organizer admin account
+    let emailToAuth = rawIdentifier.toLowerCase();
+    if (emailToAuth === "tedxklh" || emailToAuth === "admin" || !emailToAuth.includes("@")) {
+      emailToAuth = "tedxklh@tedxklh.com";
+    }
+
     const supabase = await createServerSupabaseClient();
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-      email,
+      email: emailToAuth,
       password,
     });
 
     if (authError || !authData.user) {
       return NextResponse.json(
-        { error: "Invalid email or password." },
+        { error: "Invalid username/email or password." },
         { status: 401 }
       );
     }

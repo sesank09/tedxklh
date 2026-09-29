@@ -32,16 +32,22 @@ interface ApplicationData {
 }
 
 export default function ApplicationStatusPage() {
-  const [appNumber, setAppNumber] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ApplicationData | null>(null);
 
   const handleLookup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!appNumber.trim() || !email.trim()) {
-      setError("Please provide both your Application Number and registered Email.");
+    const cleanPhone = phone.replace(/\D/g, "");
+    if (!email.trim() || !cleanPhone) {
+      setError("Please provide both your registered Email Address and 10-digit Mobile Number.");
+      return;
+    }
+
+    if (cleanPhone.length < 10) {
+      setError("Please enter a valid 10-digit mobile number.");
       return;
     }
 
@@ -54,8 +60,8 @@ export default function ApplicationStatusPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          applicationNumber: appNumber.trim(),
           email: email.trim(),
+          phone: cleanPhone,
         }),
       });
 
@@ -143,7 +149,7 @@ export default function ApplicationStatusPage() {
               className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/90"
               style={{ fontFamily: "var(--font-dm-mono)" }}
             >
-              DELEGATE STATUS DISPATCH
+              DELEGATE STATUS TRACKER
             </span>
           </div>
 
@@ -151,14 +157,14 @@ export default function ApplicationStatusPage() {
             className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight uppercase"
             style={{ fontFamily: "var(--font-sora)", fontWeight: 800 }}
           >
-            CHECK <span className="text-[#EB0028]">APPLICATION STATUS</span>
+            TRACK <span className="text-[#EB0028]">YOUR APPLICATION</span>
           </h1>
 
           <p
             className="text-xs sm:text-sm text-white/60 font-normal leading-relaxed"
             style={{ fontFamily: "var(--font-manrope)" }}
           >
-            Enter your official Application Number and registered Email Address to view your admission &amp; payment status.
+            Enter your registered Email Address and Mobile Number to instantly check your admission and payment verification status.
           </p>
         </div>
 
@@ -177,23 +183,7 @@ export default function ApplicationStatusPage() {
                   className="text-xs uppercase text-white/80 font-medium tracking-wider"
                   style={{ fontFamily: "var(--font-dm-mono)" }}
                 >
-                  Application ID *
-                </label>
-                <input
-                  type="text"
-                  value={appNumber}
-                  onChange={(e) => setAppNumber(e.target.value.toUpperCase())}
-                  placeholder="e.g. TEDXKLH-0001"
-                  className="w-full h-12 px-4 rounded-xl border border-white/15 bg-white/[0.03] text-white font-mono text-sm tracking-widest placeholder-white/25 focus:outline-none focus:border-[#EB0028] transition-all"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label
-                  className="text-xs uppercase text-white/80 font-medium tracking-wider"
-                  style={{ fontFamily: "var(--font-dm-mono)" }}
-                >
-                  Registered Email *
+                  Registered Email Address *
                 </label>
                 <input
                   type="email"
@@ -202,6 +192,24 @@ export default function ApplicationStatusPage() {
                   placeholder="e.g. yourname@domain.com"
                   className="w-full h-12 px-4 rounded-xl border border-white/15 bg-white/[0.03] text-white text-sm placeholder-white/25 focus:outline-none focus:border-[#EB0028] transition-all"
                   style={{ fontFamily: "var(--font-manrope)" }}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label
+                  className="text-xs uppercase text-white/80 font-medium tracking-wider"
+                  style={{ fontFamily: "var(--font-dm-mono)" }}
+                >
+                  Mobile Number *
+                </label>
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  maxLength={15}
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="e.g. 9876543210"
+                  className="w-full h-12 px-4 rounded-xl border border-white/15 bg-white/[0.03] text-white font-mono text-sm tracking-wider placeholder-white/25 focus:outline-none focus:border-[#EB0028] transition-all"
                 />
               </div>
             </div>

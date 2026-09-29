@@ -9,7 +9,7 @@ import Link from "next/link";
 import Magnetic from "@/components/Magnetic";
 
 export default function AdminLoginPage() {
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -17,8 +17,8 @@ export default function AdminLoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || !password) {
-      setError("Please provide both email and password.");
+    if (!identifier.trim() || !password) {
+      setError("Please provide both username/email and password.");
       return;
     }
 
@@ -30,7 +30,7 @@ export default function AdminLoginPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: email.trim(),
+          identifier: identifier.trim(),
           password,
         }),
       });
@@ -110,15 +110,17 @@ export default function AdminLoginPage() {
                 className="text-xs uppercase text-white/70 font-medium tracking-wider"
                 style={{ fontFamily: "var(--font-dm-mono)" }}
               >
-                Organizer Email
+                Username or Email
               </label>
               <div className="relative flex items-center">
                 <Mail className="w-4 h-4 text-white/40 absolute left-4" />
                 <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@tedxklh.edu.in"
+                  type="text"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  placeholder="TedxKlh or admin email"
+                  autoCapitalize="none"
+                  autoCorrect="off"
                   className="w-full h-12 pl-11 pr-4 rounded-xl border border-white/15 bg-white/[0.03] text-white text-sm placeholder-white/25 focus:outline-none focus:border-[#EB0028] transition-all"
                   style={{ fontFamily: "var(--font-manrope)" }}
                 />
