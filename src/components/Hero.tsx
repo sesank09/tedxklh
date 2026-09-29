@@ -36,14 +36,28 @@ export default function Hero() {
           className="flex flex-col items-center"
         >
           <h1
-            className="text-5xl sm:text-7xl md:text-8xl font-extrabold text-white tracking-tight uppercase select-none"
+            className="text-5xl sm:text-7xl md:text-8xl font-extrabold text-white tracking-tight select-none"
             style={{ 
               fontFamily: "var(--font-sora)", 
               fontWeight: 800,
-              letterSpacing: "-0.04em" 
+              letterSpacing: "-0.04em",
+              textTransform: "none",
             }}
           >
-            TED<span className="text-[#EB0028]">x</span>KLH
+            TED
+            <span
+              className="text-[#EB0028]"
+              style={{
+                fontSize: "0.52em",
+                fontWeight: 700,
+                verticalAlign: "0.22em",
+                letterSpacing: "0em",
+                lineHeight: 1,
+              }}
+            >
+              x
+            </span>
+            KLH
           </h1>
         </motion.div>
 
