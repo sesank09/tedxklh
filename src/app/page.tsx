@@ -13,7 +13,7 @@ import Venue from "@/components/Venue";
 import Team from "@/components/Team";
 import Partners from "@/components/Partners";
 import FAQ from "@/components/FAQ";
-import Register from "@/components/Register";
+import FinalCTA from "@/components/FinalCTA";
 import Footer from "@/components/Footer";
 
 export default function Home() {
@@ -56,8 +56,8 @@ export default function Home() {
         {/* Chapter 07: Protocols & Inquiries */}
         <FAQ />
         
-        {/* Delegate Pass Application Portal */}
-        <Register />
+        {/* Final Compact Call To Action */}
+        <FinalCTA />
         
         {/* Official Licensed Footer */}
         <Footer />
