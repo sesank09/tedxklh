@@ -617,7 +617,10 @@ export default function Register() {
                           </div>
                           <input
                             type="text"
+                            inputMode="numeric"
                             maxLength={12}
+                            minLength={12}
+                            pattern="[0-9]{12}"
                             value={form.utrNumber}
                             onChange={(e) => {
                               const val = e.target.value.replace(/\D/g, "").slice(0, 12);

@@ -2,19 +2,20 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { ArrowUp, Mail, MapPin, Send, Check } from "lucide-react";
 import Magnetic from "./Magnetic";
 
 const NAV_LINKS = [
-  { name: "Home",     href: "#hero" },
-  { name: "About",    href: "#about" },
-  { name: "Theme",    href: "#theme" },
-  { name: "Speakers", href: "#speakers" },
-  { name: "Venue",    href: "#venue" },
-  { name: "Team",     href: "#team" },
-  { name: "Partners", href: "#partners" },
-  { name: "FAQ",      href: "#faq" },
-  { name: "Register", href: "#register" },
+  { name: "Home",     href: "/#hero" },
+  { name: "About",    href: "/#about" },
+  { name: "Theme",    href: "/#theme" },
+  { name: "Speakers", href: "/#speakers" },
+  { name: "Venue",    href: "/#venue" },
+  { name: "Team",     href: "/#team" },
+  { name: "Partners", href: "/#partners" },
+  { name: "FAQ",      href: "/#faq" },
+  { name: "Apply Pass", href: "/apply" },
 ];
 
 const SOCIAL_LINKS = [
@@ -82,13 +83,15 @@ export default function Footer() {
           {/* Column 1: Logo & Mission & Official License */}
           <div className="space-y-4">
             <div className="flex items-center">
-              <Image
-                src="/logo-white.png"
-                alt="TEDx KLH"
-                width={140}
-                height={38}
-                className="h-7 w-auto object-contain brightness-105"
-              />
+              <Link href="/" className="inline-flex items-center hover:opacity-90 transition-opacity">
+                <Image
+                  src="/logo-white.png"
+                  alt="TEDx KLH"
+                  width={150}
+                  height={42}
+                  className="h-7 sm:h-8 w-auto object-contain brightness-105"
+                />
+              </Link>
             </div>
             <p 
               className="text-xs text-white/70 font-normal leading-relaxed" 
