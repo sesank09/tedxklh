@@ -73,7 +73,9 @@ const METRICS = [
 export default function ApplyPage() {
   const [step, setStep] = useState<number>(1);
   const [form, setForm] = useState<FormData>(INITIAL_FORM);
+  const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [passId, setPassId] = useState("");
@@ -96,6 +98,7 @@ export default function ApplyPage() {
   const updateField = (field: keyof FormData, val: any) => {
     const updated = { ...form, [field]: val };
     setForm(updated);
+    setSubmitError(null);
     try {
       localStorage.setItem("tedxklh_apply_draft_v2", JSON.stringify(updated));
     } catch (e) {
@@ -130,6 +133,7 @@ export default function ApplyPage() {
       return;
     }
 
+    setScreenshotFile(file);
     const sizeFormatted = (file.size / (1024 * 1024)).toFixed(2) + " MB";
     const reader = new FileReader();
     reader.onload = () => {
@@ -154,6 +158,7 @@ export default function ApplyPage() {
   };
 
   const removeFile = () => {
+    setScreenshotFile(null);
     updateField("screenshotBase64", null);
     updateField("screenshotName", null);
     updateField("screenshotSize", null);
@@ -173,7 +178,7 @@ export default function ApplyPage() {
     if (currentStep === 1) {
       if (!form.firstName.trim()) errs.firstName = "First name is required";
       if (!form.lastName.trim()) errs.lastName = "Last name is required";
-      if (!form.email.trim() || !/^\S+@\S+\.\S+$/.test(form.email)) errs.email = "Valid official email is required";
+      if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = "Valid official email is required";
       const digits = form.phone.replace(/\D/g, "");
       if (!digits || digits.length < 10) errs.phone = "Valid 10-digit phone number is required";
       if (!form.organization.trim()) errs.organization = "College / University or Organization is required";
@@ -183,7 +188,7 @@ export default function ApplyPage() {
       if (!/^\d{12}$/.test(cleanUtr)) {
         errs.utrNumber = "UTR Number must be exactly 12 numeric digits";
       }
-      if (!form.screenshotBase64) {
+      if (!form.screenshotBase64 && !screenshotFile) {
         errs.screenshot = "Payment screenshot upload is required for transaction verification";
       }
     } else if (currentStep === 3) {
@@ -214,17 +219,51 @@ export default function ApplyPage() {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validateStep(3)) return;
     if (isSubmitting) return;
 
     setIsSubmitting(true);
-    const generatedId = `TEDxKLH-2026-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
-    setPassId(generatedId);
+    setSubmitError(null);
 
-    setTimeout(() => {
+    try {
+      const formData = new FormData();
+      formData.append("firstName", form.firstName.trim());
+      formData.append("lastName", form.lastName.trim());
+      formData.append("email", form.email.trim().toLowerCase());
+      formData.append("phone", form.phone.replace(/\D/g, ""));
+      formData.append("organization", form.organization.trim());
+      formData.append("city", form.city.trim());
+      formData.append("utrNumber", form.utrNumber.replace(/\D/g, ""));
+
+      // Attach file binary
+      if (screenshotFile) {
+        formData.append("screenshot", screenshotFile);
+      } else if (form.screenshotBase64) {
+        // Convert existing base64 to file blob if restoring from draft
+        const resBlob = await fetch(form.screenshotBase64);
+        const blob = await resBlob.blob();
+        const fileFromBlob = new File([blob], form.screenshotName || "payment-proof.jpg", { type: blob.type || "image/jpeg" });
+        formData.append("screenshot", fileFromBlob);
+      }
+
+      const response = await fetch("/api/apply", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setSubmitError(data.error || "Failed to submit application. Please try again.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      setPassId(data.application_number || "TEDXKLH-RECEIVED");
       setIsSubmitting(false);
       setIsSubmitted(true);
+
       try {
         localStorage.removeItem("tedxklh_apply_draft_v2");
       } catch (e) {}
@@ -236,7 +275,11 @@ export default function ApplyPage() {
         colors: ["#EB0028", "#FFFFFF", "#FF454A", "#1a1a1a"],
       });
       window.scrollTo({ top: 140, behavior: "smooth" });
-    }, 1800);
+    } catch (err: any) {
+      console.error("Submission network error:", err);
+      setSubmitError("Network error. Please check your connection and try again.");
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -876,6 +919,14 @@ export default function ApplyPage() {
                             </div>
                           </div>
                         </div>
+
+                        {/* Server Error Alert */}
+                        {submitError && (
+                          <div className="p-4 rounded-xl border border-red-500/40 bg-red-500/10 text-red-400 text-xs flex items-start gap-2.5">
+                            <span className="font-bold shrink-0">⚠️</span>
+                            <span>{submitError}</span>
+                          </div>
+                        )}
 
                         {/* Terms & Code of Conduct Checkbox */}
                         <div className="p-4 rounded-xl border border-white/10 bg-white/[0.01] space-y-2">
