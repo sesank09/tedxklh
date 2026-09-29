@@ -207,6 +207,20 @@ html.lenis, html.lenis body { height: auto; }
 /* ───────── Glow Pulse ───────── */
 .glow-pulse { animation: glow-pulse 2.5s ease-in-out infinite; }
 
+/* ───────── Scrollbar Hide Utility ───────── */
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar { display: none; }
+
+/* ───────── Card Layer Performance ───────── */
+/* Rotating border layers use transform only — GPU-safe */
+.card-border-layer {
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
 /* ───────── Accessibility ───────── */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
