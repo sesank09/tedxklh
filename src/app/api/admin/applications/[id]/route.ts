@@ -119,14 +119,18 @@ export async function DELETE(
     }
 
     // 4. Log deletion audit action
-    await supabaseAdmin.from("admin_audit_logs").insert({
-      admin_user_id: admin.userId,
-      application_id: null,
-      action: "application_deleted",
-      old_status: application.application_number,
-      new_status: "deleted",
-      notes: `Deleted registration record for ${application.first_name} (${application.email})`,
-    }).catch(() => {});
+    try {
+      await supabaseAdmin.from("admin_audit_logs").insert({
+        admin_user_id: admin.userId,
+        application_id: null,
+        action: "application_deleted",
+        old_status: application.application_number,
+        new_status: "deleted",
+        notes: `Deleted registration record for ${application.first_name} (${application.email})`,
+      });
+    } catch (e) {
+      console.warn("Audit log notice:", e);
+    }
 
     return NextResponse.json({
       success: true,
