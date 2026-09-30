@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import Preloader from "@/components/Preloader";
+import { useState, useEffect } from "react";
+import LaunchOverlay from "@/components/LaunchOverlay";
 import Navbar from "@/components/Navbar";
 import Background3D from "@/components/Background3D";
 import Hero from "@/components/Hero";
@@ -17,11 +17,28 @@ import FinalCTA from "@/components/FinalCTA";
 import Footer from "@/components/Footer";
 
 export default function Home() {
-  const [isLoading, setIsLoading] = useState(true);
+  const [hasLaunched, setHasLaunched] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    // If URL has skip or direct parameter, skip launch overlay
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("skip") === "true") {
+        setHasLaunched(true);
+      }
+    }
+  }, []);
+
+  if (!mounted) return null;
 
   return (
     <>
-      {isLoading && <Preloader onComplete={() => setIsLoading(false)} />}
+      {/* 🚀 Crazy Holographic Metamorphosis Launch Experience with Central Reactor */}
+      {!hasLaunched && (
+        <LaunchOverlay onLaunched={() => setHasLaunched(true)} />
+      )}
 
       <div className="relative min-h-screen w-full bg-transparent text-white overflow-x-clip">
         {/* Fixed scroll-controlled 3D background — rendered once for whole site */}
@@ -29,7 +46,7 @@ export default function Home() {
 
         <Navbar />
         
-        {/* Hero Section — Approved & Unchanged */}
+        {/* Hero Section */}
         <Hero />
         
         {/* Event Date & Location Transition Banner */}
