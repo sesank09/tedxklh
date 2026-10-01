@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import LaunchOverlay from "@/components/LaunchOverlay";
+import Preloader from "@/components/Preloader";
 import Navbar from "@/components/Navbar";
 import Background3D from "@/components/Background3D";
 import Hero from "@/components/Hero";
@@ -17,28 +17,18 @@ import FinalCTA from "@/components/FinalCTA";
 import Footer from "@/components/Footer";
 
 export default function Home() {
-  const [hasLaunched, setHasLaunched] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    // If URL has skip or direct parameter, skip launch overlay
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get("skip") === "true") {
-        setHasLaunched(true);
-      }
-    }
   }, []);
 
   if (!mounted) return null;
 
   return (
     <>
-      {/* 🚀 Crazy Holographic Metamorphosis Launch Experience with Central Reactor */}
-      {!hasLaunched && (
-        <LaunchOverlay onLaunched={() => setHasLaunched(true)} />
-      )}
+      {loading && <Preloader onComplete={() => setLoading(false)} />}
 
       <div className="relative min-h-screen w-full bg-transparent text-white overflow-x-clip">
         {/* Fixed scroll-controlled 3D background — rendered once for whole site */}
