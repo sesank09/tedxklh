@@ -1,82 +1,59 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useMemo, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import * as THREE from "three";
 import { playHoverTickSound, playLaunchIgnitionSound } from "@/lib/utils/audio";
 
 // ─────────────────────────────────────────────────────────────
-// 1. STANDALONE CINEMATIC METAMORPHOSIS LAUNCH PAGE
-// Route: /launch (Completely independent from homepage)
+// HIGH-PERFORMANCE STANDALONE LAUNCH PORTAL
+// Route: /launch
+// Zero-recreation WebGL pipeline locked at 60 FPS
 // ─────────────────────────────────────────────────────────────
 
 export default function LaunchPage() {
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Experience Timeline States:
-  // 0: Darkness / Initial
-  // 1: Fragment Convergence
-  // 2: Butterfly Crystallization & Wing Flex
-  // 3: Energy Pulse
-  // 4: Brand & Launch Control Active
+  // Experience timeline phase (0..4)
   const [phase, setPhase] = useState<number>(0);
   const [isLaunching, setIsLaunching] = useState<boolean>(false);
   const [warpProgress, setWarpProgress] = useState<number>(0);
-  const [isReducedMotion, setIsReducedMotion] = useState<boolean>(false);
   const [mounted, setMounted] = useState<boolean>(false);
 
-  // Mouse Parallax Springs
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const springX = useSpring(mouseX, { stiffness: 80, damping: 20 });
-  const springY = useSpring(mouseY, { stiffness: 80, damping: 20 });
+  // Mutable refs to prevent React state changes from restarting/tearing WebGL context
+  const phaseRef = useRef<number>(0);
+  const isLaunchingRef = useRef<boolean>(false);
+  const mouseRef = useRef<{ x: number; y: number; targetX: number; targetY: number }>({
+    x: 0,
+    y: 0,
+    targetX: 0,
+    targetY: 0,
+  });
 
-  // WebGL references
-  const animFrameIdRef = useRef<number | null>(null);
-  const threeStateRef = useRef<{
-    scene: THREE.Scene;
-    camera: THREE.PerspectiveCamera;
-    renderer: THREE.WebGLRenderer;
-    butterflyGroup: THREE.Group;
-    leftWingPivot: THREE.Group;
-    rightWingPivot: THREE.Group;
-    particlesMesh: THREE.Points;
-    shatterMesh: THREE.Points;
-    pointLightCrimson: THREE.PointLight;
-    pointLightSilver: THREE.PointLight;
-    ambientLight: THREE.AmbientLight;
-  } | null>(null);
+  // Sync state to refs
+  useEffect(() => {
+    phaseRef.current = phase;
+  }, [phase]);
 
-  // Check reduced motion
+  useEffect(() => {
+    isLaunchingRef.current = isLaunching;
+  }, [isLaunching]);
+
+  // Timeline Controller (Runs once on mount)
   useEffect(() => {
     setMounted(true);
-    if (typeof window !== "undefined") {
-      const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-      setIsReducedMotion(motionQuery.matches);
-    }
-  }, []);
 
-  // ─────────────────────────────────────────────────────────────
-  // 2. TIMELINE CONTROLLER
-  // ─────────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!mounted) return;
-
-    if (isReducedMotion) {
+    if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       setPhase(4);
       return;
     }
 
-    // Phase 1: Fragment Convergence starts at 0.8s
-    const t1 = setTimeout(() => setPhase(1), 800);
-    // Phase 2: Butterfly Assembly at 2.6s
-    const t2 = setTimeout(() => setPhase(2), 2600);
-    // Phase 3: Crimson Energy Wave Pulse at 4.6s
-    const t3 = setTimeout(() => setPhase(3), 4600);
-    // Phase 4: Brand Reveal & Launch Button Activation at 5.4s
-    const t4 = setTimeout(() => setPhase(4), 5400);
+    const t1 = setTimeout(() => setPhase(1), 600);
+    const t2 = setTimeout(() => setPhase(2), 2200);
+    const t3 = setTimeout(() => setPhase(3), 4200);
+    const t4 = setTimeout(() => setPhase(4), 5000);
 
     return () => {
       clearTimeout(t1);
@@ -84,10 +61,10 @@ export default function LaunchPage() {
       clearTimeout(t3);
       clearTimeout(t4);
     };
-  }, [mounted, isReducedMotion]);
+  }, []);
 
   // ─────────────────────────────────────────────────────────────
-  // 3. THREE.JS 3D BUTTERFLY & CRYSTALLINE ENGINE
+  // SINGLE-INIT 60 FPS WEBGL CANVAS PIPELINE
   // ─────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!containerRef.current) return;
@@ -95,40 +72,41 @@ export default function LaunchPage() {
     const width = container.clientWidth || window.innerWidth;
     const height = container.clientHeight || window.innerHeight;
 
-    // ── Scene, Camera & Renderer ──
+    // 1. Scene, Camera & Renderer
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x020202);
     scene.fog = new THREE.FogExp2(0x020202, 0.035);
 
     const camera = new THREE.PerspectiveCamera(42, width / height, 0.1, 100);
-    camera.position.set(0, 0, 8.2);
+    camera.position.set(0, 0, 8.0);
 
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
       alpha: false,
       powerPreference: "high-performance",
+      precision: "mediump",
     });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     container.appendChild(renderer.domElement);
 
-    // ── Lights ──
-    const ambientLight = new THREE.AmbientLight(0x111111, 1.2);
+    // 2. Lights
+    const ambientLight = new THREE.AmbientLight(0x222222, 1.4);
     scene.add(ambientLight);
 
-    const pointLightSilver = new THREE.PointLight(0xe8f2ff, 0, 20);
-    pointLightSilver.position.set(-3.5, 1.5, 3.5);
-    scene.add(pointLightSilver);
+    const silverLight = new THREE.PointLight(0xe8f2ff, 0, 16);
+    silverLight.position.set(-3.2, 1.2, 3.2);
+    scene.add(silverLight);
 
-    const pointLightCrimson = new THREE.PointLight(0xeb0028, 0, 20);
-    pointLightCrimson.position.set(3.5, 1.5, 3.5);
-    scene.add(pointLightCrimson);
+    const crimsonLight = new THREE.PointLight(0xeb0028, 0, 16);
+    crimsonLight.position.set(3.2, 1.2, 3.2);
+    scene.add(crimsonLight);
 
-    // ── Butterfly Group & Wing Texture Generators ──
+    // 3. Butterfly Hierarchical Group
     const butterflyGroup = new THREE.Group();
-    butterflyGroup.position.set(0, 0.45, 0);
-    butterflyGroup.scale.set(0.001, 0.001, 0.001); // starts collapsed
+    butterflyGroup.position.set(0, 0.42, 0);
+    butterflyGroup.scale.set(0.001, 0.001, 0.001);
     scene.add(butterflyGroup);
 
     const leftWingPivot = new THREE.Group();
@@ -136,177 +114,133 @@ export default function LaunchPage() {
     butterflyGroup.add(leftWingPivot);
     butterflyGroup.add(rightWingPivot);
 
-    // Procedural Dynamic Crystalline Wing Texture Canvas
+    // Pre-render Wing Textures Once
     const createWingTexture = (isLeftSilver: boolean, isForewing: boolean): THREE.CanvasTexture => {
       const canvas = document.createElement("canvas");
-      canvas.width = 1024;
-      canvas.height = 1024;
+      canvas.width = 512;
+      canvas.height = 512;
       const ctx = canvas.getContext("2d")!;
-      ctx.clearRect(0, 0, 1024, 1024);
+      ctx.clearRect(0, 0, 512, 512);
 
-      // Deep obsidian gradient base
-      const bgGrad = ctx.createRadialGradient(250, 350, 40, 512, 512, 650);
+      const bgGrad = ctx.createRadialGradient(125, 175, 20, 256, 256, 320);
       if (isLeftSilver) {
-        bgGrad.addColorStop(0, "rgba(25, 30, 38, 0.96)");
-        bgGrad.addColorStop(0.5, "rgba(10, 12, 16, 0.9)");
+        bgGrad.addColorStop(0, "rgba(30, 35, 45, 0.96)");
+        bgGrad.addColorStop(0.5, "rgba(12, 14, 18, 0.9)");
         bgGrad.addColorStop(1, "rgba(2, 2, 4, 0.98)");
       } else {
-        bgGrad.addColorStop(0, "rgba(55, 3, 12, 0.96)");
-        bgGrad.addColorStop(0.5, "rgba(20, 2, 6, 0.9)");
+        bgGrad.addColorStop(0, "rgba(65, 4, 14, 0.96)");
+        bgGrad.addColorStop(0.5, "rgba(22, 2, 6, 0.9)");
         bgGrad.addColorStop(1, "rgba(3, 0, 1, 0.98)");
       }
       ctx.fillStyle = bgGrad;
-      ctx.fillRect(0, 0, 1024, 1024);
+      ctx.fillRect(0, 0, 512, 512);
 
-      // Luminous Core Flare
+      // Core Flare
       const flareGrad = ctx.createRadialGradient(
-        isForewing ? 380 : 420,
-        isForewing ? 420 : 460,
-        15,
-        512,
-        512,
-        500
+        isForewing ? 190 : 210,
+        isForewing ? 210 : 230,
+        8,
+        256,
+        256,
+        250
       );
       if (isLeftSilver) {
         flareGrad.addColorStop(0, "rgba(255, 255, 255, 0.95)");
-        flareGrad.addColorStop(0.25, "rgba(220, 235, 255, 0.75)");
-        flareGrad.addColorStop(0.6, "rgba(150, 180, 215, 0.3)");
+        flareGrad.addColorStop(0.3, "rgba(210, 230, 255, 0.65)");
         flareGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
       } else {
-        flareGrad.addColorStop(0, "rgba(255, 60, 90, 0.98)");
-        flareGrad.addColorStop(0.25, "rgba(235, 0, 40, 0.85)");
-        flareGrad.addColorStop(0.6, "rgba(160, 0, 30, 0.35)");
+        flareGrad.addColorStop(0, "rgba(255, 70, 95, 0.98)");
+        flareGrad.addColorStop(0.3, "rgba(235, 0, 40, 0.75)");
         flareGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
       }
       ctx.fillStyle = flareGrad;
-      ctx.fillRect(0, 0, 1024, 1024);
+      ctx.fillRect(0, 0, 512, 512);
 
-      // Crystalline Venation & Facet Struts
-      ctx.shadowBlur = isLeftSilver ? 16 : 22;
-      ctx.shadowColor = isLeftSilver ? "rgba(255, 255, 255, 0.85)" : "rgba(235, 0, 40, 0.95)";
-      ctx.strokeStyle = isLeftSilver ? "rgba(255, 255, 255, 0.92)" : "rgba(255, 200, 210, 0.95)";
-      ctx.lineWidth = 3.5;
-
-      const rootX = isForewing ? 120 : 160;
-      const rootY = isForewing ? 860 : 240;
-      const numVeins = isForewing ? 14 : 10;
+      // Crystalline Venation Lines
+      ctx.strokeStyle = isLeftSilver ? "rgba(255, 255, 255, 0.9)" : "rgba(255, 190, 205, 0.95)";
+      ctx.lineWidth = 2.4;
+      const rootX = isForewing ? 60 : 80;
+      const rootY = isForewing ? 430 : 120;
+      const numVeins = isForewing ? 11 : 8;
 
       for (let i = 0; i < numVeins; i++) {
         const angle = isForewing
           ? -0.12 - (i / numVeins) * 1.38
           : 0.12 + (i / numVeins) * 1.34;
-        const len = 430 + Math.sin(i * 1.4) * 200 + (isForewing ? 260 : 190);
-
+        const len = 220 + Math.sin(i * 1.4) * 100 + (isForewing ? 130 : 90);
         const endX = rootX + Math.cos(angle) * len;
         const endY = rootY + Math.sin(angle) * len;
-        const cpX = rootX + Math.cos(angle + 0.16) * (len * 0.52);
-        const cpY = rootY + Math.sin(angle + 0.16) * (len * 0.52);
-
         ctx.beginPath();
         ctx.moveTo(rootX, rootY);
-        ctx.quadraticCurveTo(cpX, cpY, endX, endY);
+        ctx.lineTo(endX, endY);
         ctx.stroke();
-
-        // Facet Struts
-        for (let b = 1; b <= 3; b++) {
-          const t = 0.32 + b * 0.22;
-          const bx = rootX * (1 - t) * (1 - t) + 2 * cpX * (1 - t) * t + endX * t * t;
-          const by = rootY * (1 - t) * (1 - t) + 2 * cpY * (1 - t) * t + endY * t * t;
-
-          const branchAngle = angle + (b % 2 === 0 ? 0.4 : -0.4);
-          const bLen = 110 + Math.sin(b * 1.5) * 60;
-
-          ctx.lineWidth = 1.8;
-          ctx.strokeStyle = isLeftSilver
-            ? "rgba(215, 235, 255, 0.7)"
-            : "rgba(255, 120, 150, 0.75)";
-          ctx.beginPath();
-          ctx.moveTo(bx, by);
-          ctx.lineTo(bx + Math.cos(branchAngle) * bLen, by + Math.sin(branchAngle) * bLen);
-          ctx.stroke();
-        }
-      }
-
-      // Margin Crystallites
-      ctx.shadowBlur = 14;
-      ctx.shadowColor = isLeftSilver ? "#ffffff" : "#eb0028";
-      ctx.fillStyle = isLeftSilver ? "#ffffff" : "#ffe6ea";
-      const edgeCount = isForewing ? 24 : 16;
-      for (let j = 0; j < edgeCount; j++) {
-        const spotX = isForewing ? 720 + Math.sin(j * 0.7) * 190 : 680 + Math.cos(j * 0.6) * 180;
-        const spotY = isForewing ? 210 + j * 34 : 320 + j * 36;
-        const radius = 2.5 + (j % 3 === 0 ? 3.0 : 1.2);
-        ctx.beginPath();
-        ctx.arc(spotX, spotY, radius, 0, Math.PI * 2);
-        ctx.fill();
       }
 
       const tex = new THREE.CanvasTexture(canvas);
-      tex.generateMipmaps = true;
-      tex.minFilter = THREE.LinearMipmapLinearFilter;
+      tex.generateMipmaps = false;
+      tex.minFilter = THREE.LinearFilter;
       tex.magFilter = THREE.LinearFilter;
       return tex;
     };
 
-    // Wing Geometries
-    const forewingShape = new THREE.Shape();
-    forewingShape.moveTo(0, 0);
-    forewingShape.bezierCurveTo(0.35, 0.85, 1.2, 1.95, 1.85, 2.55);
-    forewingShape.bezierCurveTo(2.4, 2.75, 2.75, 2.55, 2.85, 2.15);
-    forewingShape.bezierCurveTo(2.8, 1.45, 2.3, 0.85, 2.05, 0.35);
-    forewingShape.bezierCurveTo(1.85, 0.05, 1.35, -0.1, 0.75, -0.05);
-    forewingShape.lineTo(0, 0);
-    const forewingGeom = new THREE.ShapeGeometry(forewingShape, 32);
+    // Geometries
+    const foreShape = new THREE.Shape();
+    foreShape.moveTo(0, 0);
+    foreShape.bezierCurveTo(0.35, 0.85, 1.2, 1.95, 1.85, 2.55);
+    foreShape.bezierCurveTo(2.4, 2.75, 2.75, 2.55, 2.85, 2.15);
+    foreShape.bezierCurveTo(2.8, 1.45, 2.3, 0.85, 2.05, 0.35);
+    foreShape.bezierCurveTo(1.85, 0.05, 1.35, -0.1, 0.75, -0.05);
+    foreShape.lineTo(0, 0);
+    const foreGeom = new THREE.ShapeGeometry(foreShape, 24);
 
-    const hindwingShape = new THREE.Shape();
-    hindwingShape.moveTo(0, 0);
-    hindwingShape.bezierCurveTo(0.55, 0.1, 1.35, 0.0, 1.8, -0.4);
-    hindwingShape.bezierCurveTo(2.1, -0.9, 1.95, -1.65, 1.55, -2.15);
-    hindwingShape.bezierCurveTo(1.15, -2.45, 0.65, -2.2, 0.4, -1.65);
-    hindwingShape.bezierCurveTo(0.18, -1.15, 0.08, -0.55, 0.0, 0.0);
-    hindwingShape.lineTo(0, 0);
-    const hindwingGeom = new THREE.ShapeGeometry(hindwingShape, 28);
+    const hindShape = new THREE.Shape();
+    hindShape.moveTo(0, 0);
+    hindShape.bezierCurveTo(0.55, 0.1, 1.35, 0.0, 1.8, -0.4);
+    hindShape.bezierCurveTo(2.1, -0.9, 1.95, -1.65, 1.55, -2.15);
+    hindShape.bezierCurveTo(1.15, -2.45, 0.65, -2.2, 0.4, -1.65);
+    hindShape.bezierCurveTo(0.18, -1.15, 0.08, -0.55, 0.0, 0.0);
+    hindShape.lineTo(0, 0);
+    const hindGeom = new THREE.ShapeGeometry(hindShape, 20);
 
     const createWingMat = (map: THREE.Texture, isSilver: boolean) =>
       new THREE.MeshStandardMaterial({
         map,
         side: THREE.DoubleSide,
-        roughness: isSilver ? 0.25 : 0.32,
-        metalness: isSilver ? 0.85 : 0.28,
+        roughness: isSilver ? 0.28 : 0.35,
+        metalness: isSilver ? 0.8 : 0.25,
         emissive: new THREE.Color(isSilver ? 0x222a35 : 0x880018),
         emissiveIntensity: 0.85,
         transparent: true,
         opacity: 0.98,
       });
 
-    // Left Wings (Silver/White)
-    const leftForeMesh = new THREE.Mesh(forewingGeom, createWingMat(createWingTexture(true, true), true));
-    const leftHindMesh = new THREE.Mesh(hindwingGeom, createWingMat(createWingTexture(true, false), true));
+    // Left wings (Silver)
+    const leftForeMesh = new THREE.Mesh(foreGeom, createWingMat(createWingTexture(true, true), true));
+    const leftHindMesh = new THREE.Mesh(hindGeom, createWingMat(createWingTexture(true, false), true));
     leftForeMesh.scale.set(-1, 1, 1);
     leftHindMesh.scale.set(-1, 1, 1);
     leftWingPivot.add(leftForeMesh);
     leftWingPivot.add(leftHindMesh);
 
-    // Right Wings (Crimson/Red)
-    const rightForeMesh = new THREE.Mesh(forewingGeom, createWingMat(createWingTexture(false, true), false));
-    const rightHindMesh = new THREE.Mesh(hindwingGeom, createWingMat(createWingTexture(false, false), false));
+    // Right wings (Crimson)
+    const rightForeMesh = new THREE.Mesh(foreGeom, createWingMat(createWingTexture(false, true), false));
+    const rightHindMesh = new THREE.Mesh(hindGeom, createWingMat(createWingTexture(false, false), false));
     rightWingPivot.add(rightForeMesh);
     rightWingPivot.add(rightHindMesh);
 
     // Central Thorax Spine
-    const thoraxGeom = new THREE.CylinderGeometry(0.045, 0.025, 1.6, 16);
+    const thoraxGeom = new THREE.CylinderGeometry(0.04, 0.02, 1.5, 12);
     const thoraxMat = new THREE.MeshStandardMaterial({
       color: 0x111115,
-      metalness: 0.95,
-      roughness: 0.1,
+      metalness: 0.9,
+      roughness: 0.2,
       emissive: 0x220508,
     });
     const thoraxMesh = new THREE.Mesh(thoraxGeom, thoraxMat);
-    thoraxMesh.rotation.z = 0;
     butterflyGroup.add(thoraxMesh);
 
-    // ── Environmental & Convergence Crystalline Particles ──
-    const PARTICLE_COUNT = 1800;
+    // 4. Lean & Fluid Crystalline Convergence Particles (700 particles)
+    const PARTICLE_COUNT = 700;
     const pGeom = new THREE.BufferGeometry();
     const pPos = new Float32Array(PARTICLE_COUNT * 3);
     const pCol = new Float32Array(PARTICLE_COUNT * 3);
@@ -317,41 +251,31 @@ export default function LaunchPage() {
       const i3 = i * 3;
       const isLeft = i % 2 === 0;
 
-      // Start widely dispersed in 3D sphere
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(Math.random() * 2 - 1);
-      const rad = 6.0 + Math.random() * 8.0;
+      const rad = 5.0 + Math.random() * 6.0;
 
       pPos[i3] = Math.sin(phi) * Math.cos(theta) * rad;
       pPos[i3 + 1] = Math.sin(phi) * Math.sin(theta) * rad;
       pPos[i3 + 2] = Math.cos(phi) * rad;
 
-      // Target converging coordinate around butterfly wings
       const wingU = Math.random();
       const wingV = Math.random();
       const side = isLeft ? -1 : 1;
-      const wx = side * (0.2 + Math.pow(wingV, 0.5) * (1.8 + wingU * 0.8));
-      const wy = (Math.random() - 0.5) * 3.2 + 0.45;
-      const wz = (Math.random() - 0.5) * 0.6;
+      pTarget[i3] = side * (0.25 + Math.pow(wingV, 0.5) * (1.7 + wingU * 0.7));
+      pTarget[i3 + 1] = (Math.random() - 0.5) * 3.0 + 0.42;
+      pTarget[i3 + 2] = (Math.random() - 0.5) * 0.4;
+      pSpeed[i] = 0.025 + Math.random() * 0.035;
 
-      pTarget[i3] = wx;
-      pTarget[i3 + 1] = wy;
-      pTarget[i3 + 2] = wz;
-
-      pSpeed[i] = 0.015 + Math.random() * 0.025;
-
-      // Colors
       if (isLeft) {
-        // Silver / White
-        const b = 0.8 + Math.random() * 0.2;
+        const b = 0.85 + Math.random() * 0.15;
         pCol[i3] = 0.95 * b;
         pCol[i3 + 1] = 0.98 * b;
         pCol[i3 + 2] = 1.0 * b;
       } else {
-        // Crimson / Red
         pCol[i3] = 0.98;
-        pCol[i3 + 1] = 0.06 + Math.random() * 0.15;
-        pCol[i3 + 2] = 0.20 + Math.random() * 0.15;
+        pCol[i3 + 1] = 0.08 + Math.random() * 0.12;
+        pCol[i3 + 2] = 0.22 + Math.random() * 0.12;
       }
     }
 
@@ -369,8 +293,8 @@ export default function LaunchPage() {
     const particlesMesh = new THREE.Points(pGeom, pMat);
     scene.add(particlesMesh);
 
-    // ── Hyperspace Shatter Explosion Points (Active on Launch Click) ──
-    const SHATTER_COUNT = 3200;
+    // 5. Shatter Explosion Mesh on Launch (1,200 points)
+    const SHATTER_COUNT = 1200;
     const sGeom = new THREE.BufferGeometry();
     const sPos = new Float32Array(SHATTER_COUNT * 3);
     const sCol = new Float32Array(SHATTER_COUNT * 3);
@@ -379,16 +303,15 @@ export default function LaunchPage() {
     for (let j = 0; j < SHATTER_COUNT; j++) {
       const j3 = j * 3;
       const isLeft = j % 2 === 0;
-      sPos[j3] = (isLeft ? -1 : 1) * Math.random() * 2.5;
-      sPos[j3 + 1] = (Math.random() - 0.5) * 3.0 + 0.45;
-      sPos[j3 + 2] = (Math.random() - 0.5) * 0.5;
+      sPos[j3] = (isLeft ? -1 : 1) * Math.random() * 2.2;
+      sPos[j3 + 1] = (Math.random() - 0.5) * 2.8 + 0.42;
+      sPos[j3 + 2] = (Math.random() - 0.5) * 0.4;
 
-      // Explosion velocities forward toward camera & outward
-      const angle = Math.atan2(sPos[j3 + 1] - 0.45, sPos[j3]) + (Math.random() - 0.5) * 0.6;
-      const speed = 4.0 + Math.random() * 8.5;
+      const angle = Math.atan2(sPos[j3 + 1] - 0.42, sPos[j3]);
+      const speed = 5.0 + Math.random() * 9.0;
       sVel[j3] = Math.cos(angle) * speed;
       sVel[j3 + 1] = Math.sin(angle) * speed;
-      sVel[j3 + 2] = 6.0 + Math.random() * 12.0; // Accelerate toward camera
+      sVel[j3 + 2] = 7.0 + Math.random() * 12.0;
 
       if (isLeft) {
         sCol[j3] = 1.0;
@@ -405,7 +328,7 @@ export default function LaunchPage() {
     sGeom.setAttribute("color", new THREE.BufferAttribute(sCol, 3));
 
     const sMat = new THREE.PointsMaterial({
-      size: 0.08,
+      size: 0.075,
       vertexColors: true,
       transparent: true,
       opacity: 0,
@@ -415,80 +338,64 @@ export default function LaunchPage() {
     const shatterMesh = new THREE.Points(sGeom, sMat);
     scene.add(shatterMesh);
 
-    threeStateRef.current = {
-      scene,
-      camera,
-      renderer,
-      butterflyGroup,
-      leftWingPivot,
-      rightWingPivot,
-      particlesMesh,
-      shatterMesh,
-      pointLightCrimson,
-      pointLightSilver,
-      ambientLight,
-    };
-
-    // ── Animation Loop ──
+    // ── Rock-Solid 60 FPS Render Loop ──
+    let animId: number;
     let startTime = performance.now();
 
     const renderLoop = (time: number) => {
       const elapsed = (time - startTime) * 0.001;
-      const p = phase;
+      const curPhase = phaseRef.current;
+      const launching = isLaunchingRef.current;
 
-      // 1. Butterfly Assembly Scaling
-      if (p >= 2) {
-        butterflyGroup.scale.lerp(new THREE.Vector3(1.0, 1.0, 1.0), 0.05);
-      }
-
-      // 2. Wing Flap Motion (Slow organic breathing crystal flex)
-      if (p >= 2) {
+      // 1. Butterfly Assembly & Wing Flap
+      if (curPhase >= 2 && !launching) {
+        butterflyGroup.scale.lerp(new THREE.Vector3(1.0, 1.0, 1.0), 0.06);
         const flapCycle = Math.sin(elapsed * 2.2) * 0.32 + Math.cos(elapsed * 1.1) * 0.12;
         leftWingPivot.rotation.y = flapCycle;
         rightWingPivot.rotation.y = -flapCycle;
-        butterflyGroup.position.y = 0.45 + Math.sin(elapsed * 1.5) * 0.08;
+        butterflyGroup.position.y = 0.42 + Math.sin(elapsed * 1.5) * 0.06;
       }
 
-      // 3. Dynamic Lighting Activation
-      if (p >= 1) {
-        pointLightSilver.intensity = THREE.MathUtils.lerp(pointLightSilver.intensity, 4.2, 0.04);
-        pointLightCrimson.intensity = THREE.MathUtils.lerp(pointLightCrimson.intensity, 6.8, 0.04);
+      // 2. Light Intensities
+      if (curPhase >= 1) {
+        silverLight.intensity = THREE.MathUtils.lerp(silverLight.intensity, 4.0, 0.05);
+        crimsonLight.intensity = THREE.MathUtils.lerp(crimsonLight.intensity, 6.5, 0.05);
       }
 
-      // 4. Parallax Response from Mouse
-      const targetRotX = -springY.get() * 0.25;
-      const targetRotY = springX.get() * 0.35;
-      butterflyGroup.rotation.x = THREE.MathUtils.lerp(butterflyGroup.rotation.x, targetRotX, 0.06);
-      butterflyGroup.rotation.y = THREE.MathUtils.lerp(butterflyGroup.rotation.y, targetRotY, 0.06);
+      // 3. Smooth Mouse Parallax
+      const mouse = mouseRef.current;
+      mouse.x += (mouse.targetX - mouse.x) * 0.05;
+      mouse.y += (mouse.targetY - mouse.y) * 0.05;
+      butterflyGroup.rotation.x = -mouse.y * 0.22;
+      butterflyGroup.rotation.y = mouse.x * 0.30;
 
-      // 5. Environmental Particles Convergence
+      // 4. Particle Simulation
       const posAttr = pGeom.attributes.position as THREE.BufferAttribute;
       const posArr = posAttr.array as Float32Array;
 
-      for (let i = 0; i < PARTICLE_COUNT; i++) {
-        const i3 = i * 3;
-        if (p === 0) {
-          // Subtle drifting
-          posArr[i3 + 1] += Math.sin(elapsed + i) * 0.002;
-        } else if (p === 1) {
-          // Converging toward butterfly
+      if (curPhase === 1) {
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+          const i3 = i * 3;
           posArr[i3] += (pTarget[i3] - posArr[i3]) * pSpeed[i];
           posArr[i3 + 1] += (pTarget[i3 + 1] - posArr[i3 + 1]) * pSpeed[i];
           posArr[i3 + 2] += (pTarget[i3 + 2] - posArr[i3 + 2]) * pSpeed[i];
-        } else {
-          // Orbiting & Shedding from wings
-          const orbitAngle = elapsed * 0.6 + i * 0.02;
-          posArr[i3] = pTarget[i3] + Math.cos(orbitAngle) * (0.15 + (i % 5) * 0.06);
-          posArr[i3 + 1] = pTarget[i3 + 1] + Math.sin(orbitAngle) * (0.15 + (i % 5) * 0.06);
-          posArr[i3 + 2] = pTarget[i3 + 2] + Math.sin(elapsed * 2.0 + i) * 0.08;
         }
+        posAttr.needsUpdate = true;
+      } else if (curPhase >= 2 && !launching) {
+        // Light subtle shimmer orbit
+        for (let i = 0; i < PARTICLE_COUNT; i += 2) {
+          const i3 = i * 3;
+          const orbitAngle = elapsed * 0.5 + i * 0.04;
+          posArr[i3] = pTarget[i3] + Math.cos(orbitAngle) * 0.12;
+          posArr[i3 + 1] = pTarget[i3 + 1] + Math.sin(orbitAngle) * 0.12;
+        }
+        posAttr.needsUpdate = true;
       }
-      posAttr.needsUpdate = true;
 
-      // 6. Launch Shatter Hyperspace Motion
-      if (isLaunching) {
-        sMat.opacity = Math.min(1.0, sMat.opacity + 0.1);
-        butterflyGroup.scale.multiplyScalar(0.92); // butterfly collapses as it shatters
+      // 5. Shatter Motion on Click
+      if (launching) {
+        sMat.opacity = Math.min(1.0, sMat.opacity + 0.12);
+        butterflyGroup.scale.multiplyScalar(0.92);
         const sPosAttr = sGeom.attributes.position as THREE.BufferAttribute;
         const sArr = sPosAttr.array as Float32Array;
 
@@ -502,12 +409,11 @@ export default function LaunchPage() {
       }
 
       renderer.render(scene, camera);
-      animFrameIdRef.current = requestAnimationFrame(renderLoop);
+      animId = requestAnimationFrame(renderLoop);
     };
 
-    animFrameIdRef.current = requestAnimationFrame(renderLoop);
+    animId = requestAnimationFrame(renderLoop);
 
-    // ── Responsive Resize ──
     const handleResize = () => {
       if (!containerRef.current) return;
       const w = containerRef.current.clientWidth || window.innerWidth;
@@ -521,39 +427,30 @@ export default function LaunchPage() {
 
     return () => {
       window.removeEventListener("resize", handleResize);
-      if (animFrameIdRef.current) cancelAnimationFrame(animFrameIdRef.current);
+      cancelAnimationFrame(animId);
       renderer.dispose();
       if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }
     };
-  }, [mounted, phase, isLaunching, springX, springY]);
+  }, []); // Initialized ONCE!
 
-  // ─────────────────────────────────────────────────────────────
-  // 4. MOUSE MOVEMENT CONTROLLER
-  // ─────────────────────────────────────────────────────────────
+  // Mouse Listener
   const handleMouseMove = (e: React.MouseEvent) => {
     if (typeof window === "undefined") return;
-    const { innerWidth, innerHeight } = window;
-    mouseX.set((e.clientX / innerWidth) - 0.5);
-    mouseY.set((e.clientY / innerHeight) - 0.5);
+    mouseRef.current.targetX = (e.clientX / window.innerWidth) - 0.5;
+    mouseRef.current.targetY = (e.clientY / window.innerHeight) - 0.5;
   };
 
-  // ─────────────────────────────────────────────────────────────
-  // 5. LAUNCH TRIGGER HANDLER
-  // Sequence: Compress -> Energy Surge -> Shatter Flash -> Push to /
-  // ─────────────────────────────────────────────────────────────
+  // Launch Trigger
   const handleLaunchClick = useCallback(() => {
     if (isLaunching) return;
     setIsLaunching(true);
 
     try {
       playLaunchIgnitionSound();
-    } catch {
-      // Audio autoplay fallback
-    }
+    } catch {}
 
-    // Telemetry Progress & Hyperspace Warp
     let p = 0;
     const progressInterval = setInterval(() => {
       p += 3;
@@ -561,11 +458,10 @@ export default function LaunchPage() {
       if (p >= 100) {
         clearInterval(progressInterval);
         setTimeout(() => {
-          // Client side navigation directly to the existing homepage
           router.push("/");
-        }, 400);
+        }, 350);
       }
-    }, 28);
+    }, 25);
   }, [isLaunching, router]);
 
   if (!mounted) return null;
@@ -578,56 +474,35 @@ export default function LaunchPage() {
         perspective: "1200px",
       }}
     >
-      {/* ─────────────────────────────────────────────────────────
-          1. 3D WEBGL BUTTERFLY & CRYSTALLINE CANVAS
-          ───────────────────────────────────────────────────────── */}
+      {/* WebGL Canvas */}
       <div ref={containerRef} className="absolute inset-0 z-0 pointer-events-none" />
 
-      {/* ─────────────────────────────────────────────────────────
-          2. ATMOSPHERIC VOLUMETRIC GRADIENTS & SCANLINES
-          ───────────────────────────────────────────────────────── */}
+      {/* Atmospheric Background Glow */}
       <div
-        className="absolute inset-0 pointer-events-none z-10 opacity-70"
+        className="absolute inset-0 pointer-events-none z-10 opacity-75"
         style={{
           backgroundImage: `
-            radial-gradient(circle at 50% 45%, rgba(235, 0, 40, 0.16) 0%, transparent 60%),
-            radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.03) 0%, transparent 50%),
+            radial-gradient(circle at 50% 42%, rgba(235, 0, 40, 0.15) 0%, transparent 60%),
+            radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.02) 0%, transparent 50%),
             radial-gradient(circle at 80% 20%, rgba(235, 0, 40, 0.08) 0%, transparent 50%),
-            linear-gradient(180deg, rgba(2,2,2,0.7) 0%, rgba(2,2,2,0.2) 50%, rgba(2,2,2,0.85) 100%)
+            linear-gradient(180deg, rgba(2,2,2,0.6) 0%, rgba(2,2,2,0.15) 50%, rgba(2,2,2,0.85) 100%)
           `,
         }}
       />
 
-      {/* Subtle HUD Telemetry Grid */}
-      <div className="absolute inset-0 pointer-events-none opacity-15 z-10">
-        <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern id="launchGrid" width="64" height="64" patternUnits="userSpaceOnUse">
-              <path d="M 64 0 L 0 0 0 64" fill="none" stroke="rgba(255, 255, 255, 0.18)" strokeWidth="0.5" />
-              <circle cx="64" cy="64" r="0.8" fill="rgba(235, 0, 40, 0.8)" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#launchGrid)" />
-        </svg>
-      </div>
-
-      {/* ─────────────────────────────────────────────────────────
-          3. CRIMSON ENERGY PULSE WAVE (Phase 3 Trigger)
-          ───────────────────────────────────────────────────────── */}
+      {/* Crimson Energy Pulse */}
       <AnimatePresence>
         {phase >= 3 && !isLaunching && (
           <motion.div
             initial={{ scale: 0.1, opacity: 0.9 }}
-            animate={{ scale: [0.1, 4.5], opacity: [0.9, 0] }}
-            transition={{ duration: 1.6, ease: "easeOut" }}
-            className="absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full border-2 border-[#EB0028] shadow-[0_0_120px_#EB0028] pointer-events-none z-15"
+            animate={{ scale: [0.1, 4.2], opacity: [0.9, 0] }}
+            transition={{ duration: 1.4, ease: "easeOut" }}
+            className="absolute top-[42%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[280px] h-[280px] rounded-full border-2 border-[#EB0028] shadow-[0_0_100px_#EB0028] pointer-events-none z-15"
           />
         )}
       </AnimatePresence>
 
-      {/* ─────────────────────────────────────────────────────────
-          4. TOP MINIMAL METADATA BADGE (NO NAVBAR)
-          ───────────────────────────────────────────────────────── */}
+      {/* Minimal Top Telemetry */}
       <header className="relative z-30 w-full px-6 sm:px-12 pt-6 sm:pt-8 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-2 h-2 rounded-full bg-[#EB0028] animate-pulse" />
@@ -635,29 +510,23 @@ export default function LaunchPage() {
             PORTAL_STATE // READY
           </span>
         </div>
-
         <div className="text-[10px] sm:text-xs font-mono tracking-widest text-white/40">
           NOV 04, 2026
         </div>
       </header>
 
-      {/* ─────────────────────────────────────────────────────────
-          5. MAIN CENTER STAGE: BRAND HIERARCHY & LAUNCH CONTROL
-          ───────────────────────────────────────────────────────── */}
+      {/* Main Center Stage */}
       <main className="relative z-30 flex flex-col items-center justify-end sm:justify-center px-4 mb-10 sm:my-auto text-center">
-        
-        {/* BRAND HIERARCHY REVEAL (Phase 4) */}
         <AnimatePresence>
           {phase >= 4 && (
             <motion.div
-              initial={{ opacity: 0, y: 25 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
               className="flex flex-col items-center space-y-2 mb-8 sm:mb-12 mt-auto sm:mt-0"
             >
-              {/* TEDx KLH Hierarchy */}
+              {/* Brand Hierarchy */}
               <div className="flex items-baseline justify-center tracking-tight leading-none drop-shadow-[0_4px_30px_rgba(0,0,0,0.9)]">
-                {/* Official TEDx with smaller lowercase 'x' */}
                 <span
                   className="text-4xl sm:text-6xl md:text-7xl font-extrabold text-white"
                   style={{ fontFamily: "var(--font-sora)", fontWeight: 800 }}
@@ -678,7 +547,6 @@ export default function LaunchPage() {
                 </span>
               </div>
 
-              {/* BOWRAMPET Secondary Subtitle */}
               <div
                 className="text-[11px] sm:text-sm font-semibold tracking-[0.45em] text-white/70 uppercase pl-1.5"
                 style={{ fontFamily: "var(--font-dm-mono)" }}
@@ -686,12 +554,11 @@ export default function LaunchPage() {
                 BOWRAMPET
               </div>
 
-              {/* METAMORPHOSIS Theme Line */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.35, duration: 0.8 }}
-                className="pt-3 sm:pt-4 flex items-center gap-2 text-xs sm:text-sm text-[#EB0028] font-bold tracking-[0.3em] uppercase font-mono"
+                transition={{ delay: 0.25, duration: 0.6 }}
+                className="pt-2 sm:pt-3 flex items-center gap-2 text-xs sm:text-sm text-[#EB0028] font-bold tracking-[0.3em] uppercase font-mono"
               >
                 <span>METAMORPHOSIS</span>
                 <span className="text-white/30">·</span>
@@ -703,19 +570,17 @@ export default function LaunchPage() {
           )}
         </AnimatePresence>
 
-        {/* ── THE FUTURISTIC LAUNCH CONTROL BUTTON ── */}
+        {/* Launch Control Button */}
         <AnimatePresence>
           {phase >= 4 && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              initial={{ opacity: 0, scale: 0.92, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.45 }}
+              transition={{ duration: 0.7, delay: 0.35 }}
               className="relative group flex items-center justify-center"
             >
-              {/* Outer Radiant Glow Aura */}
-              <div className="absolute -inset-3 rounded-full bg-gradient-to-r from-[#EB0028]/25 via-white/10 to-[#EB0028]/25 blur-xl opacity-50 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700 pointer-events-none" />
+              <div className="absolute -inset-3 rounded-full bg-gradient-to-r from-[#EB0028]/25 via-white/10 to-[#EB0028]/25 blur-xl opacity-50 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500 pointer-events-none" />
 
-              {/* Central Capsule Button */}
               <motion.button
                 onClick={handleLaunchClick}
                 onMouseEnter={() => {
@@ -723,26 +588,23 @@ export default function LaunchPage() {
                     playHoverTickSound();
                   } catch {}
                 }}
-                whileHover={{ scale: 1.05, y: -2 }}
+                whileHover={{ scale: 1.04, y: -2 }}
                 whileTap={{ scale: 0.96, y: 1 }}
                 disabled={isLaunching}
-                className="relative px-10 sm:px-14 py-4 sm:py-5 rounded-full overflow-hidden flex items-center justify-center cursor-pointer border border-[#EB0028]/50 bg-black/60 backdrop-blur-xl shadow-[0_0_35px_rgba(235,0,40,0.45)] group-hover:shadow-[0_0_60px_rgba(235,0,40,0.85)] group-hover:border-[#EB0028] transition-all duration-300"
+                className="relative px-10 sm:px-14 py-4 sm:py-5 rounded-full overflow-hidden flex items-center justify-center cursor-pointer border border-[#EB0028]/50 bg-black/60 backdrop-blur-xl shadow-[0_0_30px_rgba(235,0,40,0.4)] group-hover:shadow-[0_0_55px_rgba(235,0,40,0.85)] group-hover:border-[#EB0028] transition-all duration-300"
               >
-                {/* Thin Perimeter Traveling Laser Light */}
                 <motion.div
                   animate={{ rotate: [0, 360] }}
                   transition={{ duration: 4.5, repeat: Infinity, ease: "linear" }}
                   className="absolute inset-[-100%] bg-[conic-gradient(from_0deg,transparent_0%,rgba(235,0,40,0.8)_20%,transparent_40%,rgba(255,255,255,0.7)_50%,transparent_70%)] opacity-40 group-hover:opacity-80 pointer-events-none"
                 />
 
-                {/* Internal Dark Shield */}
                 <div className="absolute inset-[1.5px] rounded-full bg-[#070709]/85 backdrop-blur-md pointer-events-none" />
 
-                {/* Button Content */}
                 <div className="relative z-10 flex items-center gap-3">
                   <span className="w-2 h-2 rounded-full bg-[#EB0028] group-hover:scale-125 transition-transform" />
                   <span
-                    className="text-base sm:text-lg font-bold tracking-[0.3em] uppercase text-white group-hover:text-white"
+                    className="text-base sm:text-lg font-bold tracking-[0.3em] uppercase text-white"
                     style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}
                   >
                     {isLaunching ? "INITIALIZING..." : "LAUNCH"}
@@ -754,43 +616,35 @@ export default function LaunchPage() {
         </AnimatePresence>
       </main>
 
-      {/* ─────────────────────────────────────────────────────────
-          6. BOTTOM MINIMAL HUD COORDINATES
-          ───────────────────────────────────────────────────────── */}
+      {/* Bottom Minimal HUD */}
       <footer className="relative z-30 w-full px-6 sm:px-12 pb-6 sm:pb-8 flex items-center justify-between text-[10px] font-mono text-white/35">
         <div>17.5623° N · 78.3846° E</div>
         <div>COHORT // 100 SEATS</div>
       </footer>
 
-      {/* ─────────────────────────────────────────────────────────
-          7. FULLSCREEN HYPERSPACE SHATTER FLASH (On Launch Click)
-          ───────────────────────────────────────────────────────── */}
+      {/* Fullscreen Flash on Launch */}
       <AnimatePresence>
         {isLaunching && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.5 }}
             className="fixed inset-0 z-50 pointer-events-none flex flex-col items-center justify-center bg-black/90 backdrop-blur-2xl"
           >
-            {/* Blinding Radial Flash */}
             <motion.div
               initial={{ scale: 0.2, opacity: 1 }}
               animate={{ scale: 8, opacity: [1, 0.8, 0] }}
-              transition={{ duration: 1.2, ease: "easeOut" }}
+              transition={{ duration: 1.1, ease: "easeOut" }}
               className="absolute w-[300px] h-[300px] rounded-full bg-radial from-white via-[#EB0028] to-transparent blur-2xl"
             />
-
-            {/* Expanding Warp Shockwave */}
             <motion.div
               initial={{ scale: 0.1, opacity: 1 }}
               animate={{ scale: 7, opacity: 0 }}
-              transition={{ duration: 1.5, ease: "easeOut" }}
-              className="absolute w-[320px] h-[320px] rounded-full border-4 border-[#EB0028] shadow-[0_0_140px_#EB0028]"
+              transition={{ duration: 1.3, ease: "easeOut" }}
+              className="absolute w-[300px] h-[300px] rounded-full border-4 border-[#EB0028] shadow-[0_0_120px_#EB0028]"
             />
 
-            {/* Telemetry Progress */}
             <div className="relative z-20 text-center space-y-3">
               <motion.div
                 animate={{ rotate: 360 }}

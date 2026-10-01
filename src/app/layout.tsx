@@ -15,8 +15,6 @@ export const metadata: Metadata = {
   },
 };
 
-import CustomCursor from "@/components/CustomCursor";
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -35,7 +33,6 @@ export default function RootLayout({
       <body className="min-h-full bg-black text-white selection:bg-[#EB0028] selection:text-white flex flex-col font-sans overflow-x-hidden">
         <SmoothScroll>
           <div className="noise-overlay" aria-hidden="true" />
-          <CustomCursor />
           
           <main className="relative z-10 flex-grow">
             {children}
