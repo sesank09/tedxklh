@@ -97,12 +97,12 @@ export default function Hero() {
             </h1>
 
             <span
-              className="text-[10px] sm:text-xs md:text-sm font-semibold text-white/70 uppercase tracking-[0.38em] mt-2 sm:mt-2.5"
+              className="text-xs sm:text-sm md:text-base font-bold text-white uppercase tracking-[0.4em] mt-2 sm:mt-2.5"
               style={{
                 fontFamily: "var(--font-sora)",
-                letterSpacing: "0.38em",
-                textIndent: "0.38em",
-                fontWeight: 600,
+                letterSpacing: "0.4em",
+                textIndent: "0.4em",
+                fontWeight: 700,
               }}
             >
               BOWRAMPET
