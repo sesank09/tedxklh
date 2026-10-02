@@ -75,22 +75,8 @@ export default function Schedule() {
 
       <div className="w-full max-w-[1440px] mx-auto space-y-16 relative z-20">
         
-        {/* Chapter Header */}
+        {/* Section Header */}
         <div className="max-w-4xl mx-auto space-y-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="flex items-center gap-3"
-          >
-            <span 
-              className="text-xs font-medium tracking-[0.25em] text-[#EB0028] uppercase"
-              style={{ fontFamily: "var(--font-dm-mono)" }}
-            >
-              CHAPTER 04 // THE SCHEDULE
-            </span>
-            <span className="h-px w-8 bg-[#EB0028]/40" />
-          </motion.div>
 
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}

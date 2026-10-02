@@ -18,16 +18,6 @@ export default function Venue() {
         {/* Left Column: Venue Metadata & Event Details */}
         <div className="w-full lg:w-1/2 space-y-8 flex flex-col justify-center">
           <div className="flex flex-col space-y-4">
-            <div className="flex items-center gap-3">
-              <span 
-                className="text-xs text-[#EB0028] tracking-[0.25em] uppercase font-medium"
-                style={{ fontFamily: "var(--font-dm-mono)" }}
-              >
-                CHAPTER 04 // THE VENUE
-              </span>
-              <span className="h-px w-8 bg-[#EB0028]/40" />
-            </div>
-
             <h2 
               className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white uppercase leading-[1.05]" 
               style={{ fontFamily: "var(--font-sora)", fontWeight: 800 }}

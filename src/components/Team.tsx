@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform, useReducedMotion } from "framer-motion";
@@ -153,11 +153,6 @@ export default function Team() {
       </div>
       <div className="w-full max-w-[1400px] mx-auto space-y-16 relative z-20">
         <div className="max-w-4xl mx-auto space-y-6 text-center sm:text-left">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-            className="flex items-center justify-center sm:justify-start gap-3">
-            <span className="text-xs font-medium tracking-[0.25em] text-[#EB0028] uppercase" style={{ fontFamily: "var(--font-dm-mono)" }}>CHAPTER 05 // THE ORGANIZERS</span>
-            <span className="h-px w-8 bg-[#EB0028]/40" />
-          </motion.div>
           <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.05 }}
             className="text-4xl sm:text-6xl md:text-7xl font-extrabold text-white tracking-tight uppercase leading-[1.05]"
             style={{ fontFamily: "var(--font-sora)", fontWeight: 800 }}>

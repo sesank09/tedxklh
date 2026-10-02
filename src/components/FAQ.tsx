@@ -47,20 +47,6 @@ export default function FAQ() {
         
         {/* Section Header */}
         <div className="max-w-4xl mx-auto space-y-6 text-center sm:text-left">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="flex items-center justify-center sm:justify-start gap-3"
-          >
-            <span 
-              className="text-xs font-medium tracking-[0.25em] text-[#EB0028] uppercase"
-              style={{ fontFamily: "var(--font-dm-mono)" }}
-            >
-              CHAPTER 07 // INQUIRIES &amp; PROTOCOLS
-            </span>
-            <span className="h-px w-8 bg-[#EB0028]/40" />
-          </motion.div>
 
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
