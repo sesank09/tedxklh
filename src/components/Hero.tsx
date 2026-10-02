@@ -68,30 +68,32 @@ export default function Hero() {
         >
           <div className="flex flex-col items-center justify-center select-none text-center">
             <h1
-              className="text-5xl sm:text-7xl md:text-8xl font-extrabold text-white tracking-tight flex items-baseline justify-center"
+              className="text-5xl sm:text-7xl md:text-8xl font-extrabold tracking-tight flex items-baseline justify-center select-none"
               style={{ 
                 fontFamily: "var(--font-sora)", 
                 fontWeight: 800,
-                letterSpacing: "-0.04em",
+                letterSpacing: "-0.03em",
                 textTransform: "none",
                 lineHeight: 1,
               }}
             >
-              <span>TED</span>
-              <span
-                className="text-[#EB0028]"
-                style={{
-                  fontSize: "0.52em",
-                  fontWeight: 700,
-                  verticalAlign: "0.22em",
-                  letterSpacing: "0em",
-                  lineHeight: 1,
-                  marginRight: "0.06em",
-                }}
-              >
-                x
+              {/* Official Red TEDx with superscript 'x' at top-right of 'D' */}
+              <span className="text-[#EB0028] inline-flex items-start">
+                <span className="leading-none">TED</span>
+                <span
+                  className="text-[#EB0028] font-black inline-block leading-none"
+                  style={{
+                    fontSize: "0.44em",
+                    fontWeight: 800,
+                    transform: "translateY(0.06em)",
+                    marginLeft: "0.04em",
+                    marginRight: "0.14em",
+                  }}
+                >
+                  x
+                </span>
               </span>
-              <span>KLH</span>
+              <span className="text-white leading-none">KLH</span>
             </h1>
 
             <span
