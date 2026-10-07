@@ -4,7 +4,16 @@ import { useState, useRef, useCallback } from "react";
 import { motion, useMotionValue, useSpring, useTransform, useReducedMotion } from "framer-motion";
 import { Users } from "lucide-react";
 
-const DEPARTMENTS = ["Board Members", "Leadership", "Curation", "Production", "Design", "Operations"] as const;
+const DEPARTMENTS = [
+  "Board Members",
+  "Leadership",
+  "Curation",
+  "Operations & Logistics",
+  "Registration",
+  "Social Media",
+  "Production",
+  "Design",
+] as const;
 
 interface TeamMember {
   id: string;
@@ -144,11 +153,36 @@ const TEAM_MEMBERS: TeamMember[] = [
     code: "CUR-01",
     image: "/team/sophie-blessing-m.jpg",
   },
-  { id: "design-01",   role: "Creative Director & Visual Lead",     department: "Design",      code: "DSN-01" },
+  {
+    id: "ops-srijaya",
+    name: "Srijaya Chakradhar Chilakapati",
+    role: "Operations & Logistics Lead",
+    designation: "KLH University Bowrampet",
+    department: "Operations & Logistics",
+    code: "OPS-01",
+    image: "/team/srijaya-chakradhar-chilakapati.jpg",
+  },
+  {
+    id: "reg-sameer",
+    name: "Sameer Farhad",
+    role: "Registration Lead",
+    designation: "KLH University Bowrampet",
+    department: "Registration",
+    code: "REG-01",
+    image: "/team/sameer-farhad.jpg",
+  },
+  {
+    id: "social-sahasra",
+    name: "Sahasra Kuncha",
+    role: "Social Media Lead",
+    designation: "KLH University Bowrampet",
+    department: "Social Media",
+    code: "SOC-01",
+    image: "/team/sahasra-kuncha.jpg",
+  },
   { id: "prod-01",     role: "Technical & Production Director",     department: "Production",  code: "PRD-01" },
-  { id: "ops-01",      role: "Head of Marketing & Outreach",        department: "Operations",  code: "OPS-01" },
   { id: "prod-02",     role: "Digital Experience & Systems Lead",   department: "Production",  code: "PRD-02" },
-  { id: "ops-02",      role: "Head of Logistics & Partnerships",    department: "Operations",  code: "OPS-02" },
+  { id: "design-01",   role: "Creative Director & Visual Lead",     department: "Design",      code: "DSN-01" },
 ];
 
 const CRYSTAL_POINTS = "62,6 104,26 122,70 108,114 66,130 22,110 4,66 18,22";
