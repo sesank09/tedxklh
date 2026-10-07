@@ -1134,25 +1134,23 @@ export default function ApplyPage() {
             </div>
 
             {/* Navigation and Action Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-              <Magnetic range={40} strength={0.25}>
-                <Link
-                  href="/"
-                  className="w-full sm:w-auto px-7 py-3.5 rounded-full font-bold text-xs uppercase tracking-widest text-white shadow-[0_4px_25px_rgba(235,0,40,0.4)] hover:shadow-[0_6px_35px_rgba(235,0,40,0.65)] hover:-translate-y-0.5 transition-all cursor-pointer flex items-center justify-center gap-2"
-                  style={{
-                    background: "linear-gradient(135deg, #EB0028 0%, #FF454A 100%)",
-                    fontFamily: "var(--font-sora)",
-                    fontWeight: 700,
-                  }}
-                >
-                  <Home className="w-4 h-4" />
-                  <span>BACK TO HOME</span>
-                </Link>
-              </Magnetic>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 w-full">
+              <Link
+                href="/"
+                className="w-full sm:w-auto px-7 py-3.5 rounded-full font-bold text-xs uppercase tracking-widest text-white shadow-[0_4px_25px_rgba(235,0,40,0.4)] hover:shadow-[0_6px_35px_rgba(235,0,40,0.65)] active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 whitespace-nowrap"
+                style={{
+                  background: "linear-gradient(135deg, #EB0028 0%, #FF454A 100%)",
+                  fontFamily: "var(--font-sora)",
+                  fontWeight: 700,
+                }}
+              >
+                <Home className="w-4 h-4" />
+                <span>BACK TO HOME</span>
+              </Link>
 
               <Link
                 href="/application-status"
-                className="w-full sm:w-auto px-6 py-3.5 rounded-full border border-white/20 bg-white/5 hover:bg-white/10 text-white font-bold text-xs tracking-wider uppercase transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full sm:w-auto px-6 py-3.5 rounded-full border border-white/20 bg-white/5 hover:bg-white/10 text-white font-bold text-xs tracking-wider uppercase transition-colors flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap active:scale-95"
                 style={{ fontFamily: "var(--font-sora)" }}
               >
                 <Search className="w-4 h-4 text-[#EB0028]" />
@@ -1162,7 +1160,7 @@ export default function ApplyPage() {
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="w-full sm:w-auto px-6 py-3.5 rounded-full border border-white/10 bg-white/[0.02] hover:bg-white/10 text-white/80 font-semibold text-xs tracking-wider uppercase transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full sm:w-auto px-6 py-3.5 rounded-full border border-white/10 bg-white/[0.02] hover:bg-white/10 text-white/80 font-semibold text-xs tracking-wider uppercase transition-colors flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap active:scale-95"
                 style={{ fontFamily: "var(--font-sora)" }}
               >
                 <Download className="w-4 h-4" />

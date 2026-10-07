@@ -245,7 +245,9 @@ function drawTypography(canvas: HTMLCanvasElement) {
   // 170px font gives ~1150px text width on 2560px canvas, guaranteeing ~700px safe margins on left and right
   ctx.font = "400 170px 'Bebas Neue', 'Impact', sans-serif";
   ctx.textBaseline = "middle";
-  ctx.letterSpacing = "4px";
+  try {
+    (ctx as any).letterSpacing = "4px";
+  } catch (e) {}
 
   const fullText = "METAMORPHOSIS";
   const fullWidth = ctx.measureText(fullText).width;
@@ -272,7 +274,9 @@ function drawTypography(canvas: HTMLCanvasElement) {
 
   // 3. Subtitle: "THE UNSEEN PROCESS OF BECOMING."
   ctx.font = "600 30px 'Manrope', 'Helvetica Neue', sans-serif";
-  ctx.letterSpacing = "6px";
+  try {
+    (ctx as any).letterSpacing = "6px";
+  } catch (e) {}
   ctx.textAlign = "center";
   ctx.fillStyle = "rgba(255, 255, 255, 0.92)";
   ctx.fillText("THE UNSEEN PROCESS OF BECOMING.", cx, cy + 150);
@@ -329,14 +333,35 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
     return { typographyTexture: texture, typographyCanvas: canvas };
   }, []);
 
-  // Re-draw typography once custom web fonts are fully loaded to prevent fallback-font layout shifts
+  // Re-draw typography once custom web fonts are fully loaded with retries to prevent fallback-font layout shifts
   useEffect(() => {
-    if (typeof document !== "undefined" && document.fonts && typographyCanvas) {
-      document.fonts.ready.then(() => {
-        drawTypography(typographyCanvas);
-        typographyTexture.needsUpdate = true;
-      });
+    if (typeof document === "undefined" || !typographyCanvas) return;
+
+    const redraw = () => {
+      drawTypography(typographyCanvas);
+      typographyTexture.needsUpdate = true;
+    };
+
+    // 1. Initial redraw
+    redraw();
+
+    // 2. When fonts finish loading
+    if (document.fonts) {
+      document.fonts.ready.then(redraw);
+      document.fonts.load("400 170px 'Bebas Neue'").then(redraw).catch(() => {});
+      document.fonts.load("600 30px 'Manrope'").then(redraw).catch(() => {});
     }
+
+    // 3. Fallback timers for asynchronous font stylesheets on mobile
+    const t1 = setTimeout(redraw, 150);
+    const t2 = setTimeout(redraw, 500);
+    const t3 = setTimeout(redraw, 1200);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
   }, [typographyCanvas, typographyTexture]);
 
   // Clean up GPU textures on unmount (e.g. during page routing)
@@ -412,16 +437,19 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
       shaderMatRef.current.uniforms.uTime.value = time;
     }
 
-    // ── 2. ANCHORED BUTTERFLY — NEAR-ZERO BODY MOVEMENT ──
+    // ── 2. ANCHORED BUTTERFLY ──
     const bodyBobY = Math.sin(time * 1.8) * 0.006 * butterflyScale;
     const rotPitchX = Math.sin(time * 1.3) * 0.008;
     const rotYawY = Math.cos(time * 0.55) * 0.012;
     const rotRollZ = Math.sin(time * 0.7) * 0.006;
 
+    // On mobile portrait, place butterfly slightly higher (+0.52 * butterflyScale) to provide generous clearance for bottom hero content
+    const butterflyBaseY = (isMobilePortrait ? 0.52 : 0.15) * butterflyScale;
+
     if (quadRef.current) {
       quadRef.current.scale.set(butterflyScale, butterflyScale, butterflyScale);
       quadRef.current.position.x = 0;
-      quadRef.current.position.y = (0.15 * butterflyScale + bodyBobY) + scrollYOffset * 0.6;
+      quadRef.current.position.y = butterflyBaseY + bodyBobY + scrollYOffset * 0.6;
       quadRef.current.position.z = 0;
 
       quadRef.current.rotation.x = rotPitchX;
@@ -440,7 +468,8 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
         textMeshRef.current.visible = true;
         textMatRef.current.opacity = textOpacity;
         textMeshRef.current.scale.set(textScale, textScale, textScale);
-        textMeshRef.current.position.y = -0.02 * textScale + scrollYOffset * 0.6;
+        const textBaseY = (isMobilePortrait ? 0.32 : -0.02) * textScale;
+        textMeshRef.current.position.y = textBaseY + scrollYOffset * 0.6;
       }
     }
 
@@ -464,7 +493,7 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
       const fDist = pData.featherDist[i];
 
       const bx = pData.bPositions[i3] * butterflyScale;
-      const by = (pData.bPositions[i3 + 1] + 0.25) * butterflyScale;
+      const by = (pData.bPositions[i3 + 1] + (isMobilePortrait ? 0.52 : 0.25)) * butterflyScale;
       const bz = pData.bPositions[i3 + 2];
 
       const dx = pData.driftVectors[i3] * butterflyScale;
