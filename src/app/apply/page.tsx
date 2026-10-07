@@ -1010,7 +1010,7 @@ export default function ApplyPage() {
                       <button
                         type="button"
                         onClick={handlePrev}
-                        className="w-full sm:w-auto h-12 px-6 rounded-full border border-white/15 bg-white/5 hover:bg-white/10 text-white font-semibold text-xs tracking-wider uppercase transition-all flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap active:scale-95"
+                        className="w-full sm:w-auto h-12 px-6 rounded-full border border-white/15 bg-white/5 hover:bg-white/10 text-white font-semibold text-xs sm:text-sm tracking-wider uppercase transition-all flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap active:scale-95 leading-none"
                         style={{ fontFamily: "var(--font-sora)" }}
                       >
                         <ArrowLeft className="w-4 h-4 shrink-0" />
@@ -1019,10 +1019,10 @@ export default function ApplyPage() {
                     ) : (
                       <Link
                         href="/"
-                        className="w-full sm:w-auto h-12 px-6 rounded-full border border-white/10 text-white/60 hover:text-white text-xs uppercase tracking-wider transition-colors flex items-center justify-center gap-2 whitespace-nowrap active:scale-95"
-                        style={{ fontFamily: "var(--font-dm-mono)" }}
+                        className="w-full sm:w-auto h-12 px-6 rounded-full border border-white/15 bg-white/5 hover:bg-white/10 text-white/80 hover:text-white font-semibold text-xs sm:text-sm uppercase tracking-wider transition-all flex items-center justify-center gap-2 whitespace-nowrap active:scale-95 leading-none"
+                        style={{ fontFamily: "var(--font-sora)" }}
                       >
-                        <Home className="w-3.5 h-3.5 shrink-0" />
+                        <Home className="w-4 h-4 shrink-0 text-white/60" />
                         <span>Back to Home</span>
                       </Link>
                     )}
@@ -1031,7 +1031,7 @@ export default function ApplyPage() {
                       type="button"
                       onClick={handleNext}
                       disabled={isSubmitting}
-                      className="w-full sm:w-auto relative h-12 sm:h-13 px-6 sm:px-8 rounded-full font-bold text-xs sm:text-[13px] uppercase tracking-[0.12em] sm:tracking-[0.16em] text-white flex items-center justify-center gap-2 shadow-[0_4px_30px_rgba(235,0,40,0.45)] hover:shadow-[0_8px_40px_rgba(235,0,40,0.7)] active:scale-95 transition-all duration-300 cursor-pointer overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap shrink-0"
+                      className="w-full sm:w-auto relative h-12 sm:h-13 px-6 sm:px-8 rounded-full font-bold text-xs sm:text-sm uppercase tracking-[0.1em] sm:tracking-[0.14em] text-white flex items-center justify-center gap-2.5 shadow-[0_4px_30px_rgba(235,0,40,0.45)] hover:shadow-[0_8px_40px_rgba(235,0,40,0.7)] active:scale-95 transition-all duration-300 cursor-pointer overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap shrink-0"
                       style={{
                         background: "linear-gradient(135deg, #EB0028 0%, #FF454A 100%)",
                         fontFamily: "var(--font-sora)",
@@ -1042,24 +1042,24 @@ export default function ApplyPage() {
                       <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out" />
 
                       {isSubmitting ? (
-                        <div className="flex items-center gap-2 relative z-10">
-                          <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <div className="flex items-center justify-center gap-2 relative z-10 leading-none">
+                          <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin shrink-0" />
                           <span>SUBMITTING...</span>
                         </div>
                       ) : step === 3 ? (
-                        <div className="flex items-center gap-2 relative z-10">
+                        <div className="flex items-center justify-center gap-2 relative z-10 leading-none">
                           <span>SUBMIT APPLICATION</span>
-                          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                          <ArrowRight className="w-4 h-4 shrink-0 group-hover:translate-x-1 transition-transform" />
                         </div>
                       ) : step === 2 ? (
-                        <div className="flex items-center gap-2 relative z-10">
+                        <div className="flex items-center justify-center gap-2 relative z-10 leading-none">
                           <span>REVIEW APPLICATION</span>
-                          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                          <ArrowRight className="w-4 h-4 shrink-0 group-hover:translate-x-1 transition-transform" />
                         </div>
                       ) : (
-                        <div className="flex items-center gap-2 relative z-10">
+                        <div className="flex items-center justify-center gap-2 relative z-10 leading-none">
                           <span>CONTINUE TO PAYMENT</span>
-                          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                          <ArrowRight className="w-4 h-4 shrink-0 group-hover:translate-x-1 transition-transform" />
                         </div>
                       )}
                     </button>
