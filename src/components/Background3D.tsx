@@ -460,44 +460,46 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
     const visibleW = visibleH * aspect;
 
     // ── 1. BUTTERFLY CONTAIN SCALING (Preserves 8.6 : 4.8 aspect ratio at all viewports) ──
+    const targetButterflyWRatio = THREE.MathUtils.clamp(
+      0.48 + (1.0 - Math.min(aspect, 1.8)) * 0.20,
+      0.42,
+      0.72
+    );
     const maxButterflyW = isSmallPhone
-      ? visibleW * 0.72
-      : isMobilePortrait
-        ? visibleW * 0.74
-        : isLandscapeShort
-          ? visibleW * 0.50
-          : isTablet
-            ? visibleW * 0.68
-            : Math.min(visibleW * 0.64, 7.2);
+      ? visibleW * 0.70
+      : isLandscapeShort
+        ? visibleW * 0.48
+        : Math.min(visibleW * targetButterflyWRatio, 7.2);
 
-    const maxButterflyH = visibleH * (isLandscapeShort ? 0.44 : isMobilePortrait ? 0.38 : 0.48);
+    const maxButterflyH = visibleH * (isLandscapeShort ? 0.42 : isMobilePortrait ? 0.36 : 0.46);
     const scaleByW = maxButterflyW / 8.6;
     const scaleByH = maxButterflyH / 4.8;
-    const butterflyScale = Math.min(scaleByW, scaleByH, 1.05);
+    const butterflyScale = Math.min(scaleByW, scaleByH, 1.0);
 
     // Dynamic vertical anchor for butterfly (positioned in upper-center visual zone)
     const butterflyBaseY = isLandscapeShort
       ? 0.08 * visibleH
       : isMobilePortrait
-        ? 0.14 * visibleH
-        : 0.08 * visibleH;
+        ? 0.13 * visibleH
+        : 0.07 * visibleH;
 
     // ── 2. TYPOGRAPHY CONTAIN SCALING (Guaranteed zero horizontal or vertical clipping) ──
+    const targetTextWRatio = THREE.MathUtils.clamp(
+      0.40 + (1.0 - Math.min(aspect, 1.8)) * 0.18,
+      0.36,
+      0.58
+    );
     const maxTextW = isSmallPhone
-      ? visibleW * 0.64
-      : isMobilePortrait
-        ? visibleW * 0.66
-        : isLandscapeShort
-          ? visibleW * 0.52
-          : isTablet
-            ? visibleW * 0.58
-            : Math.min(visibleW * 0.44, 5.0);
+      ? visibleW * 0.56
+      : isLandscapeShort
+        ? visibleW * 0.48
+        : Math.min(visibleW * targetTextWRatio, 5.0);
 
-    const maxTextH = visibleH * (isLandscapeShort ? 0.28 : isMobilePortrait ? 0.26 : 0.34);
+    const maxTextH = visibleH * (isLandscapeShort ? 0.26 : isMobilePortrait ? 0.24 : 0.32);
     const measuredW = Math.max(textWorldWidthRef.current, 0.5);
     const textScale = Math.min(maxTextW / measuredW, maxTextH / 4.0, 1.0);
 
-    const textBaseY = (isMobilePortrait ? 0.10 * visibleH : 0.02 * visibleH) * (textScale / 0.8);
+    const textBaseY = (isMobilePortrait ? 0.09 * visibleH : 0.02 * visibleH);
 
     const dissolveProgress = THREE.MathUtils.clamp(scrollY / (vh * 0.35), 0, 1);
 
