@@ -409,7 +409,7 @@ export default function LaunchOverlay({ onLaunched }: LaunchOverlayProps) {
         <div className="flex items-center gap-3 text-[10px] font-mono text-white/60">
           <div className="flex items-center gap-1.5">
             <Radio className="w-3.5 h-3.5 text-[#EB0028] animate-pulse" />
-            <span>METAMORPHOSIS COHORT: 100 SEATS</span>
+            <span>METAMORPHOSIS COHORT: 250 SEATS</span>
           </div>
         </div>
       </footer>

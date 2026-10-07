@@ -39,7 +39,7 @@ export default function Venue() {
             className="text-sm sm:text-base text-white/70 leading-relaxed font-normal max-w-lg mx-auto lg:mx-0" 
             style={{ fontFamily: "var(--font-manrope)", fontWeight: 400 }}
           >
-            KLH University, Bowrampet Campus. Engineered for volumetric keynote staging, spatial acoustic resonance, and collaborative breakout experiences for our cohort of 100 curated delegates.
+            KLH University, Bowrampet Campus. Engineered for volumetric keynote staging, spatial acoustic resonance, and collaborative breakout experiences for our cohort of 250 curated delegates.
           </p>
 
           <div className="space-y-3 text-xs sm:text-sm max-w-lg mx-auto lg:mx-0 text-left">

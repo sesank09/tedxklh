@@ -15,7 +15,7 @@ const FAQ_ITEMS = [
   },
   {
     question: "How does the delegate curation and pass allocation work?",
-    answer: "To ensure intimacy, intellectual depth, and high-value networking, TEDxKLH admits a cohort of 100 curated delegates. Applications are evaluated on candidate background, perspective, and alignment with the spirit of ideas worth spreading.",
+    answer: "To ensure intimacy, intellectual depth, and high-value networking, TEDxKLH admits a cohort of 250 curated delegates. Applications are evaluated on candidate background, perspective, and alignment with the spirit of ideas worth spreading.",
   },
   {
     question: "What is the fee and payment verification process?",

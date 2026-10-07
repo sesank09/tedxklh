@@ -64,7 +64,7 @@ export default function EventDateBanner() {
             style={{ fontFamily: "var(--font-dm-mono)" }}
           >
             <Sparkles className="w-3 h-3 text-[#EB0028]" />
-            100 DELEGATE SEATS
+            250 DELEGATE SEATS
           </span>
         </div>
       </motion.div>

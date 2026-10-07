@@ -65,7 +65,7 @@ const STEPS = [
 ];
 
 const METRICS = [
-  { val: "100", label: "Curated Passes" },
+  { val: "250", label: "Curated Passes" },
   { val: "12", label: "Keynote Voices" },
   { val: "Full Day", label: "Immersive Summit" },
   { val: "Official", label: "TEDx Credential" },
@@ -374,7 +374,7 @@ export default function ApplyPage() {
             className="text-sm sm:text-base text-white/65 font-normal max-w-2xl mx-auto leading-relaxed"
             style={{ fontFamily: "var(--font-manrope)" }}
           >
-            Curated cohort of 100 passionate minds convening for a transformational day of ideas, innovation, and keynotes at KLH University, Bowrampet.
+            Curated cohort of 250 passionate minds convening for a transformational day of ideas, innovation, and keynotes at KLH University, Bowrampet.
           </p>
 
           {/* Quick Badges Row */}

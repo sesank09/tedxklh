@@ -62,7 +62,7 @@ const INITIAL_FORM: FormData = {
 };
 
 const STATS = [
-  { label: "Curated Seats", val: "100 Passes" },
+  { label: "Curated Seats", val: "250 Passes" },
   { label: "Keynote Voices", val: "12 Speakers" },
   { label: "Format", val: "Full-Day Summit" },
   { label: "Credential", val: "Official TEDx" },
@@ -254,7 +254,7 @@ export default function Register() {
             className="text-sm text-white/60 font-normal max-w-md leading-relaxed" 
             style={{ fontFamily: "var(--font-manrope)", fontWeight: 400 }}
           >
-            Cohort limited to 100 curated delegates. Secure your pass for an unforgettable day of metamorphosis.
+            Cohort limited to 250 curated delegates. Secure your pass for an unforgettable day of metamorphosis.
           </p>
         </div>
 

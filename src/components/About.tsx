@@ -44,7 +44,7 @@ const STATEMENTS = [
 
 const METRICS = [
   { val: "12",   label: "Keynote Voices" },
-  { val: "100",  label: "Curated Delegates" },
+  { val: "250",  label: "Curated Delegates" },
   { val: "4",    label: "Transformative Acts" },
   { val: "TEDx", label: "LICENSED EVENT" },
 ];

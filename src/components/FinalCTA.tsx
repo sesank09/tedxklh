@@ -29,7 +29,7 @@ export default function FinalCTA() {
             className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.22em] text-white/90"
             style={{ fontFamily: "var(--font-dm-mono)" }}
           >
-            LIMITED COHORT · 100 SEATS
+            LIMITED COHORT · 250 SEATS
           </span>
         </div>
 
