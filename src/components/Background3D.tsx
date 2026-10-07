@@ -6,6 +6,15 @@ import * as THREE from "three";
 
 const PARTICLE_COUNT = 2200;
 
+// Typography plane + canvas constants
+const TEXT_PLANE_W = 10.0;
+const TEXT_PLANE_H = 4.0;
+const TEXT_CANVAS_W = 2560;
+const TEXT_CANVAS_H = 1024;
+// Max width (px on the 2560 canvas) the title / subtitle may occupy.
+// Text is auto-shrunk to fit this, so it never overflows regardless of font.
+const TEXT_MAX_PX = 1150;
+
 // ─────────────────────────────────────────────────────────────
 // 1. CONTINUOUS LIVING BUTTERFLY SHADER (3D Wing Flex & Crystal Shimmer)
 // ─────────────────────────────────────────────────────────────
@@ -21,31 +30,25 @@ const ButterflyShader = {
       vec3 pos = position;
 
       // ── CONTINUOUS ORGANIC WING DEFORMATION ──
-      // Distance from central spine (u = 0.5)
-      float distFromSpine = abs(uv.x - 0.5) * 2.0; // 0.0 at center, 1.0 at outer wingtip
+      float distFromSpine = abs(uv.x - 0.5) * 2.0;
       float wingSpan = smoothstep(0.04, 0.96, distFromSpine);
 
-      // Non-linear flex curve (small flex near root, medium at mid-wing, largest at tip)
       float flexCurve = pow(wingSpan, 1.75);
 
-      // Slow, elegant 3.2s wing cycle with procedural organic harmonics
       float t = uTime;
       float cycle1 = sin(t * 1.96);
       float cycle2 = sin(t * 2.94 + 0.8) * 0.14;
       float cycle3 = cos(t * 0.98) * 0.10;
       float baseFlap = cycle1 + cycle2 + cycle3;
 
-      // Asymmetrical wing movement (1-3% organic desync between left & right wings)
       bool isLeft = uv.x < 0.5;
       float flap = isLeft 
         ? baseFlap 
         : (sin((t * 0.985 + 0.06) * 1.96) + sin(t * 2.94 + 0.85) * 0.14 + cos(t * 0.98) * 0.10);
 
-      // Aerodynamic camber & chordwise phase lag (trailing edge / apex lag)
       float chordLag = (uv.y - 0.5) * 0.35;
       float dynamicFlap = flap * cos(chordLag) + sin(t * 1.96 - 0.3) * sin(chordLag) * 0.3;
 
-      // Continuous 3D Wing Flex Displacements (Active even at scroll = 0)
       float activeDamp = 1.0 - smoothstep(0.7, 1.0, uDissolve);
       float zDisplace = dynamicFlap * flexCurve * 0.72 * activeDamp;
       float yDisplace = -abs(dynamicFlap) * flexCurve * 0.08 * activeDamp;
@@ -67,7 +70,6 @@ const ButterflyShader = {
     varying vec2 vUv;
     varying vec3 vViewPosition;
 
-    // Fast 2D Voronoi / crystalline shard hash
     float hash21(vec2 p) {
       p = fract(p * vec2(234.34, 435.345));
       p += dot(p, p + 34.23);
@@ -77,49 +79,40 @@ const ButterflyShader = {
     void main() {
       vec4 texColor = texture2D(uTexture, vUv);
       
-      // Transparent on pure black backdrop
       if (texColor.r < 0.025 && texColor.g < 0.025 && texColor.b < 0.025) {
         discard;
       }
 
-      // Center of butterfly is at UV (0.5, 0.5)
       vec2 center = vec2(0.5, 0.5);
       float distFromCenter = length((vUv - center) * vec2(1.15, 1.0));
       
-      // Polygonal shard noise
       vec2 grid = floor(vUv * 52.0);
       float shardNoise = hash21(grid) * 0.16;
       float edgeScore = distFromCenter + shardNoise;
 
-      // Dissolution threshold
       float threshold = 0.60 - uDissolve * 0.68;
       
       if (edgeScore > threshold && uDissolve > 0.02) {
         discard;
       }
 
-      // Edge crystal glow when breaking apart
       float edgeGlow = smoothstep(threshold - 0.04, threshold, edgeScore);
       vec3 glowCol = vUv.x < 0.5 ? vec3(0.95, 0.98, 1.0) : vec3(1.0, 0.15, 0.25);
       vec3 finalCol = mix(texColor.rgb, glowCol * 1.8, edgeGlow * smoothstep(0.02, 0.35, uDissolve) * 0.75);
 
-      // ── VERY SUBTLE CRYSTAL SPECULAR SHIMMER (no visible beams or streaks) ──
       if (uDissolve < 0.5) {
         bool isRightRed = vUv.x >= 0.5;
         if (isRightRed) {
-          // Barely visible ruby facet shimmer — only on existing bright crystal pixels
           float crystalWave = sin(vUv.x * 48.0 + vUv.y * 32.0 + uTime * 0.8) * 0.5 + 0.5;
           float crystalHighlight = pow(crystalWave, 16.0) * 0.08 * (1.0 - uDissolve) * texColor.r;
           finalCol += vec3(0.6, 0.1, 0.12) * crystalHighlight;
         } else {
-          // Barely visible silver wireframe shimmer — only on existing bright wireframe pixels
           float wireWave = cos(vUv.x * 52.0 - vUv.y * 38.0 + uTime * 0.7) * 0.5 + 0.5;
           float wireHighlight = pow(wireWave, 18.0) * 0.06 * (1.0 - uDissolve) * texColor.g;
           finalCol += vec3(0.4, 0.42, 0.45) * wireHighlight;
         }
       }
 
-      // Smooth fade out of remaining center core past 80% dissolution
       float alpha = texColor.a * (1.0 - smoothstep(0.75, 1.0, uDissolve));
 
       gl_FragColor = vec4(finalCol, alpha);
@@ -161,16 +154,14 @@ function buildParticleSystemsData(count: number): ParticleSystemsData {
 
     let wx = 0;
     let wy = 0;
-    let wz = (Math.random() - 0.5) * 0.25;
+    const wz = (Math.random() - 0.5) * 0.25;
 
     if (isUpper) {
-      // Upper Wing
       const angle = 0.14 + u * 1.35;
       const radius = Math.pow(v, 0.45) * (2.85 + Math.sin(u * Math.PI * 3) * 0.4 + (1 - u) * 1.6);
       wx = Math.cos(angle) * radius;
       wy = Math.sin(angle) * radius + 0.45;
     } else {
-      // Lower Wing
       const angle = -0.14 - u * 1.15;
       const radius = Math.pow(v, 0.5) * (2.05 + Math.cos(u * Math.PI * 2) * 0.35 + (1 - u) * 0.8);
       wx = Math.cos(angle) * radius;
@@ -181,7 +172,6 @@ function buildParticleSystemsData(count: number): ParticleSystemsData {
     bPositions[i3 + 1] = wy;
     bPositions[i3 + 2] = wz;
 
-    // Distance from wing root (1 = outer tip, 0 = core)
     const dRoot = Math.sqrt(wx * wx + (wy - 0.2) * (wy - 0.2)) / 4.4;
     featherDist[i] = Math.min(1.0, Math.max(0.05, dRoot + (Math.random() - 0.5) * 0.08));
 
@@ -195,14 +185,12 @@ function buildParticleSystemsData(count: number): ParticleSystemsData {
       bColors[i3 + 2] = isBright ? 0.32 : 0.16;
     }
 
-    // Outward expanding shard drift trajectory
     const dAngle = Math.atan2(wy - 0.2, side * wx) + (Math.random() - 0.5) * 0.6;
     const dMag = 2.4 + featherDist[i] * 4.8;
     driftVectors[i3] = Math.cos(dAngle) * dMag + (Math.random() - 0.5) * 1.8;
     driftVectors[i3 + 1] = Math.sin(dAngle) * dMag + (Math.random() - 0.5) * 1.5;
     driftVectors[i3 + 2] = (Math.random() - 0.5) * 2.8;
 
-    // Deep ambient cosmos coordinates
     ambientPositions[i3] = (Math.random() - 0.5) * 24.0;
     ambientPositions[i3 + 1] = (Math.random() - 0.5) * 18.0;
     ambientPositions[i3 + 2] = (Math.random() - 0.5) * 10.0 - 1.5;
@@ -227,75 +215,114 @@ function buildParticleSystemsData(count: number): ParticleSystemsData {
 // ─────────────────────────────────────────────────────────────
 // 3. CLEAN, CRISP RED & WHITE BACKSIDE TYPOGRAPHY PLANE
 // ─────────────────────────────────────────────────────────────
-// ─────────────────────────────────────────────────────────────
-// 3. CLEAN, CRISP RED & WHITE BACKSIDE TYPOGRAPHY PLANE
-// ─────────────────────────────────────────────────────────────
-function drawTypography(canvas: HTMLCanvasElement) {
-  canvas.width = 2560;
-  canvas.height = 1024;
+/**
+ * Draws the title + subtitle onto the canvas.
+ * The title is auto-fitted: whatever font actually loads (Bebas Neue, Impact,
+ * or a generic fallback), the font size is reduced until the full text fits
+ * within TEXT_MAX_PX. Returns the real text width in WORLD units on the
+ * typography plane so the scene can scale it exactly to the screen.
+ */
+function drawTypography(canvas: HTMLCanvasElement): number {
+  canvas.width = TEXT_CANVAS_W;
+  canvas.height = TEXT_CANVAS_H;
   const ctx = canvas.getContext("2d");
-  if (!ctx) return;
+  const fallbackWorldW = (TEXT_MAX_PX / TEXT_CANVAS_W) * TEXT_PLANE_W;
+  if (!ctx) return fallbackWorldW;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   const cx = canvas.width / 2;
   const cy = 480;
 
-  // Render "METAMORPHOSIS": META (White) + MORPHOSIS (Red) with Bebas Neue
-  // 170px font gives ~1150px text width on 2560px canvas, guaranteeing ~700px safe margins on left and right
-  ctx.font = "400 170px 'Bebas Neue', 'Impact', sans-serif";
-  ctx.textBaseline = "middle";
-  try {
-    (ctx as any).letterSpacing = "4px";
-  } catch (e) {}
+  const isNarrowScreen =
+    typeof window !== "undefined" && window.innerWidth < 480;
+
+  const setLetterSpacing = (v: string) => {
+    try {
+      (ctx as any).letterSpacing = v;
+    } catch (e) {}
+  };
 
   const fullText = "METAMORPHOSIS";
-  const fullWidth = ctx.measureText(fullText).width;
-  const startX = cx - fullWidth / 2;
-
   const leftPart = "META";
+  const rightPart = "MORPHOSIS";
+
+  // ── Title: measure and auto-fit ──
+  let fontSize = isNarrowScreen ? 145 : 170;
+  const titleFont = (size: number) => `400 ${size}px 'Bebas Neue', 'Impact', sans-serif`;
+
+  ctx.textBaseline = "middle";
+  ctx.textAlign = "left";
+  ctx.font = titleFont(fontSize);
+  setLetterSpacing("4px");
+  let fullWidth = ctx.measureText(fullText).width;
+
+  if (fullWidth > TEXT_MAX_PX) {
+    fontSize = Math.floor(fontSize * (TEXT_MAX_PX / fullWidth));
+    ctx.font = titleFont(fontSize);
+    setLetterSpacing(`${Math.max(1, Math.round(4 * (fontSize / 170)))}px`);
+    fullWidth = ctx.measureText(fullText).width;
+  }
+
+  const startX = cx - fullWidth / 2;
   const leftWidth = ctx.measureText(leftPart).width;
 
-  // 1. Draw "META" (White / Silver with clean glow)
+  // 1. "META" (white)
   ctx.shadowColor = "rgba(255, 255, 255, 0.85)";
   ctx.shadowBlur = 24;
   ctx.fillStyle = "#FFFFFF";
-  ctx.textAlign = "left";
   ctx.fillText(leftPart, startX, cy);
 
-  // 2. Draw "MORPHOSIS" (Ruby Red with vibrant glow)
+  // 2. "MORPHOSIS" (ruby red)
   ctx.shadowColor = "rgba(235, 0, 40, 0.95)";
   ctx.shadowBlur = 36;
   ctx.fillStyle = "#EB0028";
-  ctx.fillText("MORPHOSIS", startX + leftWidth, cy);
+  ctx.fillText(rightPart, startX + leftWidth, cy);
 
-  // Reset shadow
   ctx.shadowBlur = 0;
 
-  // 3. Subtitle: "THE UNSEEN PROCESS OF BECOMING."
-  ctx.font = "600 30px 'Manrope', 'Helvetica Neue', sans-serif";
-  try {
-    (ctx as any).letterSpacing = "6px";
-  } catch (e) {}
+  // 3. Subtitle — also auto-fitted to the title width
+  let subSize = isNarrowScreen ? 24 : 30;
+  const subFont = (size: number) => `600 ${size}px 'Manrope', 'Helvetica Neue', sans-serif`;
+  const subText = "THE UNSEEN PROCESS OF BECOMING.";
+  ctx.font = subFont(subSize);
+  setLetterSpacing("6px");
   ctx.textAlign = "center";
+  let subWidth = ctx.measureText(subText).width;
+  const subMax = Math.max(fullWidth, 600);
+  if (subWidth > subMax) {
+    subSize = Math.floor(subSize * (subMax / subWidth));
+    ctx.font = subFont(subSize);
+    setLetterSpacing(`${Math.max(2, Math.round(6 * (subSize / 30)))}px`);
+    subWidth = ctx.measureText(subText).width;
+  }
   ctx.fillStyle = "rgba(255, 255, 255, 0.92)";
-  ctx.fillText("THE UNSEEN PROCESS OF BECOMING.", cx, cy + 150);
+  ctx.fillText(subText, cx, cy + 150);
 
-  // 4. Red horizontal accent line
+  // 4. Red accent line
   ctx.shadowColor = "rgba(235, 0, 40, 0.95)";
   ctx.shadowBlur = 18;
   ctx.fillStyle = "#EB0028";
   ctx.fillRect(cx - 120, cy + 195, 240, 4);
+  ctx.shadowBlur = 0;
+
+  // Real visual width of the widest element, in world units on the 10-wide plane
+  const widest = Math.max(fullWidth, subWidth, 240);
+  return (widest / TEXT_CANVAS_W) * TEXT_PLANE_W;
 }
 
-function createTypographyTexture(): { texture: THREE.CanvasTexture; canvas: HTMLCanvasElement } {
+function createTypographyTexture(): {
+  texture: THREE.CanvasTexture;
+  canvas: HTMLCanvasElement;
+  worldWidth: number;
+} {
   const canvas = document.createElement("canvas");
-  drawTypography(canvas);
+  const worldWidth = drawTypography(canvas);
   const tex = new THREE.CanvasTexture(canvas);
   tex.generateMipmaps = true;
   tex.minFilter = THREE.LinearMipmapLinearFilter;
   tex.magFilter = THREE.LinearFilter;
-  return { texture: tex, canvas };
+  return { texture: tex, canvas, worldWidth };
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -312,6 +339,8 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
   const textMatRef = useRef<THREE.MeshBasicMaterial>(null);
   const pointsRef = useRef<THREE.Points>(null);
   const pMatRef = useRef<THREE.PointsMaterial>(null);
+  // Real measured width of the typography (world units on the plane)
+  const textWorldWidthRef = useRef<number>((TEXT_MAX_PX / TEXT_CANVAS_W) * TEXT_PLANE_W);
   const { camera } = useThree();
 
   // Load butterfly artwork texture
@@ -324,47 +353,58 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
     return tex;
   }, []);
 
-  // Crisp Red & White typography texture with dynamic canvas ref
-  const { typographyTexture, typographyCanvas } = useMemo(() => {
+  // Typography texture with canvas ref
+  const { typographyTexture, typographyCanvas, initialWidth } = useMemo(() => {
     if (typeof document === "undefined") {
-      return { typographyTexture: new THREE.Texture(), typographyCanvas: null };
+      return {
+        typographyTexture: new THREE.Texture(),
+        typographyCanvas: null as HTMLCanvasElement | null,
+        initialWidth: (TEXT_MAX_PX / TEXT_CANVAS_W) * TEXT_PLANE_W,
+      };
     }
-    const { texture, canvas } = createTypographyTexture();
-    return { typographyTexture: texture, typographyCanvas: canvas };
+    const { texture, canvas, worldWidth } = createTypographyTexture();
+    return { typographyTexture: texture, typographyCanvas: canvas, initialWidth: worldWidth };
   }, []);
 
-  // Re-draw typography once custom web fonts are fully loaded with retries to prevent fallback-font layout shifts
+  useEffect(() => {
+    textWorldWidthRef.current = initialWidth;
+  }, [initialWidth]);
+
+  // Re-draw typography once web fonts are loaded (and on resize / rotate)
   useEffect(() => {
     if (typeof document === "undefined" || !typographyCanvas) return;
 
     const redraw = () => {
-      drawTypography(typographyCanvas);
+      textWorldWidthRef.current = drawTypography(typographyCanvas);
       typographyTexture.needsUpdate = true;
     };
 
-    // 1. Initial redraw
     redraw();
 
-    // 2. When fonts finish loading
     if (document.fonts) {
       document.fonts.ready.then(redraw);
       document.fonts.load("400 170px 'Bebas Neue'").then(redraw).catch(() => {});
+      document.fonts.load("400 145px 'Bebas Neue'").then(redraw).catch(() => {});
       document.fonts.load("600 30px 'Manrope'").then(redraw).catch(() => {});
     }
 
-    // 3. Fallback timers for asynchronous font stylesheets on mobile
     const t1 = setTimeout(redraw, 150);
     const t2 = setTimeout(redraw, 500);
     const t3 = setTimeout(redraw, 1200);
+
+    window.addEventListener("resize", redraw);
+    window.addEventListener("orientationchange", redraw);
 
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);
+      window.removeEventListener("resize", redraw);
+      window.removeEventListener("orientationchange", redraw);
     };
   }, [typographyCanvas, typographyTexture]);
 
-  // Clean up GPU textures on unmount (e.g. during page routing)
+  // Clean up GPU textures on unmount
   useEffect(() => {
     return () => {
       butterflyTexture.dispose();
@@ -378,44 +418,53 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
   const curColors = useMemo(() => new Float32Array(PARTICLE_COUNT * 3), []);
 
   useFrame((state) => {
-    const scrollY = typeof window !== "undefined" 
-      ? (window.scrollY || document.documentElement.scrollTop || scrollYRef.current || 0)
-      : scrollYRef.current;
+    const scrollY =
+      typeof window !== "undefined"
+        ? window.scrollY || document.documentElement.scrollTop || scrollYRef.current || 0
+        : scrollYRef.current;
     scrollYRef.current = scrollY;
 
     const time = state.clock.getElapsedTime();
     const vh = typeof window !== "undefined" ? Math.max(window.innerHeight, 500) : 800;
 
-    // Accurate aspect ratio and camera distance calculated FIRST
     const aspect = state.size.width / state.size.height;
-    const isMobilePortrait = aspect < 1.0;
-    const isMobile = isMobilePortrait || (typeof window !== "undefined" && window.innerWidth < 768);
-    const baseZ = isMobilePortrait ? 8.8 : 7.2;
 
+    const isMobilePortrait = aspect < 1.0;
+    const isMobile =
+      isMobilePortrait || (typeof window !== "undefined" && window.innerWidth < 768);
+    const isSmallPhone = typeof window !== "undefined" && window.innerWidth < 480;
+
+    const baseZ = isSmallPhone ? 10.2 : isMobilePortrait ? 9.6 : 7.2;
     camera.position.z = baseZ - Math.min(scrollY / (vh * 0.8), 1.0) * 0.3;
     camera.position.x = 0;
     camera.position.y = 0;
     camera.lookAt(0, 0, 0);
 
-    // Exact visible viewport width and height in world units at z = 0
+    // Exact visible viewport size in world units at z = 0
     const vFovRad = THREE.MathUtils.degToRad((camera as THREE.PerspectiveCamera).fov || 46);
     const visibleH = 2 * Math.tan(vFovRad / 2) * camera.position.z;
     const visibleW = visibleH * aspect;
 
-    // On mobile, text occupies 58% of screen width with 21% safe margin on each side.
-    // On desktop, text occupies 44% of screen width for balanced elegance.
-    // The text on the 10.0-wide plane spans ~4.5 world units (1150 / 2560 * 10.0 = 4.49).
-    const targetTextVisualWidth = visibleW * (isMobile ? 0.58 : 0.44);
-    const textScale = Math.min(1.2, targetTextVisualWidth / 4.49);
+    // ── TEXT SCALE (fits the REAL measured text width to the screen) ──
+    // Fraction of the visible width the title should occupy
+    const textFraction = isSmallPhone
+      ? 0.80
+      : isMobilePortrait
+        ? 0.80
+        : isMobile
+          ? 0.60
+          : 0.44;
 
-    // Butterfly scaling: 80% on mobile, 75% on desktop
+    const measuredTextW = Math.max(textWorldWidthRef.current, 0.5);
+    const targetTextVisualWidth = Math.min(visibleW * textFraction, visibleW * 0.86);
+    const textScale = Math.min(1.0, targetTextVisualWidth / measuredTextW);
+
+    // Butterfly scaling
     const targetButterflyVisualWidth = visibleW * (isMobile ? 0.82 : 0.76);
     const butterflyScale = Math.min(1.0, targetButterflyVisualWidth / 8.6);
 
-    // Dynamic scroll timeline normalized to viewport height:
     const dissolveProgress = THREE.MathUtils.clamp(scrollY / (vh * 0.35), 0, 1);
 
-    // Metamorphosis text visibility window:
     const fadeStart = vh * 0.12;
     const peakStart = vh * 0.35;
     const fadeOutStart = vh * 0.52;
@@ -428,10 +477,9 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
       textOpacity = fadeIn * fadeOut;
     }
 
-    // 1:1 Parallax upward scroll translation
     const scrollYOffset = (scrollY / vh) * (visibleH * 0.95);
 
-    // ── 1. CONTINUOUS LIVING BUTTERFLY WING FLAP & SHATTER SHADER ──
+    // ── 1. BUTTERFLY SHADER UNIFORMS ──
     if (shaderMatRef.current) {
       shaderMatRef.current.uniforms.uDissolve.value = dissolveProgress;
       shaderMatRef.current.uniforms.uTime.value = time;
@@ -443,7 +491,6 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
     const rotYawY = Math.cos(time * 0.55) * 0.012;
     const rotRollZ = Math.sin(time * 0.7) * 0.006;
 
-    // On mobile portrait, place butterfly slightly higher (+0.52 * butterflyScale) to provide generous clearance for bottom hero content
     const butterflyBaseY = (isMobilePortrait ? 0.52 : 0.15) * butterflyScale;
 
     if (quadRef.current) {
@@ -459,7 +506,7 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
       quadRef.current.visible = dissolveProgress < 0.99 && scrollY < vh * 0.55;
     }
 
-    // ── 3. CRISP RED & WHITE BACKSIDE METAMORPHOSIS TYPOGRAPHY ──
+    // ── 3. TYPOGRAPHY ──
     if (textMatRef.current && textMeshRef.current) {
       if (scrollY > fadeOutEnd || textOpacity <= 0.001) {
         textMeshRef.current.visible = false;
@@ -468,12 +515,14 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
         textMeshRef.current.visible = true;
         textMatRef.current.opacity = textOpacity;
         textMeshRef.current.scale.set(textScale, textScale, textScale);
-        const textBaseY = (isMobilePortrait ? 0.32 : -0.02) * textScale;
+        textMeshRef.current.position.x = 0;
+        const textBaseY =
+          (isSmallPhone ? 0.38 : isMobilePortrait ? 0.32 : -0.02) * textScale;
         textMeshRef.current.position.y = textBaseY + scrollYOffset * 0.6;
       }
     }
 
-    // ── 5. GPU PARTICLES: LIVE FLOATING STARDUST & WING SHARDS ──
+    // ── 4. GPU PARTICLES ──
     if (!pointsRef.current || !pMatRef.current) return;
     const posAttr = pointsRef.current.geometry.attributes.position as THREE.BufferAttribute;
     const colAttr = pointsRef.current.geometry.attributes.color as THREE.BufferAttribute;
@@ -516,7 +565,6 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
       let b = pData.bColors[i3 + 2];
 
       if (isDeepSection) {
-        // Pure ambient floating stardust in other sections
         px = ax + Math.sin(time * speed * 0.25 + i * 0.4) * 0.6;
         py = ay + Math.cos(time * speed * 0.20 + i * 0.3) * 0.6;
         pz = az;
@@ -526,12 +574,10 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
         b = pData.ambientColors[i3 + 2];
       } else {
         if (dissolveProgress <= dissolveStart) {
-          // HIDDEN — particles are invisible in idle hero state (clean black background)
           px = bx;
           py = by + scrollYOffset * 0.6;
           pz = -9999;
         } else if (dissolveProgress <= 0.85) {
-          // Shatter outward as scroll progresses
           const tDis = (dissolveProgress - dissolveStart) / (0.85 - dissolveStart);
           const easeDis = tDis * tDis * (3 - 2 * tDis);
 
@@ -539,7 +585,6 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
           py = by + dy * easeDis + scrollYOffset * 0.4;
           pz = bz + dz * easeDis;
         } else {
-          // Transition into ambient cosmos
           const tFlow = (scrollY - vh * 0.3) / (vh * 0.42);
           const easeFlow = THREE.MathUtils.clamp(tFlow * tFlow, 0, 1);
 
@@ -573,7 +618,6 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
     <>
       {/* ── 1. LIVING BUTTERFLY ARTWORK SHADER QUAD ── */}
       <mesh ref={quadRef} position={[0, 0.15, 0]}>
-        {/* Optimized grid (64x64) for continuous fluid wing flex deformation at 60/120fps */}
         <planeGeometry args={[8.6, 4.8, 64, 64]} />
         <shaderMaterial
           ref={shaderMatRef}
@@ -608,9 +652,9 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
         />
       </points>
 
-      {/* ── 3. CLEAN, CRISP RED & WHITE BACKSIDE METAMORPHOSIS TYPOGRAPHY ── */}
+      {/* ── 3. RED & WHITE METAMORPHOSIS TYPOGRAPHY ── */}
       <mesh ref={textMeshRef} position={[0, -0.02, 0.05]}>
-        <planeGeometry args={[10.0, 4.0]} />
+        <planeGeometry args={[TEXT_PLANE_W, TEXT_PLANE_H]} />
         <meshBasicMaterial
           ref={textMatRef}
           map={typographyTexture}
@@ -653,32 +697,34 @@ export default function Background3D() {
 
   return (
     <div
+      className="fixed inset-0 w-full h-[100dvh] overflow-hidden"
       style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        width: "100%",
-        height: "100dvh",
-        maxHeight: "100%",
-        overflow: "hidden",
         pointerEvents: "none",
         zIndex: -20,
         backgroundColor: "#000000",
       }}
     >
       <Canvas
-        camera={{ position: [0, 0, 7.2], fov: 46 }}
+        camera={{
+          position: [0, 0, 7.2],
+          fov: 46,
+        }}
         dpr={[1, 1.5]}
         gl={{
           antialias: true,
           alpha: false,
           powerPreference: "high-performance",
         }}
-        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", background: "#000000" }}
+        style={{
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          background: "#000000",
+        }}
       >
         <color attach="background" args={["#000000"]} />
+
         <CinematicMetamorphosisScene scrollYRef={scrollYRef} />
       </Canvas>
     </div>
