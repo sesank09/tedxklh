@@ -430,15 +430,25 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
     const time = state.clock.getElapsedTime();
     const vh = typeof window !== "undefined" ? Math.max(window.innerHeight, 500) : 800;
 
-    const aspect = state.size.width / state.size.height;
+    const width = state.size.width;
+    const height = state.size.height;
+    const aspect = width / height;
 
-    const isMobilePortrait = aspect < 1.0;
-    const isMobile =
-      isMobilePortrait || (typeof window !== "undefined" && window.innerWidth < 768);
-    const isSmallPhone =
-      typeof window !== "undefined" && (window.innerWidth < 480 || aspect < 0.6);
+    const isMobilePortrait = aspect < 0.95;
+    const isLandscapeShort = aspect >= 1.0 && height < 520;
+    const isSmallPhone = width < 480 || (aspect < 0.6 && width < 600);
+    const isTablet = aspect >= 0.7 && aspect <= 1.3 && width >= 600 && width <= 1368;
 
-    const baseZ = isSmallPhone ? 9.8 : isMobilePortrait ? 9.2 : 7.2;
+    const baseZ = isSmallPhone
+      ? 10.0
+      : isMobilePortrait
+        ? 9.2
+        : isLandscapeShort
+          ? 8.0
+          : isTablet
+            ? 8.5
+            : 7.2;
+
     camera.position.z = baseZ - Math.min(scrollY / (vh * 0.8), 1.0) * 0.3;
     camera.position.x = 0;
     camera.position.y = 0;
@@ -449,19 +459,45 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
     const visibleH = 2 * Math.tan(vFovRad / 2) * camera.position.z;
     const visibleW = visibleH * aspect;
 
-    // ── TEXT SCALE (guaranteed full containment within viewport) ──
-    // On small phones: text occupies 62% of viewport width (19% safe margin on left & right)
-    // On mobile portrait: text occupies 65% of viewport width (17.5% safe margin)
-    // On desktop: text occupies 44% of viewport width for balanced elegance
-    const textFraction = isSmallPhone ? 0.62 : isMobilePortrait ? 0.65 : isMobile ? 0.55 : 0.44;
+    // ── 1. BUTTERFLY CONTAIN SCALING (Preserves 8.6 : 4.8 aspect ratio at all viewports) ──
+    const maxButterflyW = isSmallPhone
+      ? visibleW * 0.72
+      : isMobilePortrait
+        ? visibleW * 0.74
+        : isLandscapeShort
+          ? visibleW * 0.50
+          : isTablet
+            ? visibleW * 0.68
+            : Math.min(visibleW * 0.64, 7.2);
 
-    const measuredTextW = Math.max(textWorldWidthRef.current, 0.5);
-    const targetTextVisualWidth = visibleW * textFraction;
-    const textScale = targetTextVisualWidth / measuredTextW;
+    const maxButterflyH = visibleH * (isLandscapeShort ? 0.44 : isMobilePortrait ? 0.38 : 0.48);
+    const scaleByW = maxButterflyW / 8.6;
+    const scaleByH = maxButterflyH / 4.8;
+    const butterflyScale = Math.min(scaleByW, scaleByH, 1.05);
 
-    // Butterfly scaling
-    const targetButterflyVisualWidth = visibleW * (isMobile ? 0.82 : 0.76);
-    const butterflyScale = Math.min(1.0, targetButterflyVisualWidth / 8.6);
+    // Dynamic vertical anchor for butterfly (positioned in upper-center visual zone)
+    const butterflyBaseY = isLandscapeShort
+      ? 0.08 * visibleH
+      : isMobilePortrait
+        ? 0.14 * visibleH
+        : 0.08 * visibleH;
+
+    // ── 2. TYPOGRAPHY CONTAIN SCALING (Guaranteed zero horizontal or vertical clipping) ──
+    const maxTextW = isSmallPhone
+      ? visibleW * 0.64
+      : isMobilePortrait
+        ? visibleW * 0.66
+        : isLandscapeShort
+          ? visibleW * 0.52
+          : isTablet
+            ? visibleW * 0.58
+            : Math.min(visibleW * 0.44, 5.0);
+
+    const maxTextH = visibleH * (isLandscapeShort ? 0.28 : isMobilePortrait ? 0.26 : 0.34);
+    const measuredW = Math.max(textWorldWidthRef.current, 0.5);
+    const textScale = Math.min(maxTextW / measuredW, maxTextH / 4.0, 1.0);
+
+    const textBaseY = (isMobilePortrait ? 0.10 * visibleH : 0.02 * visibleH) * (textScale / 0.8);
 
     const dissolveProgress = THREE.MathUtils.clamp(scrollY / (vh * 0.35), 0, 1);
 
@@ -491,8 +527,6 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
     const rotYawY = Math.cos(time * 0.55) * 0.012;
     const rotRollZ = Math.sin(time * 0.7) * 0.006;
 
-    const butterflyBaseY = (isMobilePortrait ? 0.52 : 0.15) * butterflyScale;
-
     if (quadRef.current) {
       quadRef.current.scale.set(butterflyScale, butterflyScale, butterflyScale);
       quadRef.current.position.x = 0;
@@ -516,8 +550,6 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
         textMatRef.current.opacity = textOpacity;
         textMeshRef.current.scale.set(textScale, textScale, textScale);
         textMeshRef.current.position.x = 0;
-        const textBaseY =
-          (isSmallPhone ? 0.38 : isMobilePortrait ? 0.32 : -0.02) * textScale;
         textMeshRef.current.position.y = textBaseY + scrollYOffset * 0.6;
       }
     }
@@ -673,6 +705,7 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
 // ─────────────────────────────────────────────────────────────
 export default function Background3D() {
   const [mounted, setMounted] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const scrollYRef = useRef(0);
 
   useEffect(() => {
@@ -686,10 +719,21 @@ export default function Background3D() {
     window.addEventListener("orientationchange", updateScroll, { passive: true });
     updateScroll();
 
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined" && containerRef.current) {
+      resizeObserver = new ResizeObserver(() => {
+        updateScroll();
+      });
+      resizeObserver.observe(containerRef.current);
+    }
+
     return () => {
       window.removeEventListener("scroll", updateScroll);
       window.removeEventListener("resize", updateScroll);
       window.removeEventListener("orientationchange", updateScroll);
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
     };
   }, []);
 
@@ -697,6 +741,7 @@ export default function Background3D() {
 
   return (
     <div
+      ref={containerRef}
       className="fixed inset-0 w-full h-[100dvh] overflow-hidden"
       style={{
         pointerEvents: "none",
@@ -709,7 +754,7 @@ export default function Background3D() {
           position: [0, 0, 7.2],
           fov: 46,
         }}
-        dpr={[1, 1.5]}
+        dpr={[1, 1.75]}
         gl={{
           antialias: true,
           alpha: false,

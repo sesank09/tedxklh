@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Preloader from "@/components/Preloader";
+import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Background3D from "@/components/Background3D";
 import Hero from "@/components/Hero";
@@ -17,7 +16,6 @@ import FinalCTA from "@/components/FinalCTA";
 import Footer from "@/components/Footer";
 
 export default function Home() {
-  const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -33,12 +31,9 @@ export default function Home() {
   if (!mounted) return null;
 
   return (
-    <>
-      {loading && <Preloader onComplete={() => setLoading(false)} />}
-
-      <div className="relative min-h-screen w-full bg-transparent text-white overflow-x-clip">
-        {/* Fixed scroll-controlled 3D background — rendered once for whole site */}
-        <Background3D />
+    <div className="relative min-h-screen w-full bg-transparent text-white overflow-x-clip">
+      {/* Centralized Single Source of Truth 3D Background — exactly ONE WebGL Canvas */}
+      <Background3D />
 
         <Navbar />
         
@@ -75,6 +70,5 @@ export default function Home() {
         {/* Official Licensed Footer */}
         <Footer />
       </div>
-    </>
   );
 }
