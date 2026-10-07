@@ -7,6 +7,16 @@ export const metadata: Metadata = {
   description: "Experience TEDxKLH 2026: METAMORPHOSIS. Exploring structural transformations across science, technology, human consciousness, and design. What happens when an idea refuses to stay the same shape.",
   keywords: ["TEDx", "TEDxKLH", "Metamorphosis", "Transformation", "Conference", "Innovation", "Technology", "Design"],
   authors: [{ name: "TEDxKLH Team" }],
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
+      { url: "/favicon-16x16.png", type: "image/png", sizes: "16x16" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
   openGraph: {
     title: "TEDxKLH 2026 | METAMORPHOSIS",
     description: "The Unseen Process of Becoming · TEDxKLH Annual Flagship Conference 2026",

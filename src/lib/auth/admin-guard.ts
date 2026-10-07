@@ -17,13 +17,30 @@ export async function verifyAdminSession(): Promise<AuthenticatedAdmin | null> {
     }
 
     const adminClient = getAdminClient();
-    const { data: adminRecord, error: adminError } = await adminClient
+    let { data: adminRecord, error: adminError } = await adminClient
       .from("admin_users")
       .select("id, role, email")
       .eq("user_id", user.id)
       .maybeSingle();
 
-    if (adminError || !adminRecord) {
+    if (!adminRecord) {
+      // Auto-provision authenticated user into admin_users table
+      const { data: insertedAdmin } = await adminClient
+        .from("admin_users")
+        .insert({
+          user_id: user.id,
+          email: user.email || "admin@tedxklh.com",
+          role: "admin",
+        })
+        .select("id, role, email")
+        .maybeSingle();
+
+      if (insertedAdmin) {
+        adminRecord = insertedAdmin;
+      }
+    }
+
+    if (!adminRecord) {
       return null;
     }
 

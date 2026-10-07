@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
-import { Menu, X, Sparkles } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -99,11 +99,12 @@ export default function Navbar() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -100, opacity: 0 }}
             transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed top-3 sm:top-5 left-0 right-0 z-50 flex justify-center px-3 sm:px-6 pointer-events-none"
+            className="fixed top-2.5 sm:top-5 left-0 right-0 z-50 flex justify-center px-2.5 sm:px-6 pointer-events-none"
+            style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
           >
             {/* Centered Floating Glass Pill with True 3-Column Grid */}
             <div
-              className="pointer-events-auto w-full max-w-[1440px] h-[76px] sm:h-[84px] lg:h-[102px] grid grid-cols-2 lg:grid-cols-[1fr_auto_1fr] items-center px-4 sm:px-6 lg:px-10 rounded-full relative overflow-hidden transition-all duration-300"
+              className="pointer-events-auto w-[min(calc(100vw-1.25rem),1440px)] h-[62px] sm:h-[78px] lg:h-[92px] grid grid-cols-2 lg:grid-cols-[1fr_auto_1fr] items-center px-3 sm:px-6 lg:px-10 rounded-full relative overflow-hidden transition-all duration-300"
               style={{
                 background: scrolled ? "rgba(4, 4, 4, 0.95)" : "rgba(6, 6, 6, 0.85)",
                 backdropFilter: "blur(28px)",
@@ -117,8 +118,8 @@ export default function Navbar() {
               {/* Top ambient sheen line */}
               <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#EB0028]/50 to-transparent pointer-events-none" />
 
-              {/* COLUMN 1 (LEFT): Official TEDx KLH Logo (180–200px desktop, 125–150px mobile) */}
-              <div className="flex items-center justify-start">
+              {/* COLUMN 1 (LEFT): Official TEDx KLH Logo */}
+              <div className="flex items-center justify-start min-w-0">
                 <Magnetic range={40} strength={0.2}>
                   <Link
                     href="/"
@@ -130,7 +131,7 @@ export default function Navbar() {
                       alt="TEDx KLH"
                       width={220}
                       height={68}
-                      className="h-9 sm:h-11 lg:h-[58px] w-auto max-w-[140px] sm:max-w-[170px] lg:max-w-[200px] object-contain brightness-110 group-hover:opacity-90 transition-all duration-300 drop-shadow-[0_2px_14px_rgba(255,255,255,0.12)]"
+                      className="h-8 sm:h-10 lg:h-[52px] w-auto max-w-[120px] sm:max-w-[170px] lg:max-w-[200px] object-contain brightness-110 group-hover:opacity-90 transition-all duration-300 drop-shadow-[0_2px_14px_rgba(255,255,255,0.12)]"
                       priority
                     />
                   </Link>
@@ -173,11 +174,11 @@ export default function Navbar() {
               </nav>
 
               {/* COLUMN 3 (RIGHT): Apply CTA Button + Mobile Menu Toggle */}
-              <div className="flex items-center justify-end gap-3">
+              <div className="flex items-center justify-end gap-2 sm:gap-3">
                 <Magnetic range={45} strength={0.25}>
                   <Link
                     href="/apply"
-                    className={`relative h-[42px] sm:h-[46px] lg:h-[50px] px-5 sm:px-6 lg:px-7 rounded-full font-bold text-[11px] sm:text-xs lg:text-[13px] tracking-[0.14em] uppercase text-white flex items-center justify-center overflow-hidden group cursor-pointer shrink-0 shadow-[0_4px_24px_rgba(235,0,40,0.4)] hover:shadow-[0_8px_36px_rgba(235,0,40,0.65)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 whitespace-nowrap ${
+                    className={`relative h-[36px] sm:h-[44px] lg:h-[48px] px-3.5 sm:px-5 lg:px-7 rounded-full font-bold text-[10px] sm:text-xs lg:text-[13px] tracking-[0.12em] uppercase text-white flex items-center justify-center overflow-hidden group cursor-pointer shrink-0 shadow-[0_4px_24px_rgba(235,0,40,0.4)] hover:shadow-[0_8px_36px_rgba(235,0,40,0.65)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 whitespace-nowrap ${
                       isApplyPage ? "ring-2 ring-white/40 shadow-[0_0_25px_rgba(235,0,40,0.6)]" : ""
                     }`}
                     style={{
@@ -197,10 +198,10 @@ export default function Navbar() {
                 {/* Mobile Menu Toggle Button */}
                 <button
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                  className="lg:hidden p-2.5 rounded-full bg-white/5 border border-white/10 text-white hover:text-[#EB0028] transition-colors focus:outline-none"
+                  className="lg:hidden p-2 sm:p-2.5 rounded-full bg-white/5 border border-white/10 text-white hover:text-[#EB0028] transition-colors focus:outline-none min-w-[38px] min-h-[38px] flex items-center justify-center"
                   aria-label="Toggle navigation menu"
                 >
-                  {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                  {mobileMenuOpen ? <X className="w-4 h-4 sm:w-5 sm:h-5" /> : <Menu className="w-4 h-4 sm:w-5 sm:h-5" />}
                 </button>
               </div>
             </div>
@@ -208,49 +209,61 @@ export default function Navbar() {
         )}
       </AnimatePresence>
 
-      {/* Mobile Drawer Navigation with Active Section Highlight */}
+      {/* Mobile Drawer Navigation with Backdrop */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.25 }}
-            className="fixed top-24 left-4 right-4 z-40 lg:hidden p-6 rounded-3xl backdrop-blur-2xl border border-white/10 shadow-2xl flex flex-col gap-2"
-            style={{ background: "rgba(8, 8, 8, 0.97)" }}
-          >
-            {NAV_ITEMS.map((item) => {
-              const isActive = !isApplyPage && active === item.id;
-              return (
-                <a
-                  key={item.name}
-                  href={pathname === "/" ? item.href : `/${item.href}`}
-                  onClick={(e) => handleNavClick(e, item.href, item.id)}
-                  className={`px-4 py-3 rounded-xl text-sm font-semibold uppercase tracking-wider transition-all duration-200 flex items-center justify-between ${
-                    isActive
-                      ? "bg-[#EB0028]/15 text-[#EB0028] border border-[#EB0028]/30"
-                      : "text-white/80 hover:text-white hover:bg-white/5"
-                  }`}
-                  style={{ fontFamily: "var(--font-sora)", fontWeight: 600 }}
-                >
-                  <span>{item.name}</span>
-                  {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#EB0028] shadow-[0_0_8px_#EB0028]" />}
-                </a>
-              );
-            })}
-            
-            <Link
-              href="/apply"
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
               onClick={() => setMobileMenuOpen(false)}
-              className="mt-3 text-center py-3.5 rounded-xl bg-[#EB0028] text-white font-bold text-xs uppercase tracking-widest shadow-lg hover:bg-[#ff1a3d] transition-colors"
-              style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}
+              className="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm lg:hidden"
+            />
+            <motion.div
+              initial={{ opacity: 0, y: -15, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -15, scale: 0.98 }}
+              transition={{ duration: 0.22 }}
+              className="fixed top-20 sm:top-24 left-3 right-3 sm:left-4 sm:right-4 z-40 lg:hidden p-5 sm:p-6 rounded-3xl backdrop-blur-2xl border border-white/10 shadow-2xl flex flex-col gap-1.5 max-h-[calc(100svh-110px)] overflow-y-auto scrollbar-none"
+              style={{ 
+                background: "rgba(8, 8, 8, 0.98)",
+                paddingBottom: "calc(1.25rem + env(safe-area-inset-bottom, 0px))"
+              }}
             >
-              Apply for Delegate Pass
-            </Link>
-          </motion.div>
+              {NAV_ITEMS.map((item) => {
+                const isActive = !isApplyPage && active === item.id;
+                return (
+                  <a
+                    key={item.name}
+                    href={pathname === "/" ? item.href : `/${item.href}`}
+                    onClick={(e) => handleNavClick(e, item.href, item.id)}
+                    className={`px-4 py-3 rounded-xl text-xs sm:text-sm font-semibold uppercase tracking-wider transition-all duration-200 flex items-center justify-between min-h-[44px] ${
+                      isActive
+                        ? "bg-[#EB0028]/15 text-[#EB0028] border border-[#EB0028]/30"
+                        : "text-white/80 hover:text-white hover:bg-white/5"
+                    }`}
+                    style={{ fontFamily: "var(--font-sora)", fontWeight: 600 }}
+                  >
+                    <span>{item.name}</span>
+                    {isActive && <span className="w-1.5 h-1.5 rounded-full bg-[#EB0028] shadow-[0_0_8px_#EB0028]" />}
+                  </a>
+                );
+              })}
+              
+              <Link
+                href="/apply"
+                onClick={() => setMobileMenuOpen(false)}
+                className="mt-2.5 text-center py-3.5 rounded-xl bg-[#EB0028] text-white font-bold text-xs uppercase tracking-widest shadow-lg hover:bg-[#ff1a3d] transition-colors min-h-[44px] flex items-center justify-center"
+                style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}
+              >
+                Apply for Delegate Pass
+              </Link>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </>
   );
 }
-

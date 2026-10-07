@@ -55,4 +55,6 @@ async function createAdminUser(email, password) {
 }
 
 // Create default admin account
-createAdminUser("admin@tedxklh.com", "TedxKlh2026!").catch(console.error);
+createAdminUser("tedxklh@tedxklh.com", "Sesank@9999").catch(console.error);
+createAdminUser("admin@tedxklh.com", "Sesank@9999").catch(console.error);
+

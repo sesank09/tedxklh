@@ -7,16 +7,21 @@ import { ChevronDown } from "lucide-react";
 export default function Hero() {
   const { scrollY } = useScroll();
   
-  // Smoothly fade out all hero text within first 140px of scroll
-  const heroOpacity = useTransform(scrollY, [0, 140], [1, 0]);
-  const heroY = useTransform(scrollY, [0, 140], [0, -20]);
+  // Smoothly fade out all hero text within first 140px of scroll, strictly clamped to avoid negative overscroll glitches
+  const heroOpacity = useTransform(scrollY, [0, 140], [1, 0], { clamp: true });
+  const heroY = useTransform(scrollY, [0, 140], [0, -20], { clamp: true });
 
   const [timeLeft, setTimeLeft] = useState<{
     days: number;
     hours: number;
     minutes: number;
     seconds: number;
-  }>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  }>({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
 
   const [mounted, setMounted] = useState(false);
 
@@ -25,7 +30,7 @@ export default function Hero() {
     const target = new Date("2026-11-04T09:00:00+05:30").getTime();
 
     const updateCountdown = () => {
-      const now = new Date().getTime();
+      const now = Date.now();
       const diff = Math.max(0, target - now);
 
       setTimeLeft({
@@ -50,15 +55,15 @@ export default function Hero() {
   return (
     <section 
       id="hero" 
-      className="relative min-h-screen w-full flex flex-col justify-between items-center pt-20 sm:pt-24 pb-6 sm:pb-8 px-4 sm:px-6 select-none overflow-hidden pointer-events-none"
+      className="relative min-h-[100svh] min-h-[100dvh] w-full flex flex-col justify-between items-center pt-16 sm:pt-24 pb-4 sm:pb-8 px-3 sm:px-6 select-none overflow-hidden pointer-events-none"
     >
       {/* Center zone reserved for the 3D Butterfly */}
-      <div className="w-full flex-grow min-h-[26vh] sm:min-h-[32vh]" />
+      <div className="w-full flex-grow min-h-[22vh] sm:min-h-[30vh]" />
 
       {/* Bottom Area: TEDxKLH Brand + Live Countdown + Scroll Cue */}
       <motion.div 
         style={{ opacity: heroOpacity, y: heroY }}
-        className="w-full max-w-[1440px] mx-auto text-center z-20 pb-4 sm:pb-6 flex flex-col items-center gap-3 sm:gap-4 pointer-events-auto"
+        className="w-full max-w-[1440px] mx-auto text-center z-20 pb-2 sm:pb-6 flex flex-col items-center gap-2.5 sm:gap-4 pointer-events-auto"
       >
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -68,7 +73,7 @@ export default function Hero() {
         >
           <div className="flex flex-col items-center justify-center select-none text-center">
             <h1
-              className="text-5xl sm:text-7xl md:text-8xl font-extrabold tracking-tight flex items-baseline justify-center select-none"
+              className="text-[clamp(2.4rem,8.2vw,7.5rem)] font-extrabold tracking-tight flex items-baseline justify-center select-none"
               style={{ 
                 fontFamily: "var(--font-sora)", 
                 fontWeight: 800,
@@ -87,7 +92,7 @@ export default function Hero() {
                     fontWeight: 800,
                     transform: "translateY(0.06em)",
                     marginLeft: "0.04em",
-                    marginRight: "0.14em",
+                    marginRight: "0.12em",
                   }}
                 >
                   x
@@ -97,11 +102,10 @@ export default function Hero() {
             </h1>
 
             <span
-              className="text-xs sm:text-sm md:text-base font-bold text-white uppercase tracking-[0.4em] mt-2 sm:mt-2.5"
+              className="text-[clamp(10px,2vw,15px)] font-bold text-white uppercase tracking-[clamp(0.25em,0.8vw,0.45em)] mt-1.5 sm:mt-2.5"
               style={{
                 fontFamily: "var(--font-sora)",
-                letterSpacing: "0.4em",
-                textIndent: "0.4em",
+                textIndent: "0.3em",
                 fontWeight: 700,
               }}
             >
@@ -115,7 +119,7 @@ export default function Hero() {
           initial={{ opacity: 0, scale: 0.95, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.35 }}
-          className="flex flex-col items-center my-1 sm:my-2"
+          className="flex flex-col items-center my-0.5 sm:my-1.5"
         >
           {/* Subtle status tag */}
           <div className="flex items-center gap-2 px-3 sm:px-3.5 py-1 rounded-full border border-white/[0.08] bg-black/45 backdrop-blur-md mb-2 shadow-[0_4px_16px_rgba(0,0,0,0.5)]">
@@ -129,7 +133,7 @@ export default function Hero() {
           </div>
 
           {/* Time Units Grid */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1 sm:gap-3 flex-nowrap justify-center max-w-full">
             {[
               { label: "DAYS", value: timeLeft.days },
               { label: "HOURS", value: timeLeft.hours },
@@ -137,22 +141,22 @@ export default function Hero() {
               { label: "SECS", value: timeLeft.seconds },
             ].map((item, idx, arr) => (
               <React.Fragment key={item.label}>
-                <div className="flex flex-col items-center justify-center min-w-[50px] sm:min-w-[62px] px-2 sm:px-3 py-1.5 rounded-xl border border-white/[0.08] bg-black/55 backdrop-blur-lg shadow-[0_4px_20px_rgba(0,0,0,0.6)]">
+                <div className="flex flex-col items-center justify-center min-w-[42px] xs:min-w-[48px] sm:min-w-[62px] px-1 sm:px-3 py-1 sm:py-1.5 rounded-xl border border-white/[0.08] bg-black/55 backdrop-blur-lg shadow-[0_4px_20px_rgba(0,0,0,0.6)]">
                   <span
-                    className="text-lg sm:text-2xl font-bold text-white tracking-tight leading-none"
+                    className="text-[clamp(0.95rem,3.2vw,1.75rem)] font-bold text-white tracking-tight leading-none tabular-nums"
                     style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}
                   >
-                    {mounted ? String(item.value).padStart(2, "0") : "--"}
+                    {String(item.value).padStart(2, "0")}
                   </span>
                   <span
-                    className="text-[8px] sm:text-[9px] font-bold text-[#EB0028] tracking-[0.18em] uppercase mt-0.5"
+                    className="text-[6.5px] xs:text-[7px] sm:text-[9px] font-bold text-[#EB0028] tracking-[0.14em] uppercase mt-0.5"
                     style={{ fontFamily: "var(--font-dm-mono)" }}
                   >
                     {item.label}
                   </span>
                 </div>
                 {idx < arr.length - 1 && (
-                  <span className="text-white/30 text-sm sm:text-lg font-mono -mt-2 select-none">
+                  <span className="text-white/30 text-[10px] sm:text-base font-mono -mt-1 select-none">
                     :
                   </span>
                 )}
@@ -166,21 +170,21 @@ export default function Hero() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.45 }}
-          className="flex flex-col items-center gap-1.5 cursor-pointer group mt-0.5"
+          className="flex flex-col items-center gap-1 cursor-pointer group mt-0.5"
           onClick={(e) => scrollTo(e, "#about")}
         >
           <span 
-            className="text-[10px] sm:text-[11px] tracking-[0.28em] uppercase text-white/50 group-hover:text-white transition-colors"
+            className="text-[9px] sm:text-[11px] tracking-[0.25em] uppercase text-white/50 group-hover:text-white transition-colors"
             style={{ fontFamily: "var(--font-dm-mono)" }}
           >
             SCROLL TO TRANSFORM
           </span>
           <motion.div
-            animate={{ y: [0, 5, 0] }}
+            animate={{ y: [0, 4, 0] }}
             transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-white/15 bg-white/[0.02] flex items-center justify-center text-white/40 group-hover:border-[#EB0028]/40 group-hover:text-[#EB0028] transition-colors"
+            className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border border-white/15 bg-white/[0.02] flex items-center justify-center text-white/40 group-hover:border-[#EB0028]/40 group-hover:text-[#EB0028] transition-colors"
           >
-            <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#EB0028]" />
+            <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 text-[#EB0028]" />
           </motion.div>
         </motion.div>
       </motion.div>

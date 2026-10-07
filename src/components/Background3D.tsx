@@ -227,12 +227,11 @@ function buildParticleSystemsData(count: number): ParticleSystemsData {
 // ─────────────────────────────────────────────────────────────
 // 3. CLEAN, CRISP RED & WHITE BACKSIDE TYPOGRAPHY PLANE
 // ─────────────────────────────────────────────────────────────
-function createTypographyTexture(): THREE.CanvasTexture {
-  const canvas = document.createElement("canvas");
+function drawTypography(canvas: HTMLCanvasElement) {
   canvas.width = 2048;
   canvas.height = 1024;
   const ctx = canvas.getContext("2d");
-  if (!ctx) return new THREE.CanvasTexture(canvas);
+  if (!ctx) return;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -240,7 +239,6 @@ function createTypographyTexture(): THREE.CanvasTexture {
   const cy = 480;
 
   // Render "METAMORPHOSIS": META (White) + MORPHOSIS (Red) with Bebas Neue
-  // Large 260px font for crisp edge-to-edge presence on all devices including iPhones
   ctx.font = "400 260px 'Bebas Neue', 'Impact', sans-serif";
   ctx.textBaseline = "middle";
   ctx.letterSpacing = "6px";
@@ -280,12 +278,16 @@ function createTypographyTexture(): THREE.CanvasTexture {
   ctx.shadowBlur = 20;
   ctx.fillStyle = "#EB0028";
   ctx.fillRect(cx - 140, cy + 240, 280, 5);
+}
 
+function createTypographyTexture(): { texture: THREE.CanvasTexture; canvas: HTMLCanvasElement } {
+  const canvas = document.createElement("canvas");
+  drawTypography(canvas);
   const tex = new THREE.CanvasTexture(canvas);
   tex.generateMipmaps = true;
   tex.minFilter = THREE.LinearMipmapLinearFilter;
   tex.magFilter = THREE.LinearFilter;
-  return tex;
+  return { texture: tex, canvas };
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -314,11 +316,32 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
     return tex;
   }, []);
 
-  // Crisp Red & White typography texture
-  const typographyTexture = useMemo(() => {
-    if (typeof document === "undefined") return new THREE.Texture();
-    return createTypographyTexture();
+  // Crisp Red & White typography texture with dynamic canvas ref
+  const { typographyTexture, typographyCanvas } = useMemo(() => {
+    if (typeof document === "undefined") {
+      return { typographyTexture: new THREE.Texture(), typographyCanvas: null };
+    }
+    const { texture, canvas } = createTypographyTexture();
+    return { typographyTexture: texture, typographyCanvas: canvas };
   }, []);
+
+  // Re-draw typography once custom web fonts are fully loaded to prevent fallback-font layout shifts
+  useEffect(() => {
+    if (typeof document !== "undefined" && document.fonts && typographyCanvas) {
+      document.fonts.ready.then(() => {
+        drawTypography(typographyCanvas);
+        typographyTexture.needsUpdate = true;
+      });
+    }
+  }, [typographyCanvas, typographyTexture]);
+
+  // Clean up GPU textures on unmount (e.g. during page routing)
+  useEffect(() => {
+    return () => {
+      butterflyTexture.dispose();
+      typographyTexture.dispose();
+    };
+  }, [butterflyTexture, typographyTexture]);
 
   const pData = useMemo(() => buildParticleSystemsData(PARTICLE_COUNT), []);
 
@@ -326,23 +349,25 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
   const curColors = useMemo(() => new Float32Array(PARTICLE_COUNT * 3), []);
 
   useFrame((state) => {
-    const scrollY = scrollYRef.current;
+    const scrollY = typeof window !== "undefined" 
+      ? (window.scrollY || document.documentElement.scrollTop || scrollYRef.current || 0)
+      : scrollYRef.current;
+    scrollYRef.current = scrollY;
+
     const time = state.clock.getElapsedTime();
     const vpW = viewport.width;
     const vpH = viewport.height;
-    const vh = typeof window !== "undefined" ? window.innerHeight : 800;
+    const vh = typeof window !== "undefined" ? Math.max(window.innerHeight, 500) : 800;
 
     const isMobile = vpW < 7.6 || (typeof window !== "undefined" && window.innerWidth < 768);
 
-    // Responsive scaling to fit mobile / iPhone / all screens boldly without clipping:
-    // On iPhone / mobile viewports, scale so the typography fills ~92% of screen width
-    const textScale = isMobile 
-      ? Math.max(0.35, Math.min(1.2, (vpW * 0.94) / 10.2))
-      : Math.min(1.0, (vpW * 0.88) / 11.2);
+    // Responsive scaling with strict upper and lower safety bounds:
+    // Guarantees transformed typography and butterfly never exceed viewport bounds on any device (320px–3840px)
+    const maxTextWidth = vpW * (isMobile ? 0.90 : 0.84);
+    const textScale = Math.min(1.0, maxTextWidth / 11.6);
 
-    const butterflyScale = isMobile
-      ? Math.max(0.38, Math.min(1.15, (vpW * 0.92) / 8.2))
-      : Math.min(1.0, (vpW * 0.86) / 8.6);
+    const maxButterflyWidth = vpW * (isMobile ? 0.88 : 0.82);
+    const butterflyScale = Math.min(1.0, maxButterflyWidth / 8.6);
 
     // Dynamic scroll timeline normalized to viewport height:
     const dissolveProgress = THREE.MathUtils.clamp(scrollY / (vh * 0.35), 0, 1);
@@ -578,13 +603,20 @@ export default function Background3D() {
 
   useEffect(() => {
     setMounted(true);
-    const onScroll = () => {
-      scrollYRef.current = window.scrollY;
+    const updateScroll = () => {
+      scrollYRef.current = window.scrollY || document.documentElement.scrollTop || 0;
     };
 
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
+    window.addEventListener("scroll", updateScroll, { passive: true });
+    window.addEventListener("resize", updateScroll, { passive: true });
+    window.addEventListener("orientationchange", updateScroll, { passive: true });
+    updateScroll();
+
+    return () => {
+      window.removeEventListener("scroll", updateScroll);
+      window.removeEventListener("resize", updateScroll);
+      window.removeEventListener("orientationchange", updateScroll);
+    };
   }, []);
 
   if (!mounted) return null;
@@ -593,9 +625,13 @@ export default function Background3D() {
     <div
       style={{
         position: "fixed",
-        inset: 0,
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         width: "100%",
-        height: "100%",
+        height: "100dvh",
+        maxHeight: "100%",
         overflow: "hidden",
         pointerEvents: "none",
         zIndex: -20,
@@ -610,7 +646,7 @@ export default function Background3D() {
           alpha: false,
           powerPreference: "high-performance",
         }}
-        style={{ position: "absolute", inset: 0, background: "#000000" }}
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", background: "#000000" }}
       >
         <color attach="background" args={["#000000"]} />
         <CinematicMetamorphosisScene scrollYRef={scrollYRef} />

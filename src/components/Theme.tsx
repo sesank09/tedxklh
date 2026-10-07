@@ -98,40 +98,42 @@ export default function Theme() {
   return (
     <section 
       id="theme" 
-      className="relative w-full py-28 sm:py-40 px-4 sm:px-8 md:px-12 select-none overflow-hidden"
+      className="relative w-full py-[clamp(3.5rem,7vw,8.5rem)] px-[clamp(1rem,4vw,3.5rem)] select-none overflow-hidden"
     >
       {/* Background Ambient Radial Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85vw] max-w-[1400px] h-[650px] bg-[radial-gradient(ellipse_at_center,rgba(235,0,40,0.07),transparent_70%)] pointer-events-none" />
 
-      <div className="w-full max-w-[1400px] mx-auto space-y-20 relative z-20">
+      <div className="w-full max-w-[1400px] mx-auto space-y-[clamp(2.5rem,5vw,4.5rem)] relative z-20">
         
         {/* Section Header */}
-        <div className="max-w-4xl mx-auto space-y-6 text-center sm:text-left">
-
+        <div className="max-w-4xl mx-auto space-y-3 sm:space-y-6 text-center sm:text-left">
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.05 }}
-            className="text-4xl sm:text-6xl md:text-7xl font-extrabold text-white tracking-tight uppercase leading-[1.05]"
+            className="text-[clamp(2.1rem,5.5vw,4.5rem)] font-extrabold text-white tracking-tight uppercase leading-[1.05]"
             style={{ fontFamily: "var(--font-sora)", fontWeight: 800 }}
           >
             METAMORPHOSIS<br />
-            <span className="text-[#EB0028] text-2xl sm:text-4xl md:text-5xl font-semibold tracking-normal block mt-2" style={{ fontFamily: "var(--font-sora)" }}>
+            <span 
+              className="text-[#EB0028] text-[clamp(1.1rem,2.8vw,2.2rem)] font-semibold tracking-normal block mt-1.5 sm:mt-2" 
+              style={{ fontFamily: "var(--font-sora)" }}
+            >
               The Unseen Process of Becoming
             </span>
           </motion.h2>
         </div>
 
         {/* Metamorphosis Stage Selector Navigation */}
-        <div className="flex items-center justify-start sm:justify-center overflow-x-auto pb-4 sm:pb-0 gap-2 sm:gap-3 scrollbar-none">
+        <div className="flex items-center justify-start sm:justify-center overflow-x-auto pb-3 sm:pb-0 gap-2 sm:gap-3 scrollbar-none w-full max-w-full">
           {STAGES.map((st, idx) => {
             const isActive = activeStageIdx === idx;
             return (
               <button
                 key={st.id}
                 onClick={() => setActiveStageIdx(idx)}
-                className={`group relative px-4 sm:px-6 py-3 rounded-2xl border transition-all duration-300 flex items-center gap-3 shrink-0 cursor-pointer ${
+                className={`group relative px-3.5 sm:px-6 py-2.5 sm:py-3 rounded-2xl border transition-all duration-300 flex items-center gap-2 sm:gap-3 shrink-0 cursor-pointer min-h-[44px] ${
                   isActive
                     ? "bg-[#EB0028]/20 border-[#EB0028] shadow-[0_0_25px_rgba(235,0,40,0.35)]"
                     : "bg-black/50 border-white/[0.08] hover:border-white/20 hover:bg-white/[0.03]"
@@ -146,144 +148,101 @@ export default function Theme() {
                   {st.num}
                 </span>
                 <span 
-                  className={`text-xs sm:text-sm font-bold uppercase tracking-wider transition-colors ${
+                  className={`text-[11px] sm:text-xs lg:text-sm font-bold uppercase tracking-wider transition-colors ${
                     isActive ? "text-white" : "text-white/60 group-hover:text-white"
                   }`}
                   style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}
                 >
                   {st.name}
                 </span>
-                {isActive && (
-                  <motion.div
-                    layoutId="themeTabUnderline"
-                    className="absolute bottom-0 left-4 right-4 h-[2px] bg-[#EB0028]"
-                  />
-                )}
               </button>
             );
           })}
         </div>
 
-        {/* Central Dynamic Crystalline Metamorphosis Canvas */}
-        <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        {/* Main Interactive Stage Display Container */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           
-          {/* Left / Center: Interactive Crystalline Shard Object */}
-          <div className="lg:col-span-7 flex justify-center items-center">
-            <div className="relative w-full max-w-[440px] aspect-square rounded-3xl border border-white/[0.08] bg-black/70 backdrop-blur-2xl p-8 flex items-center justify-center overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.9)] group">
+          {/* Left: Dynamic Shard SVG Visualization */}
+          <div className="flex items-center justify-center w-full">
+            <div className="relative w-full max-w-[min(100%,420px)] aspect-square rounded-3xl border border-white/10 bg-black/60 backdrop-blur-2xl p-6 sm:p-8 flex items-center justify-center overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.85)]">
               
-              {/* Radial Ruby/White Backlight */}
+              {/* Center Ambient Core */}
               <div 
-                className="absolute inset-0 transition-opacity duration-700 pointer-events-none"
-                style={{
-                  background: `radial-gradient(circle at center, ${activeStageIdx >= 2 ? "rgba(235,0,40,0.22)" : "rgba(255,255,255,0.08)"}, transparent 70%)`
-                }}
+                className="absolute w-40 h-40 rounded-full blur-3xl pointer-events-none transition-colors duration-700"
+                style={{ background: `${currentStage.color}18` }}
               />
 
-              {/* Dynamic Geometric Crystalline SVG */}
-              <svg 
-                viewBox="0 0 390 390" 
-                className="w-full h-full relative z-10 filter drop-shadow-[0_0_20px_rgba(235,0,40,0.4)]"
-              >
-                {/* Connecting Laser Guidelines */}
-                <line x1="150" y1="20" x2="150" y2="380" stroke="rgba(255,255,255,0.1)" strokeDasharray="3 3" />
-                <line x1="20" y1="200" x2="370" y2="200" stroke="rgba(255,255,255,0.1)" strokeDasharray="3 3" />
-
-                {/* Animated Dynamic Polygon Shards */}
-                {currentStage.shards.map((shard, sIdx) => (
-                  <motion.path
-                    key={`${currentStage.id}-${sIdx}`}
-                    d={shard.path}
-                    fill={shard.fill}
-                    stroke={shard.stroke}
-                    strokeWidth="1.5"
+              {/* Dynamic Animated Crystalline Facets */}
+              <svg viewBox="0 0 400 400" className="w-full h-full max-w-[340px] drop-shadow-[0_0_30px_rgba(235,0,40,0.35)]">
+                <AnimatePresence mode="wait">
+                  <motion.g
+                    key={currentStage.id}
                     initial={{ opacity: 0, scale: 0.85 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.85 }}
-                    transition={{ duration: 0.55, ease: "easeOut" }}
-                  />
-                ))}
-
-                {/* Center Core Node */}
-                <circle 
-                  cx="150" 
-                  cy="200" 
-                  r={activeStageIdx >= 3 ? "5" : "3.5"} 
-                  fill="#EB0028" 
-                  stroke="#ffffff" 
-                  strokeWidth="1.5"
-                  className="animate-pulse shadow-[0_0_12px_#EB0028]" 
-                />
+                    exit={{ opacity: 0, scale: 1.15 }}
+                    transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    {currentStage.shards.map((shard, sIdx) => (
+                      <motion.path
+                        key={sIdx}
+                        d={shard.path}
+                        fill={shard.fill}
+                        stroke={shard.stroke}
+                        strokeWidth="1.5"
+                        strokeLinejoin="round"
+                        initial={{ pathLength: 0 }}
+                        animate={{ pathLength: 1 }}
+                        transition={{ duration: 0.7, delay: sIdx * 0.08 }}
+                      />
+                    ))}
+                  </motion.g>
+                </AnimatePresence>
               </svg>
 
-              {/* HUD Coordinates & Status */}
+              {/* HUD Coordinates Label */}
               <div 
-                className="absolute top-4 left-4 text-[9px] text-white/40 space-y-0.5"
+                className="absolute bottom-4 left-5 text-[9px] font-mono text-white/30 uppercase tracking-widest"
                 style={{ fontFamily: "var(--font-dm-mono)" }}
               >
-                <div>STAGE // 0{activeStageIdx + 1}</div>
-                <div className="text-[#EB0028]">STATE: {currentStage.name}</div>
-              </div>
-
-              <div 
-                className="absolute bottom-4 right-4 text-[9px] text-white/30"
-                style={{ fontFamily: "var(--font-dm-mono)" }}
-              >
-                // CRYSTALLINE_MATRIX
+                PHASE 0{activeStageIdx + 1} — {currentStage.name}
               </div>
             </div>
           </div>
 
-          {/* Right: Stage Narrative & Transformation Details */}
-          <div className="lg:col-span-5 space-y-6">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentStage.id}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.4 }}
-                className="space-y-5 p-8 rounded-3xl border border-white/[0.08] bg-black/60 backdrop-blur-xl shadow-2xl relative overflow-hidden"
+          {/* Right: Stage Narrative & Details */}
+          <div className="space-y-4 sm:space-y-6 text-center lg:text-left">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-[#EB0028]/30 bg-[#EB0028]/10 text-[#EB0028] text-xs font-bold uppercase tracking-widest">
+              <span>PHASE {currentStage.num}</span>
+              <span className="text-white/30">·</span>
+              <span className="text-white/80">{currentStage.tagline}</span>
+            </div>
+
+            <h3 
+              className="text-[clamp(1.8rem,4vw,3.2rem)] font-extrabold text-white tracking-tight uppercase leading-tight"
+              style={{ fontFamily: "var(--font-sora)", fontWeight: 800 }}
+            >
+              {currentStage.name}
+            </h3>
+
+            <p 
+              className="text-sm sm:text-base text-white/70 font-normal leading-relaxed max-w-lg mx-auto lg:mx-0"
+              style={{ fontFamily: "var(--font-manrope)", fontWeight: 400 }}
+            >
+              {currentStage.description}
+            </p>
+
+            {/* Quick Next Stage Trigger */}
+            <div className="pt-2 flex items-center justify-center lg:justify-start">
+              <button
+                onClick={() => setActiveStageIdx((activeStageIdx + 1) % STAGES.length)}
+                className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-white/60 hover:text-[#EB0028] transition-colors cursor-pointer py-2"
+                style={{ fontFamily: "var(--font-dm-mono)" }}
               >
-                {/* Top Crimson Edge Line */}
-                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#EB0028] to-transparent" />
-
-                <div className="space-y-2">
-                  <span 
-                    className="text-xs font-semibold tracking-[0.25em] text-[#EB0028] uppercase block"
-                    style={{ fontFamily: "var(--font-dm-mono)" }}
-                  >
-                    PHASE 0{activeStageIdx + 1} · {currentStage.tagline}
-                  </span>
-
-                  <h3 
-                    className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight uppercase"
-                    style={{ fontFamily: "var(--font-sora)", fontWeight: 800 }}
-                  >
-                    {currentStage.name}
-                  </h3>
-                </div>
-
-                <p 
-                  className="text-sm sm:text-base text-white/70 font-normal leading-relaxed"
-                  style={{ fontFamily: "var(--font-manrope)", fontWeight: 400 }}
-                >
-                  {currentStage.description}
-                </p>
-
-                {/* Visual Legend */}
-                <div className="pt-4 border-t border-white/[0.06] flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-sm bg-white" />
-                    <span className="text-white/60 font-mono text-[10px]">WHITE: IDEA</span>
-                  </div>
-                  <ChevronRight className="w-3.5 h-3.5 text-white/30" />
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-sm bg-[#EB0028]" />
-                    <span className="text-[#EB0028] font-mono text-[10px]">CRIMSON: BECOMING</span>
-                  </div>
-                </div>
-              </motion.div>
-            </AnimatePresence>
+                <span>NEXT PHASE</span>
+                <ChevronRight className="w-4 h-4 text-[#EB0028]" />
+              </button>
+            </div>
           </div>
 
         </div>

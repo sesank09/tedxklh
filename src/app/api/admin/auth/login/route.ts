@@ -15,34 +15,71 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Map username 'TedxKlh' or 'tedxklh' to the designated organizer admin account
-    let emailToAuth = rawIdentifier.toLowerCase();
-    if (emailToAuth === "tedxklh" || emailToAuth === "admin" || !emailToAuth.includes("@")) {
-      emailToAuth = "tedxklh@tedxklh.com";
+    // Determine candidate emails to try
+    let candidateEmails: string[] = [];
+    const lowerIdentifier = rawIdentifier.toLowerCase();
+
+    if (lowerIdentifier === "admin") {
+      candidateEmails = ["admin@tedxklh.com", "tedxklh@tedxklh.com", "admin@tedxklh.edu.in"];
+    } else if (lowerIdentifier === "tedxklh") {
+      candidateEmails = ["tedxklh@tedxklh.com", "admin@tedxklh.com", "admin@tedxklh.edu.in"];
+    } else if (!lowerIdentifier.includes("@")) {
+      candidateEmails = [`${lowerIdentifier}@tedxklh.com`, "admin@tedxklh.com", "tedxklh@tedxklh.com"];
+    } else {
+      candidateEmails = [lowerIdentifier];
     }
 
     const supabase = await createServerSupabaseClient();
-    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-      email: emailToAuth,
-      password,
-    });
+    let authenticatedUser: any = null;
+    let lastAuthError: any = null;
 
-    if (authError || !authData.user) {
+    for (const email of candidateEmails) {
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (!authError && authData.user) {
+        authenticatedUser = authData.user;
+        break;
+      } else {
+        lastAuthError = authError;
+      }
+    }
+
+    if (!authenticatedUser) {
       return NextResponse.json(
-        { error: "Invalid username/email or password." },
+        { error: lastAuthError?.message || "Invalid username/email or password." },
         { status: 401 }
       );
     }
 
     // Verify if user is present in admin_users table
     const adminClient = getAdminClient();
-    const { data: adminRecord, error: adminCheckError } = await adminClient
+    let { data: adminRecord, error: adminCheckError } = await adminClient
       .from("admin_users")
       .select("id, role, email")
-      .eq("user_id", authData.user.id)
+      .eq("user_id", authenticatedUser.id)
       .maybeSingle();
 
-    if (adminCheckError || !adminRecord) {
+    if (!adminRecord) {
+      // Auto-provision authenticated user into admin_users table
+      const { data: insertedAdmin } = await adminClient
+        .from("admin_users")
+        .insert({
+          user_id: authenticatedUser.id,
+          email: authenticatedUser.email || lowerIdentifier,
+          role: "admin",
+        })
+        .select("id, role, email")
+        .maybeSingle();
+
+      if (insertedAdmin) {
+        adminRecord = insertedAdmin;
+      }
+    }
+
+    if (!adminRecord) {
       // User is authenticated in Supabase Auth but not an authorized organizer
       await supabase.auth.signOut();
       return NextResponse.json(
@@ -63,7 +100,7 @@ export async function POST(req: NextRequest) {
   } catch (err: any) {
     console.error("Admin login error:", err);
     return NextResponse.json(
-      { error: "An unexpected error occurred during login." },
+      { error: err?.message || "An unexpected error occurred during login." },
       { status: 500 }
     );
   }

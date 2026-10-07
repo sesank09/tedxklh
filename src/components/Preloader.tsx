@@ -16,7 +16,69 @@ export default function Preloader({ onComplete }: PreloaderProps) {
   const isCompletedRef = useRef(false);
 
   // ─────────────────────────────────────────────────────────────
-  // 1. TIMELINE & ACCESSIBILITY CONTROLLER (~4.8s cinematic sequence)
+  // 1. SCROLL-LOCK CONTROLLER (Strict 0-displacement while preloading)
+  // ─────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+
+    window.scrollTo(0, 0);
+
+    const lenis = (window as unknown as { __lenis?: { stop: () => void; start: () => void; scrollTo: (target: number, opts?: { immediate?: boolean }) => void } }).__lenis;
+    if (lenis) {
+      lenis.stop();
+      lenis.scrollTo(0, { immediate: true });
+    }
+
+    const preventScroll = (e: Event) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    const preventKeys = (e: KeyboardEvent) => {
+      const keys = ["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " ", "Spacebar"];
+      if (keys.includes(e.key)) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+
+    const prevHtmlOverflow = document.documentElement.style.overflow;
+    const prevBodyOverflow = document.body.style.overflow;
+    const prevBodyTouchAction = document.body.style.touchAction;
+
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    document.body.style.touchAction = "none";
+
+    window.addEventListener("wheel", preventScroll, { passive: false });
+    window.addEventListener("touchmove", preventScroll, { passive: false });
+    window.addEventListener("keydown", preventKeys, { passive: false });
+
+    return () => {
+      document.documentElement.style.overflow = prevHtmlOverflow;
+      document.body.style.overflow = prevBodyOverflow;
+      document.body.style.touchAction = prevBodyTouchAction;
+
+      window.removeEventListener("wheel", preventScroll);
+      window.removeEventListener("touchmove", preventScroll);
+      window.removeEventListener("keydown", preventKeys);
+
+      window.scrollTo(0, 0);
+
+      const lenisAfter = (window as unknown as { __lenis?: { start: () => void; scrollTo: (target: number, opts?: { immediate?: boolean }) => void } }).__lenis;
+      if (lenisAfter) {
+        lenisAfter.scrollTo(0, { immediate: true });
+        lenisAfter.start();
+      }
+    };
+  }, []);
+
+  // ─────────────────────────────────────────────────────────────
+  // 2. TIMELINE & ACCESSIBILITY CONTROLLER (~4.8s cinematic sequence)
   // ─────────────────────────────────────────────────────────────
   useEffect(() => {
     // Respect user's reduced-motion preference
@@ -869,7 +931,9 @@ export default function Preloader({ onComplete }: PreloaderProps) {
           animate={isFinishing ? { opacity: 0 } : { opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.65, ease: [0.65, 0, 0.35, 1] }}
-          className="fixed inset-0 w-screen h-screen z-[99999] select-none overflow-hidden bg-black flex flex-col justify-between items-center p-8 sm:p-12 pointer-events-none"
+          className="fixed inset-0 w-screen h-screen z-[99999] select-none overflow-hidden bg-black flex flex-col justify-between items-center p-8 sm:p-12 pointer-events-auto touch-none"
+          onWheel={(e) => { e.preventDefault(); e.stopPropagation(); }}
+          onTouchMove={(e) => { e.preventDefault(); e.stopPropagation(); }}
         >
           {/* ── 3D CINEMATIC LOGO ACTIVATION WEBGL CANVAS ── */}
           <div

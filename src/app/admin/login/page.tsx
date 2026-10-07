@@ -43,8 +43,7 @@ export default function AdminLoginPage() {
         return;
       }
 
-      router.push("/admin");
-      router.refresh();
+      window.location.href = "/admin";
     } catch (err) {
       console.error(err);
       setError("An unexpected network error occurred.");
@@ -72,7 +71,7 @@ export default function AdminLoginPage() {
           />
         </Link>
         <div className="text-[11px] font-mono uppercase tracking-widest text-[#EB0028] font-bold">
-          ADMIN PORTAL // 2026
+          ADMIN PORTAL • 2026
         </div>
       </header>
 

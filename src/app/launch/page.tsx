@@ -1,722 +1,1714 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  useMemo,
+} from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import * as THREE from "three";
 
-// ─────────────────────────────────────────────────────────────
-// TEDx KLH 2026 — CINEMATIC METAMORPHOSIS LAUNCH EXPERIENCE
-// Route: /launch (100% Standalone, Zero Homepage Interference)
-// Ultra-Smooth 60 FPS Canvas Engine with Delta-Time Physics
-// ─────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════
+// TEDx KLH 2026 — METAMORPHOSIS
+// THE CRIMSON PORTAL — FINAL CINEMATIC LAUNCH EXPERIENCE
+// Route: /launch → Navigates to / upon completion
+// ═══════════════════════════════════════════════════════════════════════
 
-interface Shard {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  targetX: number;
-  targetY: number;
-  size: number;
-  angle: number;
-  vAngle: number;
-  alpha: number;
-  targetAlpha: number;
-  isLeftSilver: boolean;
-  depth: number;
-  orbitAngle: number;
-  orbitRadius: number;
-  orbitSpeed: number;
-  wingPhase: number;
-  shatterVx: number;
-  shatterVy: number;
-  shatterVz: number;
+// ── COLOR PALETTE ──────────────────────────────────────────────────────
+const PALETTE = {
+  black: "#000000",
+  void: "#050506",
+  charcoal: "#09090B",
+  darkWine: "#12070A",
+  burgundyDeep: "#26080E",
+  wine: "#5A0715",
+  crimsonDeep: "#8F071C",
+  crimson: "#EB0028",
+  silverMuted: "#D9D9D9",
+  silverBright: "#F4F4F4",
+  white: "#FFFFFF",
+};
+
+const THREE_COLORS = {
+  black: new THREE.Color(0x000000),
+  void: new THREE.Color(0x050506),
+  charcoal: new THREE.Color(0x09090b),
+  darkWine: new THREE.Color(0x12070a),
+  burgundyDeep: new THREE.Color(0x26080e),
+  wine: new THREE.Color(0x5a0715),
+  crimsonDeep: new THREE.Color(0x8f071c),
+  crimson: new THREE.Color(0xeb0028),
+  silver: new THREE.Color(0xd9d9d9),
+  white: new THREE.Color(0xffffff),
+};
+
+// ── STATE MACHINE ──────────────────────────────────────────────────────
+export type LaunchPhase =
+  | "INTRO"              // 0.0s - 2.6s: Line drawn -> lattice forms -> portal awakens
+  | "IDLE"               // Stable luxury state: breathing, silk light flow, micro parallax
+  | "LAUNCH_COMPRESS"    // Click Step 1-2: Button compresses 3%, glow spikes, portal focuses
+  | "LAUNCH_STILLNESS"   // Click Step 4-5: Motion halts, profound momentary stillness
+  | "PORTAL_IMPLOSION"   // Click Step 6: Portal and crystalline shards implode into center
+  | "BUTTERFLY_REVEAL"   // Center cracks open, dual-wing crystalline butterfly emerges
+  | "METAMORPHOSIS"      // Butterfly dissolves into lines of light -> hyperspace light tunnel
+  | "FLASH"              // Crimson + silver + white blinding cinematic flash
+  | "COMPLETE";          // Clean route transition to /
+
+// ── INTRO SEQUENCE TIMELINE CONSTANTS ──────────────────────────────────
+const TIMINGS = {
+  INTRO_LINE_START: 0.1,
+  INTRO_LINE_CROSS: 0.6,
+  INTRO_LATTICE: 1.2,
+  INTRO_CRIMSON_AWAKEN: 1.8,
+  INTRO_PORTAL_FORM: 2.3,
+  INTRO_BUTTON_EMERGE: 2.8,
+  INTRO_READY: 3.2,
+};
+
+// ── SHADER: CRIMSON SILK LIGHT FLOW ────────────────────────────────────
+// Procedural fluid light flow moving around the portal ring like silk in water
+const CrimsonSilkShader = {
+  uniforms: {
+    uTime: { value: 0 },
+    uHover: { value: 0 },
+    uImplosion: { value: 0 },
+    uIntensity: { value: 1.0 },
+    uColor1: { value: THREE_COLORS.wine },
+    uColor2: { value: THREE_COLORS.crimsonDeep },
+    uColor3: { value: THREE_COLORS.crimson },
+    uColorSilver: { value: THREE_COLORS.white },
+  },
+  vertexShader: `
+    varying vec2 vUv;
+    varying vec3 vPosition;
+    void main() {
+      vUv = uv;
+      vPosition = position;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `,
+  fragmentShader: `
+    uniform float uTime;
+    uniform float uHover;
+    uniform float uImplosion;
+    uniform float uIntensity;
+    uniform vec3 uColor1;
+    uniform vec3 uColor2;
+    uniform vec3 uColor3;
+    uniform vec3 uColorSilver;
+    varying vec2 vUv;
+    varying vec3 vPosition;
+
+    void main() {
+      vec2 center = vec2(0.5, 0.5);
+      vec2 pos = vUv - center;
+      float angle = atan(pos.y, pos.x); // -PI to PI
+      float dist = length(pos) * 2.0;
+
+      // Soft ring mask
+      float ringAlpha = smoothstep(0.7, 0.88, dist) * smoothstep(1.02, 0.88, dist);
+
+      // Traveling waves (flowing like silk)
+      float speed = 1.2 + uHover * 2.5 + uImplosion * 8.0;
+      float wave1 = sin(angle * 3.0 - uTime * speed) * 0.5 + 0.5;
+      float wave2 = sin(angle * 6.0 + uTime * (speed * 0.7) + dist * 4.0) * 0.5 + 0.5;
+      float wave3 = cos(angle * 2.0 - uTime * (speed * 1.3)) * 0.5 + 0.5;
+
+      float silkPattern = (wave1 * 0.5 + wave2 * 0.3 + wave3 * 0.2);
+
+      // Color blending
+      vec3 col = mix(uColor1, uColor2, silkPattern);
+      col = mix(col, uColor3, wave1 * wave2);
+
+      // Silver specular highlights catching the edge
+      float silverCrest = smoothstep(0.75, 0.98, wave1 * wave3) * (0.4 + uHover * 0.6);
+      col = mix(col, uColorSilver, silverCrest * 0.6);
+
+      // Brightness boost during hover & implosion
+      float totalIntensity = (uIntensity + uHover * 0.7 + uImplosion * 4.0);
+      col *= totalIntensity;
+
+      float alpha = ringAlpha * (0.65 + uHover * 0.25 + uImplosion * 0.35);
+      gl_FragColor = vec4(col, alpha);
+    }
+  `,
+};
+
+// ── LAYER 1: SILVER CRYSTALLINE HAIRLINE RING & TICKS ──────────────────
+function SilverHairlineRing({
+  phaseRef,
+  elapsedRef,
+  hoverRef,
+  implosionProgressRef,
+}: {
+  phaseRef: React.MutableRefObject<LaunchPhase>;
+  elapsedRef: React.MutableRefObject<number>;
+  hoverRef: React.MutableRefObject<number>;
+  implosionProgressRef: React.MutableRefObject<number>;
+}) {
+  const { viewport } = useThree();
+  const groupRef = useRef<THREE.Group>(null);
+  const ringLineRef = useRef<THREE.Line | null>(null);
+  const ticksRef = useRef<THREE.LineSegments | null>(null);
+
+  const portalRadius = Math.min(viewport.width, viewport.height) * 0.28;
+
+  const ringMat = useMemo(
+    () =>
+      new THREE.LineBasicMaterial({
+        color: THREE_COLORS.silver,
+        transparent: true,
+        opacity: 0,
+        linewidth: 1,
+      }),
+    []
+  );
+
+  const tickMat = useMemo(
+    () =>
+      new THREE.LineBasicMaterial({
+        color: THREE_COLORS.white,
+        transparent: true,
+        opacity: 0,
+        linewidth: 1,
+      }),
+    []
+  );
+
+  useEffect(() => {
+    const group = groupRef.current;
+    if (!group) return;
+
+    // 1. Continuous hairline circular line
+    const segments = 128;
+    const points: THREE.Vector3[] = [];
+    for (let i = 0; i <= segments; i++) {
+      const theta = (i / segments) * Math.PI * 2;
+      points.push(
+        new THREE.Vector3(
+          Math.cos(theta) * portalRadius,
+          Math.sin(theta) * portalRadius,
+          0
+        )
+      );
+    }
+    const ringGeo = new THREE.BufferGeometry().setFromPoints(points);
+    const ringLine = new THREE.Line(ringGeo, ringMat);
+    ringLineRef.current = ringLine;
+    group.add(ringLine);
+
+    // 2. Precision ticks around the circumference (64 ticks with 4 cardinal points)
+    const tickPoints: THREE.Vector3[] = [];
+    const totalTicks = 64;
+    for (let i = 0; i < totalTicks; i++) {
+      const theta = (i / totalTicks) * Math.PI * 2;
+      const isCardinal = i % 16 === 0;
+      const isMajor = i % 4 === 0;
+      const len = isCardinal
+        ? portalRadius * 0.08
+        : isMajor
+        ? portalRadius * 0.04
+        : portalRadius * 0.02;
+
+      const innerR = portalRadius - len * 0.5;
+      const outerR = portalRadius + len * 0.5;
+
+      tickPoints.push(
+        new THREE.Vector3(Math.cos(theta) * innerR, Math.sin(theta) * innerR, 0)
+      );
+      tickPoints.push(
+        new THREE.Vector3(Math.cos(theta) * outerR, Math.sin(theta) * outerR, 0)
+      );
+    }
+    const ticksGeo = new THREE.BufferGeometry().setFromPoints(tickPoints);
+    const ticksObj = new THREE.LineSegments(ticksGeo, tickMat);
+    ticksRef.current = ticksObj;
+    group.add(ticksObj);
+
+    return () => {
+      group.remove(ringLine, ticksObj);
+      ringGeo.dispose();
+      ticksGeo.dispose();
+    };
+  }, [portalRadius, ringMat, tickMat]);
+
+  useFrame((_, delta) => {
+    const elapsed = elapsedRef.current;
+    const phase = phaseRef.current;
+    const hover = hoverRef.current;
+    const implosion = implosionProgressRef.current;
+
+    let targetRingAlpha = 0;
+    let targetTickAlpha = 0;
+
+    if (phase === "INTRO") {
+      if (elapsed > TIMINGS.INTRO_PORTAL_FORM) {
+        const p = Math.min(1, (elapsed - TIMINGS.INTRO_PORTAL_FORM) / 0.8);
+        targetRingAlpha = p * 0.75;
+        targetTickAlpha = p * 0.5;
+      }
+    } else if (
+      phase === "IDLE" ||
+      phase === "LAUNCH_COMPRESS" ||
+      phase === "LAUNCH_STILLNESS"
+    ) {
+      targetRingAlpha = 0.75 + hover * 0.25;
+      targetTickAlpha = 0.45 + hover * 0.4;
+    } else if (phase === "PORTAL_IMPLOSION") {
+      targetRingAlpha = (1 - implosion) * 0.9;
+      targetTickAlpha = (1 - implosion) * 0.8;
+    }
+
+    ringMat.opacity += (targetRingAlpha - ringMat.opacity) * delta * 4;
+    tickMat.opacity += (targetTickAlpha - tickMat.opacity) * delta * 4;
+
+    if (groupRef.current) {
+      // Very slow rotation
+      const rotSpeed = 0.04 + hover * 0.1;
+      groupRef.current.rotation.z += delta * rotSpeed;
+
+      // Implosion scale
+      if (phase === "PORTAL_IMPLOSION") {
+        const s = Math.max(0.001, 1 - Math.pow(implosion, 2));
+        groupRef.current.scale.set(s, s, s);
+      } else {
+        groupRef.current.scale.set(1, 1, 1);
+      }
+    }
+  });
+
+  return <group ref={groupRef} position={[0, 0, 0.05]} />;
 }
+
+// ── LAYER 2: DARK REFLECTIVE GLASS RING ────────────────────────────────
+function DarkReflectiveGlassRing({
+  phaseRef,
+  elapsedRef,
+  hoverRef,
+  implosionProgressRef,
+}: {
+  phaseRef: React.MutableRefObject<LaunchPhase>;
+  elapsedRef: React.MutableRefObject<number>;
+  hoverRef: React.MutableRefObject<number>;
+  implosionProgressRef: React.MutableRefObject<number>;
+}) {
+  const { viewport } = useThree();
+  const meshRef = useRef<THREE.Mesh>(null);
+  const portalRadius = Math.min(viewport.width, viewport.height) * 0.28;
+
+  const glassMat = useMemo(
+    () =>
+      new THREE.MeshPhysicalMaterial({
+        color: THREE_COLORS.darkWine,
+        metalness: 0.35,
+        roughness: 0.1,
+        transparent: true,
+        opacity: 0,
+        transmission: 0.6,
+        ior: 1.5,
+        reflectivity: 0.9,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.05,
+        side: THREE.DoubleSide,
+      }),
+    []
+  );
+
+  useFrame((_, delta) => {
+    const elapsed = elapsedRef.current;
+    const phase = phaseRef.current;
+    const hover = hoverRef.current;
+    const implosion = implosionProgressRef.current;
+
+    let targetAlpha = 0;
+    if (phase === "INTRO") {
+      if (elapsed > TIMINGS.INTRO_PORTAL_FORM) {
+        targetAlpha = Math.min(0.65, (elapsed - TIMINGS.INTRO_PORTAL_FORM) * 0.8);
+      }
+    } else if (
+      phase === "IDLE" ||
+      phase === "LAUNCH_COMPRESS" ||
+      phase === "LAUNCH_STILLNESS"
+    ) {
+      targetAlpha = 0.65 + hover * 0.25;
+    } else if (phase === "PORTAL_IMPLOSION") {
+      targetAlpha = (1 - implosion) * 0.8;
+    }
+
+    glassMat.opacity += (targetAlpha - glassMat.opacity) * delta * 3;
+
+    if (meshRef.current) {
+      if (phase === "PORTAL_IMPLOSION") {
+        const s = Math.max(0.001, 1 - Math.pow(implosion, 2));
+        meshRef.current.scale.set(s, s, s);
+      } else {
+        const breath = 1.0 + Math.sin(elapsed * 1.3) * 0.008;
+        meshRef.current.scale.set(breath, breath, 1);
+      }
+    }
+  });
+
+  return (
+    <mesh ref={meshRef} position={[0, 0, 0]}>
+      <ringGeometry
+        args={[portalRadius * 0.92, portalRadius * 1.08, 64]}
+      />
+      <primitive object={glassMat} />
+    </mesh>
+  );
+}
+
+// ── LAYER 3: DEEP CRIMSON ENERGY RING (SILK LIGHT FLOW) ────────────────
+function DeepCrimsonEnergyRing({
+  phaseRef,
+  elapsedRef,
+  hoverRef,
+  implosionProgressRef,
+}: {
+  phaseRef: React.MutableRefObject<LaunchPhase>;
+  elapsedRef: React.MutableRefObject<number>;
+  hoverRef: React.MutableRefObject<number>;
+  implosionProgressRef: React.MutableRefObject<number>;
+}) {
+  const { viewport } = useThree();
+  const meshRef = useRef<THREE.Mesh>(null);
+  const portalRadius = Math.min(viewport.width, viewport.height) * 0.28;
+
+  const shaderMat = useMemo(() => {
+    return new THREE.ShaderMaterial({
+      uniforms: THREE.UniformsUtils.clone(CrimsonSilkShader.uniforms),
+      vertexShader: CrimsonSilkShader.vertexShader,
+      fragmentShader: CrimsonSilkShader.fragmentShader,
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    });
+  }, []);
+
+  useFrame((_, delta) => {
+    const elapsed = elapsedRef.current;
+    const phase = phaseRef.current;
+    const hover = hoverRef.current;
+    const implosion = implosionProgressRef.current;
+
+    shaderMat.uniforms.uTime.value = elapsed;
+    shaderMat.uniforms.uHover.value = hover;
+    shaderMat.uniforms.uImplosion.value = implosion;
+
+    let targetIntensity = 0;
+    if (phase === "INTRO") {
+      if (elapsed > TIMINGS.INTRO_CRIMSON_AWAKEN) {
+        targetIntensity = Math.min(
+          1.2,
+          (elapsed - TIMINGS.INTRO_CRIMSON_AWAKEN) * 1.1
+        );
+      }
+    } else if (phase === "IDLE") {
+      targetIntensity = 1.2 + Math.sin(elapsed * 1.8) * 0.2;
+    } else if (phase === "LAUNCH_COMPRESS") {
+      targetIntensity = 3.0;
+    } else if (phase === "LAUNCH_STILLNESS") {
+      targetIntensity = 1.0;
+    } else if (phase === "PORTAL_IMPLOSION") {
+      targetIntensity = 2.0 + implosion * 6.0;
+    }
+
+    shaderMat.uniforms.uIntensity.value +=
+      (targetIntensity - shaderMat.uniforms.uIntensity.value) * delta * 4;
+
+    if (meshRef.current) {
+      if (phase === "PORTAL_IMPLOSION") {
+        const s = Math.max(0.001, 1 - Math.pow(implosion, 2));
+        meshRef.current.scale.set(s, s, s);
+      } else {
+        meshRef.current.scale.set(1, 1, 1);
+      }
+    }
+  });
+
+  return (
+    <mesh ref={meshRef} position={[0, 0, 0.02]}>
+      <planeGeometry args={[portalRadius * 2.6, portalRadius * 2.6]} />
+      <primitive object={shaderMat} />
+    </mesh>
+  );
+}
+
+// ── LAYER 4: SEGMENTED METALLIC / CRYSTALLINE ARCS ─────────────────────
+function SegmentedCrystallineArcs({
+  phaseRef,
+  elapsedRef,
+  hoverRef,
+  implosionProgressRef,
+}: {
+  phaseRef: React.MutableRefObject<LaunchPhase>;
+  elapsedRef: React.MutableRefObject<number>;
+  hoverRef: React.MutableRefObject<number>;
+  implosionProgressRef: React.MutableRefObject<number>;
+}) {
+  const { viewport } = useThree();
+  const groupRef = useRef<THREE.Group>(null);
+  const portalRadius = Math.min(viewport.width, viewport.height) * 0.28;
+
+  const arcCount = 16;
+  const arcSegments = useMemo(() => {
+    const items = [];
+    const angleStep = (Math.PI * 2) / arcCount;
+    const gap = 0.08; // gap between segments in radians
+
+    for (let i = 0; i < arcCount; i++) {
+      const startAngle = i * angleStep + gap / 2;
+      const endAngle = (i + 1) * angleStep - gap / 2;
+      const isCrimson = i % 4 === 1 || i % 4 === 3;
+
+      items.push({
+        startAngle,
+        endAngle,
+        isCrimson,
+        zOffset: (Math.sin(i * 1.5) * 0.04) * portalRadius,
+      });
+    }
+    return items;
+  }, [arcCount, portalRadius]);
+
+  const silverArcMat = useMemo(
+    () =>
+      new THREE.MeshPhysicalMaterial({
+        color: THREE_COLORS.silver,
+        metalness: 0.9,
+        roughness: 0.1,
+        transparent: true,
+        opacity: 0,
+        clearcoat: 1.0,
+        side: THREE.DoubleSide,
+      }),
+    []
+  );
+
+  const crimsonArcMat = useMemo(
+    () =>
+      new THREE.MeshPhysicalMaterial({
+        color: THREE_COLORS.crimson,
+        metalness: 0.8,
+        roughness: 0.15,
+        transparent: true,
+        opacity: 0,
+        emissive: THREE_COLORS.wine,
+        emissiveIntensity: 0.4,
+        clearcoat: 0.9,
+        side: THREE.DoubleSide,
+      }),
+    []
+  );
+
+  useFrame((_, delta) => {
+    const elapsed = elapsedRef.current;
+    const phase = phaseRef.current;
+    const hover = hoverRef.current;
+    const implosion = implosionProgressRef.current;
+
+    let targetAlpha = 0;
+    if (phase === "INTRO") {
+      if (elapsed > TIMINGS.INTRO_PORTAL_FORM) {
+        targetAlpha = Math.min(
+          0.85,
+          (elapsed - TIMINGS.INTRO_PORTAL_FORM) * 0.9
+        );
+      }
+    } else if (
+      phase === "IDLE" ||
+      phase === "LAUNCH_COMPRESS" ||
+      phase === "LAUNCH_STILLNESS"
+    ) {
+      targetAlpha = 0.85 + hover * 0.15;
+    } else if (phase === "PORTAL_IMPLOSION") {
+      targetAlpha = (1 - implosion) * 0.9;
+    }
+
+    silverArcMat.opacity += (targetAlpha - silverArcMat.opacity) * delta * 3;
+    crimsonArcMat.opacity += (targetAlpha - crimsonArcMat.opacity) * delta * 3;
+
+    if (groupRef.current) {
+      // Counter-rotation to inner ring
+      const speed = -0.03 - hover * 0.08;
+      groupRef.current.rotation.z += delta * speed;
+
+      if (phase === "PORTAL_IMPLOSION") {
+        const s = Math.max(0.001, 1 - Math.pow(implosion, 2.2));
+        groupRef.current.scale.set(s, s, s);
+      } else {
+        groupRef.current.scale.set(1, 1, 1);
+      }
+    }
+  });
+
+  return (
+    <group ref={groupRef} position={[0, 0, 0.03]}>
+      {arcSegments.map((arc, i) => (
+        <mesh
+          key={i}
+          position={[0, 0, arc.zOffset]}
+          material={arc.isCrimson ? crimsonArcMat : silverArcMat}
+        >
+          <ringGeometry
+            args={[
+              portalRadius * 1.12,
+              portalRadius * 1.15,
+              16,
+              1,
+              arc.startAngle,
+              arc.endAngle - arc.startAngle,
+            ]}
+          />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+// ── LAYER 5: ATMOSPHERIC HALO & VOLUMETRIC AURA ────────────────────────
+function AtmosphericHalo({
+  phaseRef,
+  elapsedRef,
+  hoverRef,
+  implosionProgressRef,
+}: {
+  phaseRef: React.MutableRefObject<LaunchPhase>;
+  elapsedRef: React.MutableRefObject<number>;
+  hoverRef: React.MutableRefObject<number>;
+  implosionProgressRef: React.MutableRefObject<number>;
+}) {
+  const { viewport } = useThree();
+  const meshRef = useRef<THREE.Mesh>(null);
+  const portalRadius = Math.min(viewport.width, viewport.height) * 0.28;
+
+  const haloMat = useMemo(
+    () =>
+      new THREE.MeshBasicMaterial({
+        color: THREE_COLORS.burgundyDeep,
+        transparent: true,
+        opacity: 0,
+        side: THREE.DoubleSide,
+        depthWrite: false,
+      }),
+    []
+  );
+
+  useFrame((_, delta) => {
+    const elapsed = elapsedRef.current;
+    const phase = phaseRef.current;
+    const hover = hoverRef.current;
+    const implosion = implosionProgressRef.current;
+
+    let targetAlpha = 0;
+    if (phase === "INTRO") {
+      if (elapsed > TIMINGS.INTRO_CRIMSON_AWAKEN) {
+        targetAlpha = Math.min(0.25, (elapsed - TIMINGS.INTRO_CRIMSON_AWAKEN) * 0.2);
+      }
+    } else if (phase === "IDLE") {
+      targetAlpha = 0.22 + Math.sin(elapsed * 1.2) * 0.05 + hover * 0.15;
+    } else if (phase === "LAUNCH_COMPRESS") {
+      targetAlpha = 0.45;
+    } else if (phase === "PORTAL_IMPLOSION") {
+      targetAlpha = (1 - implosion) * 0.35;
+    }
+
+    haloMat.opacity += (targetAlpha - haloMat.opacity) * delta * 2;
+
+    if (meshRef.current) {
+      if (phase === "PORTAL_IMPLOSION") {
+        const s = Math.max(0.001, 1 - Math.pow(implosion, 2));
+        meshRef.current.scale.set(s, s, 1);
+      } else {
+        const breath = 1.0 + Math.sin(elapsed * 0.9) * 0.03 + hover * 0.05;
+        meshRef.current.scale.set(breath, breath, 1);
+      }
+    }
+  });
+
+  return (
+    <mesh ref={meshRef} position={[0, 0, -0.15]}>
+      <ringGeometry args={[portalRadius * 0.6, portalRadius * 1.8, 64]} />
+      <primitive object={haloMat} />
+    </mesh>
+  );
+}
+
+// ── LAYER 6: HIDDEN METAMORPHOSIS (BUTTERFLY GEOMETRIC SEED) ───────────
+// Embedded inside the portal ring: left side silver, right side crimson.
+// Initially subtle, catching specular glimmers. Revealed prominently post-implosion!
+function HiddenMetamorphosisSeed({
+  phaseRef,
+  elapsedRef,
+  hoverRef,
+  implosionProgressRef,
+  metamorphosisProgressRef,
+}: {
+  phaseRef: React.MutableRefObject<LaunchPhase>;
+  elapsedRef: React.MutableRefObject<number>;
+  hoverRef: React.MutableRefObject<number>;
+  implosionProgressRef: React.MutableRefObject<number>;
+  metamorphosisProgressRef: React.MutableRefObject<number>;
+}) {
+  const { viewport } = useThree();
+  const groupRef = useRef<THREE.Group>(null);
+  const portalRadius = Math.min(viewport.width, viewport.height) * 0.28;
+
+  // Dual wing materials: Silver Left, Crimson Right
+  const silverWingMat = useMemo(
+    () =>
+      new THREE.MeshPhysicalMaterial({
+        color: THREE_COLORS.silver,
+        metalness: 0.9,
+        roughness: 0.12,
+        transparent: true,
+        opacity: 0,
+        emissive: new THREE.Color(0xcccccc),
+        emissiveIntensity: 0.2,
+        clearcoat: 1.0,
+        side: THREE.DoubleSide,
+      }),
+    []
+  );
+
+  const crimsonWingMat = useMemo(
+    () =>
+      new THREE.MeshPhysicalMaterial({
+        color: THREE_COLORS.crimson,
+        metalness: 0.85,
+        roughness: 0.15,
+        transparent: true,
+        opacity: 0,
+        emissive: THREE_COLORS.crimsonDeep,
+        emissiveIntensity: 0.35,
+        clearcoat: 1.0,
+        side: THREE.DoubleSide,
+      }),
+    []
+  );
+
+  // Crystalline faceted wing geometries
+  const { leftWingGeo, rightWingGeo } = useMemo(() => {
+    // Generate faceted butterfly wing geometry
+    const makeWingGeometry = (isLeft: boolean) => {
+      const geo = new THREE.BufferGeometry();
+      const s = isLeft ? -1 : 1;
+      const r = portalRadius * 0.45;
+
+      // Faceted crystal vertices defining upper & lower wing lobes
+      const vertices = new Float32Array([
+        // Center spine root
+        0, 0, 0,
+        // Upper outer tip
+        s * r * 1.3, r * 0.85, 0.05 * r,
+        // Upper middle crest
+        s * r * 0.9, r * 1.2, 0.08 * r,
+        // Upper inner junction
+        s * r * 0.3, r * 0.4, 0.02 * r,
+        // Lower outer tip
+        s * r * 1.05, -r * 0.65, 0.04 * r,
+        // Lower bottom lobe
+        s * r * 0.55, -r * 1.0, 0.06 * r,
+        // Lower inner root
+        0, -r * 0.3, 0,
+      ]);
+
+      // Triangular facet indices
+      const indices = [
+        0, 2, 1,
+        0, 3, 2,
+        0, 1, 4,
+        0, 4, 5,
+        0, 5, 6,
+      ];
+
+      geo.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
+      geo.setIndex(indices);
+      geo.computeVertexNormals();
+      return geo;
+    };
+
+    return {
+      leftWingGeo: makeWingGeometry(true),
+      rightWingGeo: makeWingGeometry(false),
+    };
+  }, [portalRadius]);
+
+  useFrame((_, delta) => {
+    const elapsed = elapsedRef.current;
+    const phase = phaseRef.current;
+    const hover = hoverRef.current;
+    const metaProgress = metamorphosisProgressRef.current;
+
+    let targetAlpha = 0;
+    let wingScale = 1.0;
+    let wingZ = 0;
+
+    if (phase === "INTRO") {
+      targetAlpha = 0;
+    } else if (phase === "IDLE") {
+      // Very subtle hidden presence — catches specular glimmer periodically
+      const glimmer = Math.pow(Math.sin(elapsed * 0.8), 6) * 0.25;
+      targetAlpha = 0.12 + glimmer + hover * 0.28;
+    } else if (
+      phase === "LAUNCH_COMPRESS" ||
+      phase === "LAUNCH_STILLNESS"
+    ) {
+      targetAlpha = 0.45;
+    } else if (phase === "PORTAL_IMPLOSION") {
+      // Center concentrates
+      targetAlpha = 0.8;
+    } else if (phase === "BUTTERFLY_REVEAL") {
+      // ── GLORIOUS THEME REVELATION ──
+      targetAlpha = 1.0;
+      wingScale = 1.6;
+      wingZ = 0.5;
+    } else if (phase === "METAMORPHOSIS") {
+      // Transforming into light tunnel
+      targetAlpha = Math.max(0, 1 - metaProgress * 1.5);
+      wingScale = 1.6 + metaProgress * 3.0;
+    }
+
+    silverWingMat.opacity += (targetAlpha - silverWingMat.opacity) * delta * 4;
+    crimsonWingMat.opacity += (targetAlpha - crimsonWingMat.opacity) * delta * 4;
+
+    if (groupRef.current) {
+      // Subtle wing breathing
+      if (phase !== "METAMORPHOSIS" && phase !== "COMPLETE") {
+        const wingFlap = Math.sin(elapsed * 1.5) * 0.05;
+        groupRef.current.rotation.y = wingFlap;
+      }
+
+      // Smooth scaling during reveal
+      groupRef.current.scale.lerp(
+        new THREE.Vector3(wingScale, wingScale, wingScale),
+        delta * 6
+      );
+      groupRef.current.position.z +=
+        (wingZ - groupRef.current.position.z) * delta * 5;
+    }
+  });
+
+  return (
+    <group ref={groupRef} position={[0, 0, 0.01]}>
+      {/* Left Wing — Silver */}
+      <mesh geometry={leftWingGeo} material={silverWingMat} />
+      {/* Right Wing — Crimson */}
+      <mesh geometry={rightWingGeo} material={crimsonWingMat} />
+    </group>
+  );
+}
+
+// ── FLOATING CRYSTALLINE ENVIRONMENT (CHAMBER SCULPTURE) ───────────────
+// Symmetrical floating crystal shards, glass planes, and metallic arcs floating in depth.
+function FloatingCrystallineChamber({
+  phaseRef,
+  elapsedRef,
+  mouseRef,
+  hoverRef,
+  implosionProgressRef,
+}: {
+  phaseRef: React.MutableRefObject<LaunchPhase>;
+  elapsedRef: React.MutableRefObject<number>;
+  mouseRef: React.MutableRefObject<{ x: number; y: number }>;
+  hoverRef: React.MutableRefObject<number>;
+  implosionProgressRef: React.MutableRefObject<number>;
+}) {
+  const { viewport } = useThree();
+  const groupRef = useRef<THREE.Group>(null);
+  const scale = Math.min(viewport.width, viewport.height) * 0.35;
+
+  const shardCount = viewport.width < 5 ? 24 : 48;
+
+  // Symmetrical crystalline shard cluster data
+  const shardsData = useMemo(() => {
+    const data = [];
+    for (let i = 0; i < shardCount; i++) {
+      const isLeft = i % 2 === 0;
+      const side = isLeft ? -1 : 1;
+      const angle = (Math.floor(i / 2) / (shardCount / 2)) * Math.PI * 2;
+      const r = (1.4 + (i % 3) * 0.45) * scale;
+
+      const baseX = side * Math.abs(Math.cos(angle) * r);
+      const baseY = Math.sin(angle) * r;
+      // Varied depth layers: background (-3) to foreground (+1.5)
+      const baseZ = ((i % 5) - 2) * 0.8 * scale;
+
+      data.push({
+        basePos: new THREE.Vector3(baseX, baseY, baseZ),
+        currentPos: new THREE.Vector3(baseX, baseY, baseZ),
+        rotSpeed: new THREE.Vector3(
+          (Math.sin(i) * 0.4) * 0.5,
+          (Math.cos(i) * 0.4) * 0.5,
+          (Math.sin(i * 2) * 0.3) * 0.5
+        ),
+        size: (0.04 + (i % 4) * 0.025) * scale,
+        isCrimson: i % 3 === 0,
+        depthFactor: 0.2 + (i % 5) * 0.2,
+      });
+    }
+    return data;
+  }, [shardCount, scale]);
+
+  // Diamond facet geometry for shards
+  const shardGeo = useMemo(() => {
+    const geo = new THREE.BufferGeometry();
+    const verts = new Float32Array([
+      0, 1, 0,
+      0.6, 0, 0.15,
+      0, -1.1, 0,
+      -0.6, 0, -0.15,
+      0, 0, 0.4,
+      0, 0, -0.4,
+    ]);
+    const indices = [
+      0, 1, 4, 0, 4, 3, 0, 3, 5, 0, 5, 1,
+      2, 4, 1, 2, 3, 4, 2, 5, 3, 2, 1, 5,
+    ];
+    geo.setAttribute("position", new THREE.BufferAttribute(verts, 3));
+    geo.setIndex(indices);
+    geo.computeVertexNormals();
+    return geo;
+  }, []);
+
+  const silverMat = useMemo(
+    () =>
+      new THREE.MeshPhysicalMaterial({
+        color: THREE_COLORS.silver,
+        metalness: 0.95,
+        roughness: 0.1,
+        transparent: true,
+        opacity: 0,
+        clearcoat: 1.0,
+      }),
+    []
+  );
+
+  const crimsonMat = useMemo(
+    () =>
+      new THREE.MeshPhysicalMaterial({
+        color: THREE_COLORS.crimson,
+        metalness: 0.8,
+        roughness: 0.15,
+        transparent: true,
+        opacity: 0,
+        emissive: THREE_COLORS.crimsonDeep,
+        emissiveIntensity: 0.3,
+        clearcoat: 1.0,
+      }),
+    []
+  );
+
+  const meshRefs = useRef<THREE.Mesh[]>([]);
+
+  useFrame((_, delta) => {
+    const elapsed = elapsedRef.current;
+    const phase = phaseRef.current;
+    const mx = mouseRef.current.x;
+    const my = mouseRef.current.y;
+    const hover = hoverRef.current;
+    const implosion = implosionProgressRef.current;
+
+    let targetAlpha = 0;
+    if (phase === "INTRO") {
+      if (elapsed > TIMINGS.INTRO_LATTICE) {
+        targetAlpha = Math.min(
+          0.75,
+          (elapsed - TIMINGS.INTRO_LATTICE) * 0.8
+        );
+      }
+    } else if (
+      phase === "IDLE" ||
+      phase === "LAUNCH_COMPRESS" ||
+      phase === "LAUNCH_STILLNESS"
+    ) {
+      targetAlpha = 0.75 + hover * 0.2;
+    } else if (phase === "PORTAL_IMPLOSION") {
+      targetAlpha = (1 - implosion) * 0.85;
+    }
+
+    silverMat.opacity += (targetAlpha - silverMat.opacity) * delta * 3;
+    crimsonMat.opacity += (targetAlpha - crimsonMat.opacity) * delta * 3;
+
+    for (let i = 0; i < shardsData.length; i++) {
+      const s = shardsData[i];
+      const mesh = meshRefs.current[i];
+      if (!mesh) continue;
+
+      if (phase === "PORTAL_IMPLOSION") {
+        // ── STEP 6: IMPLOSION TOWARD CENTER (0, 0, 0) ──
+        const collapseEase = Math.pow(implosion, 2.5);
+        mesh.position.x = s.basePos.x * (1 - collapseEase);
+        mesh.position.y = s.basePos.y * (1 - collapseEase);
+        mesh.position.z = s.basePos.z * (1 - collapseEase);
+        mesh.scale.setScalar(s.size * Math.max(0.01, 1 - collapseEase));
+        mesh.rotation.x += delta * 6;
+        mesh.rotation.y += delta * 6;
+      } else {
+        // Subtle floating orbit + parallax
+        const orbitAngle = elapsed * 0.2 + i;
+        const floatX = Math.cos(orbitAngle) * 0.05 * scale;
+        const floatY = Math.sin(orbitAngle * 1.3) * 0.05 * scale;
+
+        // Mouse Parallax with spring factor
+        const parallaxX = mx * s.depthFactor * 0.25 * scale;
+        const parallaxY = -my * s.depthFactor * 0.25 * scale;
+
+        // Hover effect: outer structures subtly tilt toward center
+        const hoverPull = hover * 0.08;
+        const pullX = (0 - s.basePos.x) * hoverPull;
+        const pullY = (0 - s.basePos.y) * hoverPull;
+
+        mesh.position.set(
+          s.basePos.x + floatX + parallaxX + pullX,
+          s.basePos.y + floatY + parallaxY + pullY,
+          s.basePos.z
+        );
+
+        mesh.rotation.x += s.rotSpeed.x * delta;
+        mesh.rotation.y += s.rotSpeed.y * delta;
+        mesh.rotation.z += s.rotSpeed.z * delta;
+        mesh.scale.setScalar(s.size);
+      }
+    }
+  });
+
+  return (
+    <group ref={groupRef}>
+      {shardsData.map((s, i) => (
+        <mesh
+          key={i}
+          ref={(el) => {
+            if (el) meshRefs.current[i] = el;
+          }}
+          geometry={shardGeo}
+          material={s.isCrimson ? crimsonMat : silverMat}
+          position={[s.basePos.x, s.basePos.y, s.basePos.z]}
+        />
+      ))}
+    </group>
+  );
+}
+
+// ── FINAL METAMORPHOSIS LIGHT TUNNEL (HYPERSPACE) ──────────────────────
+function LightTunnelStreaks({
+  phaseRef,
+  metamorphosisProgressRef,
+}: {
+  phaseRef: React.MutableRefObject<LaunchPhase>;
+  metamorphosisProgressRef: React.MutableRefObject<number>;
+}) {
+  const { viewport } = useThree();
+  const groupRef = useRef<THREE.Group>(null);
+  const count = 36;
+  const radius = Math.min(viewport.width, viewport.height) * 0.35;
+
+  const streaks = useMemo(() => {
+    const list = [];
+    for (let i = 0; i < count; i++) {
+      const theta = (i / count) * Math.PI * 2;
+      const r = radius * (0.3 + (i % 4) * 0.35);
+      const isCrimson = i % 2 === 0;
+      list.push({
+        x: Math.cos(theta) * r,
+        y: Math.sin(theta) * r,
+        zStart: -10 + (i % 6) * 3,
+        length: 8 + (i % 3) * 4,
+        isCrimson,
+      });
+    }
+    return list;
+  }, [count, radius]);
+
+  const streakGeo = useMemo(() => {
+    return new THREE.CylinderGeometry(0.015, 0.015, 1, 6);
+  }, []);
+
+  const silverStreakMat = useMemo(
+    () =>
+      new THREE.MeshBasicMaterial({
+        color: THREE_COLORS.white,
+        transparent: true,
+        opacity: 0,
+      }),
+    []
+  );
+
+  const crimsonStreakMat = useMemo(
+    () =>
+      new THREE.MeshBasicMaterial({
+        color: THREE_COLORS.crimson,
+        transparent: true,
+        opacity: 0,
+      }),
+    []
+  );
+
+  useFrame((_, delta) => {
+    const phase = phaseRef.current;
+    const progress = metamorphosisProgressRef.current;
+
+    if (phase === "METAMORPHOSIS") {
+      const alpha = Math.min(1, progress * 2.5);
+      silverStreakMat.opacity = alpha;
+      crimsonStreakMat.opacity = alpha;
+
+      if (groupRef.current) {
+        // Accelerate through camera
+        groupRef.current.position.z += delta * (15 + progress * 45);
+      }
+    } else {
+      silverStreakMat.opacity = 0;
+      crimsonStreakMat.opacity = 0;
+      if (groupRef.current) {
+        groupRef.current.position.z = 0;
+      }
+    }
+  });
+
+  return (
+    <group ref={groupRef} position={[0, 0, -5]}>
+      {streaks.map((s, i) => (
+        <mesh
+          key={i}
+          geometry={streakGeo}
+          material={s.isCrimson ? crimsonStreakMat : silverStreakMat}
+          position={[s.x, s.y, s.zStart]}
+          rotation={[Math.PI / 2, 0, 0]}
+          scale={[1, s.length, 1]}
+        />
+      ))}
+    </group>
+  );
+}
+
+// ── CINEMATIC CAMERA SYSTEM ────────────────────────────────────────────
+function CinematicChamberCamera({
+  phaseRef,
+  elapsedRef,
+  mouseRef,
+  implosionProgressRef,
+  metamorphosisProgressRef,
+}: {
+  phaseRef: React.MutableRefObject<LaunchPhase>;
+  elapsedRef: React.MutableRefObject<number>;
+  mouseRef: React.MutableRefObject<{ x: number; y: number }>;
+  implosionProgressRef: React.MutableRefObject<number>;
+  metamorphosisProgressRef: React.MutableRefObject<number>;
+}) {
+  const { camera } = useThree();
+  const targetZ = useRef(7.2);
+
+  useFrame((_, delta) => {
+    const phase = phaseRef.current;
+    const elapsed = elapsedRef.current;
+    const mx = mouseRef.current.x;
+    const my = mouseRef.current.y;
+    const implosion = implosionProgressRef.current;
+    const metaProgress = metamorphosisProgressRef.current;
+
+    // Camera target depth based on state
+    if (phase === "INTRO") {
+      targetZ.current = 7.8;
+    } else if (phase === "IDLE") {
+      targetZ.current = 6.8;
+    } else if (phase === "LAUNCH_COMPRESS") {
+      targetZ.current = 6.6;
+    } else if (phase === "LAUNCH_STILLNESS") {
+      targetZ.current = 6.6;
+    } else if (phase === "PORTAL_IMPLOSION") {
+      // Rapid plunge toward center
+      targetZ.current = 6.6 - Math.pow(implosion, 2) * 4.2;
+    } else if (phase === "BUTTERFLY_REVEAL") {
+      targetZ.current = 2.4;
+    } else if (phase === "METAMORPHOSIS") {
+      // Plunge through light tunnel
+      targetZ.current = Math.max(0.1, 2.4 - metaProgress * 6.0);
+    }
+
+    // Smooth Z interpolation
+    camera.position.z += (targetZ.current - camera.position.z) * delta * 3.5;
+
+    // Cursor Parallax (spring interpolation)
+    if (phase !== "METAMORPHOSIS" && phase !== "FLASH") {
+      const pStrength = 0.28;
+      camera.position.x += (mx * pStrength - camera.position.x) * delta * 2.5;
+      camera.position.y += (-my * pStrength * 0.7 - camera.position.y) * delta * 2.5;
+
+      // Micro continuous orbital drift
+      camera.position.x += Math.sin(elapsed * 0.25) * 0.002;
+      camera.position.y += Math.cos(elapsed * 0.2) * 0.0015;
+    }
+
+    camera.lookAt(0, 0, 0);
+  });
+
+  return null;
+}
+
+// ── LUXURY LIGHTING RIG ────────────────────────────────────────────────
+function LuxuryChamberLighting({
+  phaseRef,
+  elapsedRef,
+  hoverRef,
+  implosionProgressRef,
+}: {
+  phaseRef: React.MutableRefObject<LaunchPhase>;
+  elapsedRef: React.MutableRefObject<number>;
+  hoverRef: React.MutableRefObject<number>;
+  implosionProgressRef: React.MutableRefObject<number>;
+}) {
+  const centralCrimsonLight = useRef<THREE.PointLight>(null);
+  const orbitingSilverLight = useRef<THREE.PointLight>(null);
+  const backlightRef = useRef<THREE.PointLight>(null);
+
+  useFrame((_, delta) => {
+    const phase = phaseRef.current;
+    const elapsed = elapsedRef.current;
+    const hover = hoverRef.current;
+    const implosion = implosionProgressRef.current;
+
+    // 1. Central Crimson Light
+    if (centralCrimsonLight.current) {
+      let targetIntensity = 0;
+      if (phase === "INTRO") {
+        if (elapsed > TIMINGS.INTRO_CRIMSON_AWAKEN) {
+          targetIntensity = Math.min(
+            2.0,
+            (elapsed - TIMINGS.INTRO_CRIMSON_AWAKEN) * 1.5
+          );
+        }
+      } else if (phase === "IDLE") {
+        targetIntensity = 2.2 + Math.sin(elapsed * 1.6) * 0.4 + hover * 1.5;
+      } else if (phase === "LAUNCH_COMPRESS") {
+        targetIntensity = 5.0;
+      } else if (phase === "LAUNCH_STILLNESS") {
+        targetIntensity = 1.5;
+      } else if (phase === "PORTAL_IMPLOSION") {
+        targetIntensity = 3.0 + implosion * 10.0;
+      } else if (phase === "BUTTERFLY_REVEAL") {
+        targetIntensity = 8.0;
+      } else if (phase === "METAMORPHOSIS") {
+        targetIntensity = 15.0;
+      }
+
+      centralCrimsonLight.current.intensity +=
+        (targetIntensity - centralCrimsonLight.current.intensity) * delta * 4;
+    }
+
+    // 2. Orbiting Silver Specular Light (creates luxury highlights)
+    if (orbitingSilverLight.current) {
+      const orbAngle = elapsed * 0.45;
+      orbitingSilverLight.current.position.set(
+        Math.cos(orbAngle) * 3.5,
+        Math.sin(orbAngle * 0.7) * 2.5,
+        2.5
+      );
+      orbitingSilverLight.current.intensity =
+        phase === "INTRO" ? 0.3 : 1.2 + hover * 0.8;
+    }
+
+    // 3. Backlight
+    if (backlightRef.current) {
+      backlightRef.current.intensity = phase === "IDLE" ? 0.8 : 1.5;
+    }
+  });
+
+  return (
+    <>
+      <ambientLight intensity={0.06} color={0x09090b} />
+      <pointLight
+        ref={centralCrimsonLight}
+        position={[0, 0, 1.5]}
+        color={0xeb0028}
+        intensity={0}
+        distance={14}
+        decay={2}
+      />
+      <pointLight
+        ref={orbitingSilverLight}
+        position={[2.5, 2, 2.5]}
+        color={0xf4f4f4}
+        intensity={0.8}
+        distance={12}
+        decay={2}
+      />
+      <pointLight
+        ref={backlightRef}
+        position={[0, 0, -4]}
+        color={0x5a0715}
+        intensity={0.8}
+        distance={15}
+        decay={2}
+      />
+    </>
+  );
+}
+
+// ── FLASH OVERLAY (FINAL METAMORPHOSIS TRANSITION) ─────────────────────
+function CinematicFlashOverlay({
+  flashOpacity,
+}: {
+  flashOpacity: number;
+}) {
+  if (flashOpacity < 0.005) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 pointer-events-none transition-none"
+      style={{
+        background: `radial-gradient(
+          circle at center,
+          rgba(255, 255, 255, ${flashOpacity}) 0%,
+          rgba(235, 0, 40, ${flashOpacity * 0.85}) 40%,
+          rgba(90, 7, 21, ${flashOpacity * 0.9}) 75%,
+          rgba(0, 0, 0, ${flashOpacity}) 100%
+        )`,
+        opacity: flashOpacity,
+      }}
+    />
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// MAIN LAUNCH PAGE
+// ═══════════════════════════════════════════════════════════════════════
 
 export default function LaunchPage() {
   const router = useRouter();
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Experience timeline states
-  // 0: Darkness (0 - 0.8s)
-  // 1: The First Energy (0.8s - 2.0s)
-  // 2: Fragment Storm & Convergence (2.0s - 4.5s)
-  // 3: Butterfly Metamorphosis Formed (4.5s - 6.2s)
-  // 4: Cinematic Pulse & Brand / Button Reveal (6.2s+)
-  const [timelinePhase, setTimelinePhase] = useState<number>(0);
-  const [isLaunching, setIsLaunching] = useState<boolean>(false);
-  const [buttonActive, setButtonActive] = useState<boolean>(false);
-  const [mounted, setMounted] = useState<boolean>(false);
-  const [reducedMotion, setReducedMotion] = useState<boolean>(false);
+  // Animation & state synchronization refs
+  const phaseRef = useRef<LaunchPhase>("INTRO");
+  const elapsedRef = useRef(0);
+  const hoverRef = useRef(0); // 0 to 1 smooth
+  const mouseRef = useRef({ x: 0, y: 0 });
+  const targetMouseRef = useRef({ x: 0, y: 0 });
+  const implosionProgressRef = useRef(0); // 0 to 1
+  const metamorphosisProgressRef = useRef(0); // 0 to 1
+  const startTimeRef = useRef(0);
 
-  // Magnetic button state
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const [btnOffset, setBtnOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  // React UI state
+  const [uiPhase, setUiPhase] = useState<LaunchPhase>("INTRO");
+  const [showButton, setShowButton] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const [flashOpacity, setFlashOpacity] = useState(0);
 
-  // Physics & Animation state refs (Prevents re-render lag)
-  const stateRef = useRef<{
-    phase: number;
-    launching: boolean;
-    launchStartTime: number;
-    pulseProgress: number;
-    butterflyAlpha: number;
-    wingFlap: number;
-    shards: Shard[];
-    corePulse: number;
-    mouseX: number;
-    mouseY: number;
-    targetMouseX: number;
-    targetMouseY: number;
-    cameraZoom: number;
-    flashAlpha: number;
-    width: number;
-    height: number;
-    dpr: number;
-  }>({
-    phase: 0,
-    launching: false,
-    launchStartTime: 0,
-    pulseProgress: 0,
-    butterflyAlpha: 0,
-    wingFlap: 0,
-    shards: [],
-    corePulse: 0,
-    mouseX: 0,
-    mouseY: 0,
-    targetMouseX: 0,
-    targetMouseY: 0,
-    cameraZoom: 1,
-    flashAlpha: 0,
-    width: 1920,
-    height: 1080,
-    dpr: 1,
-  });
-
-  // Sync React states to ref
-  useEffect(() => {
-    stateRef.current.phase = timelinePhase;
-  }, [timelinePhase]);
-
-  useEffect(() => {
-    stateRef.current.launching = isLaunching;
-  }, [isLaunching]);
-
-  // Reduced motion check
-  useEffect(() => {
-    setMounted(true);
-    if (typeof window !== "undefined") {
-      const isMotionReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      setReducedMotion(isMotionReduced);
-      if (isMotionReduced) {
-        setTimelinePhase(4);
-        setButtonActive(true);
-      }
-    }
+  // Mouse Tracking
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (typeof window === "undefined") return;
+    targetMouseRef.current = {
+      x: (e.clientX / window.innerWidth) * 2 - 1,
+      y: (e.clientY / window.innerHeight) * 2 - 1,
+    };
   }, []);
 
-  // ─────────────────────────────────────────────────────────────
-  // 1. TIMELINE SEQUENCER (Clean single timer sequence)
-  // ─────────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!mounted || reducedMotion) return;
+  // Launch Trigger Handler
+  const handleLaunchClick = useCallback(() => {
+    if (phaseRef.current !== "IDLE") return;
 
-    // Phase 1: First Energy pulse at 0.8s
-    const t1 = setTimeout(() => setTimelinePhase(1), 800);
-    // Phase 2: Fragment storm & attraction field at 2.2s
-    const t2 = setTimeout(() => setTimelinePhase(2), 2200);
-    // Phase 3: Butterfly assembly completes at 4.8s
-    const t3 = setTimeout(() => setTimelinePhase(3), 4800);
-    // Phase 4: Silence -> Massive Crimson Pulse & Brand Reveal at 6.2s
-    const t4 = setTimeout(() => {
-      setTimelinePhase(4);
-      // Button materializes after pulse
-      setTimeout(() => setButtonActive(true), 1200);
-    }, 6200);
+    // STEP 1-2: Button compresses 3%, glow spikes, portal focuses
+    phaseRef.current = "LAUNCH_COMPRESS";
+    setUiPhase("LAUNCH_COMPRESS");
 
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-      clearTimeout(t4);
+    const launchStartTime = performance.now();
+
+    const launchTimelineTick = () => {
+      const now = performance.now();
+      const dt = (now - launchStartTime) / 1000;
+
+      // Step 1-2: Compress (0.0s - 0.25s)
+      if (dt < 0.25) {
+        phaseRef.current = "LAUNCH_COMPRESS";
+      }
+      // Step 4-5: Profound Stillness (0.25s - 0.45s)
+      else if (dt < 0.45) {
+        phaseRef.current = "LAUNCH_STILLNESS";
+      }
+      // Step 6: Portal Implosion (0.45s - 1.15s)
+      else if (dt < 1.15) {
+        phaseRef.current = "PORTAL_IMPLOSION";
+        implosionProgressRef.current = Math.min(1, (dt - 0.45) / 0.7);
+      }
+      // Butterfly Reveal (1.15s - 1.65s)
+      else if (dt < 1.65) {
+        phaseRef.current = "BUTTERFLY_REVEAL";
+        implosionProgressRef.current = 1.0;
+      }
+      // Metamorphosis Light Tunnel (1.65s - 2.15s)
+      else if (dt < 2.15) {
+        phaseRef.current = "METAMORPHOSIS";
+        metamorphosisProgressRef.current = Math.min(1, (dt - 1.65) / 0.5);
+      }
+      // Cinematic Flash (2.15s - 2.45s)
+      else if (dt < 2.45) {
+        phaseRef.current = "FLASH";
+        const flashProgress = (dt - 2.15) / 0.3;
+        setFlashOpacity(Math.min(1, flashProgress * 1.5));
+      }
+      // Final Navigation
+      else {
+        phaseRef.current = "COMPLETE";
+        setFlashOpacity(1);
+        router.push("/");
+        return;
+      }
+
+      requestAnimationFrame(launchTimelineTick);
     };
-  }, [mounted, reducedMotion]);
 
-  // ─────────────────────────────────────────────────────────────
-  // 2. ULTRA-SMOOTH CANVAS 2D/3D METAMORPHOSIS ENGINE
-  // Zero Garbage Collection, Locked 60 FPS Delta-Time Loop
-  // ─────────────────────────────────────────────────────────────
+    requestAnimationFrame(launchTimelineTick);
+  }, [router]);
+
+  // Main Loop for State Machine & Progress
   useEffect(() => {
-    if (!canvasRef.current) return;
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d", { alpha: false });
-    if (!ctx) return;
+    startTimeRef.current = performance.now();
+
+    // Check prefers-reduced-motion
+    const prefersReduced =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (prefersReduced) {
+      phaseRef.current = "IDLE";
+      setUiPhase("IDLE");
+      setShowButton(true);
+      return;
+    }
 
     let animId: number;
-    let lastTime = performance.now();
 
-    // Setup Canvas Resolution
-    const resizeCanvas = () => {
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      const dpr = Math.min(window.devicePixelRatio || 1, w < 768 ? 1.5 : 2);
+    const tick = () => {
+      const now = performance.now();
+      const elapsed = (now - startTimeRef.current) / 1000;
+      elapsedRef.current = elapsed;
 
-      canvas.width = Math.floor(w * dpr);
-      canvas.height = Math.floor(h * dpr);
-      canvas.style.width = `${w}px`;
-      canvas.style.height = `${h}px`;
+      // Mouse smoothing with spring factor
+      mouseRef.current.x +=
+        (targetMouseRef.current.x - mouseRef.current.x) * 0.08;
+      mouseRef.current.y +=
+        (targetMouseRef.current.y - mouseRef.current.y) * 0.08;
 
-      stateRef.current.width = w;
-      stateRef.current.height = h;
-      stateRef.current.dpr = dpr;
+      // Smooth hover interpolation
+      const targetHover = isHovered ? 1.0 : 0.0;
+      hoverRef.current += (targetHover - hoverRef.current) * 0.1;
 
-      // Re-initialize shard target positions on resize
-      initShards(w, h);
+      // State machine progressions during initial load
+      if (
+        phaseRef.current === "INTRO" ||
+        phaseRef.current === "IDLE"
+      ) {
+        if (elapsed > TIMINGS.INTRO_BUTTON_EMERGE && !showButton) {
+          setShowButton(true);
+        }
+        if (elapsed > TIMINGS.INTRO_READY && phaseRef.current === "INTRO") {
+          phaseRef.current = "IDLE";
+          setUiPhase("IDLE");
+        }
+      }
+
+      animId = requestAnimationFrame(tick);
     };
 
-    // Initialize Shards (Adaptive count: 320 on desktop, 160 on mobile)
-    const initShards = (w: number, h: number) => {
-      const isMobile = w < 768;
-      const count = isMobile ? 180 : 360;
-      const shards: Shard[] = [];
-
-      const cx = w / 2;
-      const cy = h * 0.44;
-
-      for (let i = 0; i < count; i++) {
-        const isLeft = i % 2 === 0;
-        const side = isLeft ? -1 : 1;
-
-        // Wing shape distribution
-        const u = Math.random();
-        const v = Math.random();
-        const isForewing = Math.random() < 0.65;
-
-        let wx = 0;
-        let wy = 0;
-
-        if (isForewing) {
-          // Upper wing arc
-          const angle = -0.15 - u * 1.35;
-          const radius = Math.pow(v, 0.45) * (isMobile ? 110 : 175);
-          wx = cx + side * (Math.cos(angle) * radius * 1.35 + 15);
-          wy = cy + Math.sin(angle) * radius - (isMobile ? 15 : 25);
-        } else {
-          // Lower wing arc
-          const angle = 0.2 + u * 1.25;
-          const radius = Math.pow(v, 0.5) * (isMobile ? 80 : 130);
-          wx = cx + side * (Math.cos(angle) * radius * 1.1 + 12);
-          wy = cy + Math.sin(angle) * radius + (isMobile ? 18 : 30);
-        }
-
-        // Spawn position: widely dispersed along screen perimeter
-        const spawnAngle = Math.random() * Math.PI * 2;
-        const spawnDist = Math.max(w, h) * (0.6 + Math.random() * 0.5);
-        const sx = cx + Math.cos(spawnAngle) * spawnDist;
-        const sy = cy + Math.sin(spawnAngle) * spawnDist;
-
-        // Shatter explosion trajectory
-        const shatterAngle = Math.atan2(wy - cy, wx - cx) + (Math.random() - 0.5) * 0.5;
-        const shatterSpeed = (isMobile ? 12 : 18) + Math.random() * 22;
-
-        shards.push({
-          x: sx,
-          y: sy,
-          vx: 0,
-          vy: 0,
-          targetX: wx,
-          targetY: wy,
-          size: (isMobile ? 2.5 : 3.8) + Math.random() * (isMobile ? 3.5 : 5.5),
-          angle: Math.random() * Math.PI * 2,
-          vAngle: (Math.random() - 0.5) * 0.08,
-          alpha: 0,
-          targetAlpha: 0.25 + Math.random() * 0.65,
-          isLeftSilver: isLeft,
-          depth: 0.5 + Math.random() * 1.2,
-          orbitAngle: Math.random() * Math.PI * 2,
-          orbitRadius: 2 + Math.random() * 8,
-          orbitSpeed: (0.4 + Math.random() * 0.8) * (Math.random() < 0.5 ? 1 : -1),
-          wingPhase: Math.random() * Math.PI * 2,
-          shatterVx: Math.cos(shatterAngle) * shatterSpeed,
-          shatterVy: Math.sin(shatterAngle) * shatterSpeed,
-          shatterVz: 1.0 + Math.random() * 3.5, // Fly toward camera
-        });
-      }
-
-      stateRef.current.shards = shards;
-    };
-
-    resizeCanvas();
-    window.addEventListener("resize", resizeCanvas);
-
-    // ─────────────────────────────────────────────────────────────
-    // 3. MAIN 60 FPS RENDER LOOP
-    // ─────────────────────────────────────────────────────────────
-    const render = (now: number) => {
-      const dt = Math.min((now - lastTime) * 0.001, 0.05); // Clamped delta time
-      lastTime = now;
-
-      const state = stateRef.current;
-      const { width: w, height: h, dpr, phase, shards, launching } = state;
-
-      // Mouse Parallax Smooth Lerp
-      state.mouseX += (state.targetMouseX - state.mouseX) * (dt * 4.0);
-      state.mouseY += (state.targetMouseY - state.mouseY) * (dt * 4.0);
-
-      const cx = w / 2 + state.mouseX * 25;
-      const cy = h * 0.44 + state.mouseY * 20;
-
-      // Clear Frame
-      ctx.save();
-      ctx.scale(dpr, dpr);
-
-      // Layer 1: Atmospheric Deep Black Void
-      ctx.fillStyle = "#020202";
-      ctx.fillRect(0, 0, w, h);
-
-      // Layer 2: Atmospheric Volumetric Crimson Breathing Glow
-      const glowRadius = Math.min(w, h) * (0.4 + Math.sin(now * 0.0015) * 0.05);
-      const bgGlow = ctx.createRadialGradient(cx, cy, 10, cx, cy, glowRadius);
-      const glowOpacity = phase === 0 ? 0.04 : phase < 3 ? 0.12 : 0.22;
-      bgGlow.addColorStop(0, `rgba(235, 0, 40, ${glowOpacity})`);
-      bgGlow.addColorStop(0.5, `rgba(100, 0, 16, ${glowOpacity * 0.4})`);
-      bgGlow.addColorStop(1, "rgba(2, 2, 2, 0)");
-      ctx.fillStyle = bgGlow;
-      ctx.fillRect(0, 0, w, h);
-
-      // ── PHASE 1 & 2: THE FIRST ENERGY & CORE PULSE ──
-      if (phase >= 1 && !launching) {
-        state.corePulse += dt * 2.5;
-        const pulseScale = 1.0 + Math.sin(state.corePulse) * 0.15;
-        const coreRad = (phase === 1 ? 4 : 8) * pulseScale;
-
-        const coreGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreRad * 4);
-        coreGrad.addColorStop(0, "rgba(255, 255, 255, 0.95)");
-        coreGrad.addColorStop(0.3, "rgba(235, 0, 40, 0.85)");
-        coreGrad.addColorStop(0.7, "rgba(235, 0, 40, 0.25)");
-        coreGrad.addColorStop(1, "rgba(235, 0, 40, 0)");
-
-        ctx.fillStyle = coreGrad;
-        ctx.beginPath();
-        ctx.arc(cx, cy, coreRad * 4, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      // ── PHASE 3 & 4: BUTTERFLY CRYSTALLIZATION & WING MOTION ──
-      if (phase >= 2) {
-        state.butterflyAlpha = Math.min(1.0, state.butterflyAlpha + dt * 0.8);
-        state.wingFlap += dt * 2.2;
-      }
-
-      // ── PHASE 4: CINEMATIC PULSE WAVE EXPANSION ──
-      if (phase >= 4 && !launching) {
-        state.pulseProgress = Math.min(1.0, state.pulseProgress + dt * 0.7);
-        const pWave = state.pulseProgress;
-        if (pWave > 0 && pWave < 1) {
-          const waveRadius = pWave * Math.max(w, h) * 0.9;
-          const waveAlpha = (1.0 - pWave) * 0.75;
-
-          ctx.strokeStyle = `rgba(235, 0, 40, ${waveAlpha})`;
-          ctx.lineWidth = 3.5 * (1.0 - pWave) + 0.5;
-          ctx.beginPath();
-          ctx.arc(cx, cy, waveRadius, 0, Math.PI * 2);
-          ctx.stroke();
-
-          // Inner shockwave ring
-          ctx.strokeStyle = `rgba(255, 255, 255, ${waveAlpha * 0.6})`;
-          ctx.lineWidth = 1.5 * (1.0 - pWave);
-          ctx.beginPath();
-          ctx.arc(cx, cy, waveRadius * 0.82, 0, Math.PI * 2);
-          ctx.stroke();
-        }
-      }
-
-      // ── DRAW METAMORPHOSIS CRYSTALLINE WINGS (Phase 3+) ──
-      if (state.butterflyAlpha > 0.05 && !launching) {
-        const flap = Math.sin(state.wingFlap) * 0.18;
-        const bAlpha = state.butterflyAlpha;
-
-        // Draw Left Wing Structure (Silver / White)
-        ctx.save();
-        ctx.translate(cx - 4, cy);
-        ctx.scale(1.0 - Math.abs(flap) * 0.35, 1.0 + flap * 0.1);
-        ctx.globalAlpha = bAlpha * 0.92;
-
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
-        ctx.lineWidth = 1.8;
-        ctx.fillStyle = "rgba(240, 245, 255, 0.08)";
-
-        // Left Forewing Path
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.bezierCurveTo(-45, -75, -120, -155, -170, -120);
-        ctx.bezierCurveTo(-195, -75, -150, -15, -110, 15);
-        ctx.bezierCurveTo(-75, 25, -35, 15, 0, 0);
-        ctx.stroke();
-        ctx.fill();
-
-        // Left Hindwing Path
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.bezierCurveTo(-35, 20, -115, 45, -125, 95);
-        ctx.bezierCurveTo(-95, 140, -45, 125, -20, 75);
-        ctx.bezierCurveTo(-8, 45, -4, 20, 0, 0);
-        ctx.stroke();
-        ctx.fill();
-
-        // Left Crystalline Facet Veins
-        ctx.strokeStyle = "rgba(200, 225, 255, 0.45)";
-        ctx.lineWidth = 1.0;
-        ctx.beginPath();
-        ctx.moveTo(0, 0); ctx.lineTo(-135, -85);
-        ctx.moveTo(0, 0); ctx.lineTo(-155, -40);
-        ctx.moveTo(0, 0); ctx.lineTo(-95, -110);
-        ctx.moveTo(0, 0); ctx.lineTo(-90, 80);
-        ctx.moveTo(0, 0); ctx.lineTo(-65, 105);
-        ctx.stroke();
-        ctx.restore();
-
-        // Draw Right Wing Structure (Ruby Crimson)
-        ctx.save();
-        ctx.translate(cx + 4, cy);
-        ctx.scale(1.0 - Math.abs(flap) * 0.35, 1.0 + flap * 0.1);
-        ctx.globalAlpha = bAlpha * 0.95;
-
-        ctx.strokeStyle = "rgba(255, 45, 75, 0.95)";
-        ctx.lineWidth = 2.0;
-        ctx.fillStyle = "rgba(235, 0, 40, 0.14)";
-
-        // Right Forewing Path
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.bezierCurveTo(45, -75, 120, -155, 170, -120);
-        ctx.bezierCurveTo(195, -75, 150, -15, 110, 15);
-        ctx.bezierCurveTo(75, 25, 35, 15, 0, 0);
-        ctx.stroke();
-        ctx.fill();
-
-        // Right Hindwing Path
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.bezierCurveTo(35, 20, 115, 45, 125, 95);
-        ctx.bezierCurveTo(95, 140, 45, 125, 20, 75);
-        ctx.bezierCurveTo(8, 45, 4, 20, 0, 0);
-        ctx.stroke();
-        ctx.fill();
-
-        // Right Crystalline Facet Veins
-        ctx.strokeStyle = "rgba(255, 140, 160, 0.65)";
-        ctx.lineWidth = 1.2;
-        ctx.beginPath();
-        ctx.moveTo(0, 0); ctx.lineTo(135, -85);
-        ctx.moveTo(0, 0); ctx.lineTo(155, -40);
-        ctx.moveTo(0, 0); ctx.lineTo(95, -110);
-        ctx.moveTo(0, 0); ctx.lineTo(90, 80);
-        ctx.moveTo(0, 0); ctx.lineTo(65, 105);
-        ctx.stroke();
-        ctx.restore();
-
-        // Central Spine / Thorax
-        ctx.save();
-        ctx.fillStyle = "#ffffff";
-        ctx.globalAlpha = bAlpha * 0.9;
-        ctx.beginPath();
-        ctx.ellipse(cx, cy, 3, 22, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      }
-
-      // ── SHARDS PHYSICS & RENDERING (The Crystalline Metamorphosis Particles) ──
-      const len = shards.length;
-      const isShattering = launching;
-
-      for (let i = 0; i < len; i++) {
-        const s = shards[i];
-
-        if (phase === 0) {
-          // Complete darkness
-          s.alpha = 0;
-          continue;
-        }
-
-        if (!isShattering) {
-          if (phase === 1) {
-            // First few fragments appear
-            if (i < 24) {
-              s.alpha = Math.min(s.targetAlpha, s.alpha + dt * 0.4);
-            }
-          } else if (phase >= 2) {
-            // Fragment storm converges toward wings via attraction field
-            s.alpha = Math.min(s.targetAlpha, s.alpha + dt * 0.8);
-
-            const dx = s.targetX - s.x;
-            const dy = s.targetY - s.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-
-            // Attraction + Inertia + Damping
-            const force = Math.min(dist * 0.08, 14);
-            const ax = (dx / (dist + 0.001)) * force;
-            const ay = (dy / (dist + 0.001)) * force;
-
-            s.vx = (s.vx + ax * dt * 4.5) * 0.90;
-            s.vy = (s.vy + ay * dt * 4.5) * 0.90;
-
-            s.x += s.vx;
-            s.y += s.vy;
-
-            // Subtle orbital motion when locked in place
-            if (dist < 15 && phase >= 3) {
-              s.orbitAngle += s.orbitSpeed * dt;
-              s.x = s.targetX + Math.cos(s.orbitAngle) * s.orbitRadius;
-              s.y = s.targetY + Math.sin(s.orbitAngle) * s.orbitRadius;
-            }
-          }
-        } else {
-          // ── PHASE 8: HYPERSPACE SHATTER EXPLOSION ──
-          s.x += s.shatterVx * dt * 60;
-          s.y += s.shatterVy * dt * 60;
-          s.depth += s.shatterVz * dt * 4.0; // Accelerates toward camera
-          s.size = Math.max(0.5, s.size * (1.0 + dt * 2.5));
-          s.alpha = Math.max(0, s.alpha - dt * 0.65);
-        }
-
-        s.angle += s.vAngle;
-
-        if (s.alpha <= 0.01) continue;
-
-        // Render Individual Diamond Crystalline Shard
-        ctx.save();
-        ctx.translate(s.x, s.y);
-        ctx.rotate(s.angle);
-        ctx.globalAlpha = s.alpha;
-
-        if (s.isLeftSilver) {
-          // Left: Silver / White Shard
-          ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
-          ctx.strokeStyle = "rgba(200, 230, 255, 0.7)";
-        } else {
-          // Right: Ruby Crimson Shard
-          ctx.fillStyle = "rgba(235, 0, 40, 0.95)";
-          ctx.strokeStyle = "rgba(255, 120, 145, 0.85)";
-        }
-
-        ctx.lineWidth = 1.0;
-        const sz = s.size;
-
-        ctx.beginPath();
-        ctx.moveTo(0, -sz);
-        ctx.lineTo(sz * 0.65, 0);
-        ctx.lineTo(0, sz * 1.2);
-        ctx.lineTo(-sz * 0.65, 0);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.restore();
-      }
-
-      // ── LAUNCH HYPERSPACE FLASH & FADE TO WHITE/CRIMSON ──
-      if (launching) {
-        state.flashAlpha = Math.min(1.0, state.flashAlpha + dt * 1.8);
-        if (state.flashAlpha > 0.01) {
-          ctx.fillStyle = `rgba(235, 0, 40, ${state.flashAlpha * 0.85})`;
-          ctx.fillRect(0, 0, w, h);
-          ctx.fillStyle = `rgba(255, 255, 255, ${state.flashAlpha * 0.65})`;
-          ctx.fillRect(0, 0, w, h);
-        }
-      }
-
-      ctx.restore();
-      animId = requestAnimationFrame(render);
-    };
-
-    animId = requestAnimationFrame(render);
-
-    return () => {
-      window.removeEventListener("resize", resizeCanvas);
-      cancelAnimationFrame(animId);
-    };
-  }, []);
-
-  // ─────────────────────────────────────────────────────────────
-  // 4. MOUSE PARALLAX & MAGNETIC BUTTON LOGIC
-  // ─────────────────────────────────────────────────────────────
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (typeof window === "undefined") return;
-    const { innerWidth, innerHeight } = window;
-    stateRef.current.targetMouseX = (e.clientX / innerWidth) - 0.5;
-    stateRef.current.targetMouseY = (e.clientY / innerHeight) - 0.5;
-
-    // Magnetic pull for Launch Button
-    if (buttonRef.current && buttonActive && !isLaunching) {
-      const rect = buttonRef.current.getBoundingClientRect();
-      const btnCenterX = rect.left + rect.width / 2;
-      const btnCenterY = rect.top + rect.height / 2;
-      const dx = e.clientX - btnCenterX;
-      const dy = e.clientY - btnCenterY;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-
-      if (dist < 100) {
-        const pull = (1.0 - dist / 100) * 4.5;
-        setBtnOffset({ x: (dx / dist) * pull, y: (dy / dist) * pull });
-      } else {
-        setBtnOffset({ x: 0, y: 0 });
-      }
-    }
-  };
-
-  // ─────────────────────────────────────────────────────────────
-  // 5. LAUNCH CLICK — THE GOOSEBUMPS TRANSFORMATION MOMENT
-  // ─────────────────────────────────────────────────────────────
-  const handleLaunchClick = useCallback(() => {
-    if (isLaunching) return;
-    setIsLaunching(true);
-
-    // Sequence: Shatter -> Fly-through -> Navigate to /
-    setTimeout(() => {
-      router.push("/");
-    }, 1100);
-  }, [isLaunching, router]);
-
-  if (!mounted) return null;
+    animId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(animId);
+  }, [isHovered, showButton]);
 
   return (
     <div
       onMouseMove={handleMouseMove}
-      className="relative w-screen h-screen min-h-[100dvh] bg-[#020202] text-white select-none overflow-hidden flex flex-col justify-between"
-      style={{ perspective: "1200px" }}
+      className="fixed inset-0 w-screen h-screen min-h-[100svh] min-h-[100dvh] min-h-[100lvh] bg-[#000000] text-white select-none overflow-hidden"
+      style={{
+        background:
+          "radial-gradient(ellipse at center, #09090B 0%, #050506 50%, #000000 100%)",
+      }}
     >
-      {/* ── HIGH PERFORMANCE 60 FPS CANVAS ── */}
-      <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none" />
+      {/* ── WEBGL 3D CANVAS LAYER ── */}
+      <div className="absolute inset-0 z-0">
+        <Canvas
+          dpr={[1, 1.5]}
+          gl={{
+            antialias: true,
+            alpha: false,
+            powerPreference: "high-performance",
+            stencil: false,
+            depth: true,
+          }}
+          camera={{ position: [0, 0, 7.8], fov: 42, near: 0.1, far: 50 }}
+          style={{ background: "#000000" }}
+          onCreated={({ gl }) => {
+            gl.setClearColor(THREE_COLORS.black);
+            gl.toneMapping = THREE.ACESFilmicToneMapping;
+            gl.toneMappingExposure = 1.25;
+          }}
+        >
+          <CinematicChamberCamera
+            phaseRef={phaseRef}
+            elapsedRef={elapsedRef}
+            mouseRef={mouseRef}
+            implosionProgressRef={implosionProgressRef}
+            metamorphosisProgressRef={metamorphosisProgressRef}
+          />
+          <LuxuryChamberLighting
+            phaseRef={phaseRef}
+            elapsedRef={elapsedRef}
+            hoverRef={hoverRef}
+            implosionProgressRef={implosionProgressRef}
+          />
 
-      {/* ── TOP MINIMAL HUD METADATA (NO NAVBAR) ── */}
-      <header className="relative z-20 w-full px-6 sm:px-12 pt-6 sm:pt-8 flex items-center justify-between pointer-events-none">
+          {/* ── THE CRIMSON PORTAL: 6 CONCENTRIC DEPTH LAYERS ── */}
+          <SilverHairlineRing
+            phaseRef={phaseRef}
+            elapsedRef={elapsedRef}
+            hoverRef={hoverRef}
+            implosionProgressRef={implosionProgressRef}
+          />
+          <DarkReflectiveGlassRing
+            phaseRef={phaseRef}
+            elapsedRef={elapsedRef}
+            hoverRef={hoverRef}
+            implosionProgressRef={implosionProgressRef}
+          />
+          <DeepCrimsonEnergyRing
+            phaseRef={phaseRef}
+            elapsedRef={elapsedRef}
+            hoverRef={hoverRef}
+            implosionProgressRef={implosionProgressRef}
+          />
+          <SegmentedCrystallineArcs
+            phaseRef={phaseRef}
+            elapsedRef={elapsedRef}
+            hoverRef={hoverRef}
+            implosionProgressRef={implosionProgressRef}
+          />
+          <AtmosphericHalo
+            phaseRef={phaseRef}
+            elapsedRef={elapsedRef}
+            hoverRef={hoverRef}
+            implosionProgressRef={implosionProgressRef}
+          />
+          <HiddenMetamorphosisSeed
+            phaseRef={phaseRef}
+            elapsedRef={elapsedRef}
+            hoverRef={hoverRef}
+            implosionProgressRef={implosionProgressRef}
+            metamorphosisProgressRef={metamorphosisProgressRef}
+          />
+
+          {/* ── SURROUNDING CHAMBER SCULPTURE & HYPERSPACE TUNNEL ── */}
+          <FloatingCrystallineChamber
+            phaseRef={phaseRef}
+            elapsedRef={elapsedRef}
+            mouseRef={mouseRef}
+            hoverRef={hoverRef}
+            implosionProgressRef={implosionProgressRef}
+          />
+          <LightTunnelStreaks
+            phaseRef={phaseRef}
+            metamorphosisProgressRef={metamorphosisProgressRef}
+          />
+
+          <fog attach="fog" args={[0x000000, 8, 22]} />
+        </Canvas>
+      </div>
+
+      {/* ── SECONDARY BRANDING: TOP BAR ── */}
+      <header className="absolute top-0 left-0 right-0 z-20 w-full px-6 sm:px-12 pt-6 sm:pt-8 flex items-center justify-between pointer-events-none">
+        {/* TEDx KLH 2026 */}
         <div className="flex items-center gap-2.5">
-          <div className="w-2 h-2 rounded-full bg-[#EB0028] animate-pulse" />
-          <span className="text-[10px] sm:text-xs font-mono tracking-[0.25em] text-white/50 uppercase">
-            PORTAL_STATE // METAMORPHOSIS
-          </span>
+          <div
+            className="w-2 h-2 rounded-full bg-[#EB0028]"
+            style={{
+              boxShadow:
+                "0 0 10px #EB0028, 0 0 20px rgba(235, 0, 40, 0.6)",
+            }}
+          />
+          <div className="flex items-baseline tracking-tight">
+            <span
+              className="text-sm sm:text-base font-extrabold text-white tracking-wider"
+              style={{ fontFamily: "var(--font-sora)" }}
+            >
+              TED
+            </span>
+            <span
+              className="text-xs sm:text-sm font-black text-[#EB0028] ml-0.5"
+              style={{ fontFamily: "var(--font-sora)" }}
+            >
+              x
+            </span>
+            <span
+              className="text-xs sm:text-sm font-semibold text-white/80 ml-2 tracking-widest"
+              style={{ fontFamily: "var(--font-sora)" }}
+            >
+              KLH
+            </span>
+            <span
+              className="text-[10px] sm:text-xs font-mono text-white/40 ml-2.5 tracking-widest"
+              style={{ fontFamily: "var(--font-dm-mono)" }}
+            >
+              2026
+            </span>
+          </div>
         </div>
-        <div className="text-[10px] sm:text-xs font-mono tracking-widest text-white/40">
-          NOV 04, 2026
+
+        {/* METAMORPHOSIS */}
+        <div className="text-right">
+          <div
+            className="text-[10px] sm:text-xs font-mono tracking-[0.35em] text-[#EB0028]/90 uppercase font-semibold"
+            style={{ fontFamily: "var(--font-dm-mono)" }}
+          >
+            METAMORPHOSIS
+          </div>
+          <div
+            className="text-[8px] sm:text-[9px] font-mono tracking-[0.25em] text-white/30 uppercase mt-0.5"
+            style={{ fontFamily: "var(--font-dm-mono)" }}
+          >
+            THE UNSEEN PROCESS OF BECOMING
+          </div>
         </div>
       </header>
 
-      {/* ── MAIN CENTER STAGE: BRAND HIERARCHY & LAUNCH CONTROL ── */}
-      <main className="relative z-20 flex flex-col items-center justify-end sm:justify-center px-4 mb-8 sm:my-auto text-center pointer-events-auto">
-        
-        {/* BRAND REVEAL (Phase 4) */}
+      {/* ── THE VISUAL CENTER: MATHEMATICALLY CENTERED LAUNCH BUTTON ── */}
+      {/* 50% Horizontal, 50% Vertical Center */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-auto flex items-center justify-center">
         <AnimatePresence>
-          {timelinePhase >= 4 && (
+          {showButton && (
             <motion.div
-              initial={{ opacity: 0, y: 22 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-              className="flex flex-col items-center space-y-1.5 mb-6 sm:mb-10 mt-auto sm:mt-0"
-            >
-              {/* TEDx KLH Hierarchy */}
-              <div className="flex items-baseline justify-center tracking-tight leading-none drop-shadow-[0_4px_30px_rgba(0,0,0,0.95)]">
-                <span
-                  className="text-4xl sm:text-6xl md:text-7xl font-extrabold text-white"
-                  style={{ fontFamily: "var(--font-sora)", fontWeight: 800 }}
-                >
-                  TED
-                </span>
-                <span
-                  className="text-3xl sm:text-5xl md:text-6xl font-black text-[#EB0028] ml-0.5"
-                  style={{ fontFamily: "var(--font-sora)", fontWeight: 900 }}
-                >
-                  x
-                </span>
-                <span
-                  className="text-4xl sm:text-6xl md:text-7xl font-light text-white/95 ml-3 sm:ml-4"
-                  style={{ fontFamily: "var(--font-sora)", fontWeight: 600 }}
-                >
-                  KLH
-                </span>
-              </div>
-
-              {/* BOWRAMPET Subtitle */}
-              <div
-                className="text-[11px] sm:text-sm font-semibold tracking-[0.45em] text-white/70 uppercase pl-1.5"
-                style={{ fontFamily: "var(--font-dm-mono)" }}
-              >
-                BOWRAMPET
-              </div>
-
-              {/* METAMORPHOSIS Theme Line */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.35, duration: 0.8 }}
-                className="pt-2 sm:pt-3 flex items-center gap-2 text-xs sm:text-sm text-[#EB0028] font-bold tracking-[0.3em] uppercase font-mono"
-              >
-                <span>METAMORPHOSIS</span>
-                <span className="text-white/30">·</span>
-                <span className="text-white/60 font-medium tracking-[0.2em] hidden sm:inline">
-                  THE UNSEEN PROCESS OF BECOMING
-                </span>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* ── THE FUTURISTIC MAGNETIC LAUNCH CONTROL ── */}
-        <AnimatePresence>
-          {buttonActive && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.88, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-              className="relative group flex items-center justify-center"
-              style={{
-                transform: `translate3d(${btnOffset.x}px, ${btnOffset.y}px, 0)`,
-                transition: "transform 0.15s ease-out",
+              initial={{ opacity: 0, scale: 0.88 }}
+              animate={{
+                opacity: 1,
+                scale: isHovered ? 1.025 : [1, 1.012, 1],
               }}
+              transition={
+                isHovered
+                  ? { duration: 0.35, ease: [0.16, 1, 0.3, 1] }
+                  : {
+                      scale: {
+                        repeat: Infinity,
+                        duration: 5,
+                        ease: "easeInOut",
+                      },
+                      opacity: { duration: 1.2, ease: [0.16, 1, 0.3, 1] },
+                    }
+              }
+              className="relative flex items-center justify-center"
             >
-              {/* Outer Energy Field */}
-              <div className="absolute -inset-3.5 rounded-full bg-gradient-to-r from-[#EB0028]/25 via-white/10 to-[#EB0028]/25 blur-xl opacity-50 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500 pointer-events-none" />
+              {/* Button Ambient Crimson Glow */}
+              <div
+                className="absolute -inset-4 rounded-full pointer-events-none transition-opacity duration-700 blur-xl"
+                style={{
+                  background:
+                    "radial-gradient(circle, rgba(235,0,40,0.3) 0%, transparent 70%)",
+                  opacity: isHovered ? 0.9 : 0.4,
+                }}
+              />
 
-              {/* Magnetic Button */}
+              {/* The Launch Button */}
               <motion.button
-                ref={buttonRef}
+                id="launch-portal-button"
                 onClick={handleLaunchClick}
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.95 }}
-                disabled={isLaunching}
-                className="relative px-10 sm:px-14 py-4 sm:py-5 rounded-full overflow-hidden flex items-center justify-center cursor-pointer border border-[#EB0028]/50 bg-black/75 backdrop-blur-xl shadow-[0_0_35px_rgba(235,0,40,0.45)] group-hover:shadow-[0_0_65px_rgba(235,0,40,0.9)] group-hover:border-[#EB0028] transition-all duration-300"
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+                whileTap={{ scale: 0.96 }}
+                animate={
+                  uiPhase === "LAUNCH_COMPRESS"
+                    ? { scale: 0.96, filter: "brightness(1.5)" }
+                    : {}
+                }
+                disabled={uiPhase !== "IDLE"}
+                className="group relative min-w-[160px] sm:min-w-[190px] h-[48px] sm:h-[54px] px-8 sm:px-11 rounded-full overflow-hidden flex items-center justify-center transition-all duration-500 cursor-pointer"
+                style={{
+                  // Dark translucent glass
+                  backgroundColor: "rgba(9, 9, 11, 0.88)",
+                  backdropFilter: "blur(24px)",
+                  WebkitBackdropFilter: "blur(24px)",
+                  // Silver hairline border transitioning to bright silver on hover
+                  border: isHovered
+                    ? "1px solid rgba(244, 244, 244, 0.75)"
+                    : "1px solid rgba(217, 217, 217, 0.22)",
+                  boxShadow: isHovered
+                    ? "0 0 35px rgba(235, 0, 40, 0.45), inset 0 0 15px rgba(235, 0, 40, 0.25)"
+                    : "0 0 20px rgba(0, 0, 0, 0.8), inset 0 0 12px rgba(235, 0, 40, 0.08)",
+                }}
               >
-                {/* Traveling Perimeter Laser Tracer */}
+                {/* Slow surface reflection sweep across glass */}
                 <motion.div
-                  animate={{ rotate: [0, 360] }}
-                  transition={{ duration: 4.0, repeat: Infinity, ease: "linear" }}
-                  className="absolute inset-[-100%] bg-[conic-gradient(from_0deg,transparent_0%,rgba(235,0,40,0.85)_25%,transparent_45%,rgba(255,255,255,0.75)_50%,transparent_75%)] opacity-40 group-hover:opacity-85 pointer-events-none"
+                  animate={{
+                    x: ["-150%", "200%"],
+                  }}
+                  transition={{
+                    duration: 5.5,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    repeatDelay: 1.5,
+                  }}
+                  className="absolute inset-y-0 w-1/2 bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12 pointer-events-none"
                 />
 
-                {/* Inner Obsidian Shield */}
-                <div className="absolute inset-[1.5px] rounded-full bg-[#08080a]/90 backdrop-blur-md pointer-events-none" />
+                {/* Subtle Inner Crimson Core Glow */}
+                <div
+                  className="absolute inset-0 rounded-full pointer-events-none transition-opacity duration-500"
+                  style={{
+                    background:
+                      "radial-gradient(ellipse at center, rgba(235,0,40,0.22) 0%, transparent 75%)",
+                    opacity: isHovered ? 1 : 0.6,
+                  }}
+                />
 
-                {/* Button Typography */}
-                <div className="relative z-10 flex items-center gap-3">
-                  <span className="w-2 h-2 rounded-full bg-[#EB0028] group-hover:scale-125 transition-transform" />
+                {/* Button Content */}
+                <div className="relative z-10 flex items-center justify-center gap-3">
+                  {/* Glowing Jewel Indicator */}
                   <span
-                    className="text-base sm:text-lg font-bold tracking-[0.3em] uppercase text-white"
-                    style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}
+                    className="w-1.5 h-1.5 rounded-full bg-[#EB0028] transition-transform duration-300 group-hover:scale-125"
+                    style={{
+                      boxShadow:
+                        "0 0 8px #EB0028, 0 0 16px rgba(235, 0, 40, 0.6)",
+                    }}
+                  />
+
+                  {/* LAUNCH Text */}
+                  <span
+                    className="text-xs sm:text-sm font-bold tracking-[0.38em] uppercase text-[#F4F4F4] group-hover:text-white transition-colors duration-300 pl-1"
+                    style={{
+                      fontFamily: "var(--font-sora)",
+                      fontWeight: 700,
+                      letterSpacing: "0.38em",
+                    }}
                   >
-                    {isLaunching ? "WARPING..." : "LAUNCH"}
+                    {uiPhase === "LAUNCH_COMPRESS" ||
+                    uiPhase === "LAUNCH_STILLNESS" ||
+                    uiPhase === "PORTAL_IMPLOSION" ||
+                    uiPhase === "BUTTERFLY_REVEAL" ||
+                    uiPhase === "METAMORPHOSIS"
+                      ? "TRANSCENDING"
+                      : "LAUNCH"}
                   </span>
                 </div>
               </motion.button>
             </motion.div>
           )}
         </AnimatePresence>
-      </main>
+      </div>
 
-      {/* ── BOTTOM MINIMAL COORDINATES ── */}
-      <footer className="relative z-20 w-full px-6 sm:px-12 pb-6 sm:pb-8 flex items-center justify-between text-[10px] font-mono text-white/35 pointer-events-none">
-        <div>17.5623° N · 78.3846° E</div>
-        <div>COHORT // 100 SEATS</div>
+      {/* ── SECONDARY BRANDING: BOTTOM BAR ── */}
+      <footer className="absolute bottom-0 left-0 right-0 z-20 w-full px-6 sm:px-12 pb-6 sm:pt-0 sm:pb-8 flex items-center justify-between pointer-events-none text-white/30 text-[9px] sm:text-[10px] font-mono tracking-widest uppercase">
+        <span style={{ fontFamily: "var(--font-dm-mono)" }}>
+          17.5623° N · 78.3846° E
+        </span>
+        <span
+          className="text-[#EB0028]/60"
+          style={{ fontFamily: "var(--font-dm-mono)" }}
+        >
+          THE CRIMSON PORTAL
+        </span>
       </footer>
+
+      {/* ── FINAL METAMORPHOSIS TRANSITION FLASH ── */}
+      <CinematicFlashOverlay flashOpacity={flashOpacity} />
     </div>
   );
 }

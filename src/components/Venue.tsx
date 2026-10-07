@@ -1,25 +1,25 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { MapPin, Compass, ArrowUpRight, Calendar, Sparkles } from "lucide-react";
+import { MapPin, Compass, ArrowUpRight } from "lucide-react";
 import Magnetic from "./Magnetic";
 
 export default function Venue() {
   return (
     <section 
       id="venue" 
-      className="relative w-full py-28 sm:py-40 px-4 sm:px-8 md:px-12 select-none overflow-hidden"
+      className="relative w-full py-[clamp(3.5rem,7vw,8.5rem)] px-[clamp(1rem,4vw,3.5rem)] select-none overflow-hidden"
     >
       {/* Background Radial Atmosphere */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85vw] max-w-[1400px] h-[600px] bg-[radial-gradient(ellipse_at_center,rgba(235,0,40,0.06),transparent_70%)] pointer-events-none" />
 
-      <div className="w-full max-w-[1400px] mx-auto z-20 flex flex-col lg:flex-row gap-12 lg:gap-16 items-center">
+      <div className="w-full max-w-[1400px] mx-auto z-20 flex flex-col lg:flex-row gap-[clamp(2.5rem,5vw,4.5rem)] items-center">
         
         {/* Left Column: Venue Metadata & Event Details */}
-        <div className="w-full lg:w-1/2 space-y-8 flex flex-col justify-center">
-          <div className="flex flex-col space-y-4">
+        <div className="w-full lg:w-1/2 space-y-[clamp(1.25rem,2.5vw,2rem)] flex flex-col justify-center text-center lg:text-left">
+          <div className="flex flex-col space-y-3 sm:space-y-4">
             <h2 
-              className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white uppercase leading-[1.05]" 
+              className="text-[clamp(2.1rem,5.5vw,4.5rem)] font-extrabold tracking-tight text-white uppercase leading-[1.05]" 
               style={{ fontFamily: "var(--font-sora)", fontWeight: 800 }}
             >
               KLH AUDITORIUM <br />
@@ -27,7 +27,7 @@ export default function Venue() {
             </h2>
 
             <div 
-              className="flex items-center space-x-2 text-xs text-white/60 pt-1"
+              className="flex items-center justify-center lg:justify-start space-x-2 text-xs text-white/60 pt-0.5"
               style={{ fontFamily: "var(--font-dm-mono)" }}
             >
               <Compass className="w-4 h-4 text-[#EB0028] shrink-0" />
@@ -36,13 +36,13 @@ export default function Venue() {
           </div>
 
           <p 
-            className="text-sm sm:text-base text-white/70 leading-relaxed font-normal max-w-lg" 
+            className="text-sm sm:text-base text-white/70 leading-relaxed font-normal max-w-lg mx-auto lg:mx-0" 
             style={{ fontFamily: "var(--font-manrope)", fontWeight: 400 }}
           >
             KLH University, Bowrampet Campus. Engineered for volumetric keynote staging, spatial acoustic resonance, and collaborative breakout experiences for our cohort of 100 curated delegates.
           </p>
 
-          <div className="space-y-3 text-xs sm:text-sm">
+          <div className="space-y-3 text-xs sm:text-sm max-w-lg mx-auto lg:mx-0 text-left">
             <div className="flex items-start space-x-3 p-4 rounded-2xl border border-white/[0.08] bg-black/50 backdrop-blur-xl">
               <MapPin className="w-5 h-5 text-[#EB0028] shrink-0 mt-0.5" />
               <div className="space-y-1">
@@ -60,13 +60,13 @@ export default function Venue() {
           </div>
 
           {/* Magnetic Google Maps Action Button */}
-          <div className="pt-2">
+          <div className="pt-2 flex justify-center lg:justify-start">
             <Magnetic range={65} strength={0.35}>
               <a
                 href="https://www.google.com/maps/place/KLH+University,+Bowrampet/data=!4m2!3m1!1s0x0:0xc307c84e835d6187?sa=X&ved=1t:2428&ictx=111"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center space-x-2.5 text-xs font-bold tracking-[0.2em] uppercase text-white bg-white/[0.04] border border-white/10 hover:border-[#EB0028] px-6 py-3.5 rounded-full group transition-all duration-300 shadow-lg hover:shadow-[0_0_25px_rgba(235,0,40,0.3)]"
+                className="inline-flex items-center space-x-2.5 text-xs font-bold tracking-[0.2em] uppercase text-white bg-white/[0.04] border border-white/10 hover:border-[#EB0028] px-6 py-3.5 rounded-full group transition-all duration-300 shadow-lg hover:shadow-[0_0_25px_rgba(235,0,40,0.3)] min-h-[44px]"
                 style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}
               >
                 <span>Open in Google Maps</span>
@@ -78,7 +78,7 @@ export default function Venue() {
 
         {/* Right Column: Geometric Location Visualization */}
         <div className="w-full lg:w-1/2 flex items-center justify-center">
-          <div className="relative w-full max-w-[480px] aspect-square rounded-3xl border border-white/10 bg-black/70 backdrop-blur-2xl p-8 overflow-hidden group shadow-[0_25px_60px_rgba(0,0,0,0.9)]">
+          <div className="relative w-full max-w-[min(100%,440px)] aspect-square rounded-3xl border border-white/10 bg-black/70 backdrop-blur-2xl p-6 sm:p-8 overflow-hidden group shadow-[0_25px_60px_rgba(0,0,0,0.9)]">
             
             {/* Ambient Ruby Radar Glow */}
             <div className="absolute top-[40%] left-[60%] -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-[#EB0028]/20 rounded-full blur-3xl pointer-events-none group-hover:bg-[#EB0028]/35 transition-colors duration-500" />
@@ -113,7 +113,7 @@ export default function Venue() {
 
             {/* HUD Status Labels */}
             <div 
-              className="absolute top-5 left-5 text-[9px] text-white/40 space-y-1"
+              className="absolute top-4 sm:top-5 left-4 sm:left-5 text-[9px] text-white/40 space-y-1"
               style={{ fontFamily: "var(--font-dm-mono)" }}
             >
               <div>SYS.VENUE: CALIBRATED</div>
@@ -121,7 +121,7 @@ export default function Venue() {
             </div>
 
             <div 
-              className="absolute bottom-5 right-5 text-[9px] text-[#EB0028] font-bold tracking-widest uppercase"
+              className="absolute bottom-4 sm:bottom-5 right-4 sm:right-5 text-[9px] text-[#EB0028] font-bold tracking-widest uppercase"
               style={{ fontFamily: "var(--font-dm-mono)" }}
             >
               KLH BOWRAMPET CAMPUS

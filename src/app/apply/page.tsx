@@ -500,8 +500,8 @@ export default function ApplyPage() {
               {/* Need Help link */}
               <div className="p-4 rounded-2xl border border-white/5 bg-white/[0.01] text-xs text-white/50 flex items-center justify-between">
                 <span>Inquiries or bulk pass queries?</span>
-                <a href="mailto:tedx@klh.edu.in" className="text-[#EB0028] font-semibold hover:underline" style={{ fontFamily: "var(--font-dm-mono)" }}>
-                  tedx@klh.edu.in
+                <a href="mailto:tedxklhbowrampet@klh.edu.in" className="text-[#EB0028] font-semibold hover:underline" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                  tedxklhbowrampet@klh.edu.in
                 </a>
               </div>
             </motion.div>
@@ -511,19 +511,19 @@ export default function ApplyPage() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="lg:col-span-8"
+              className="lg:col-span-8 w-full"
             >
-              <div className="w-full p-6 sm:p-10 md:p-12 rounded-3xl relative overflow-hidden shadow-[0_24px_80px_rgba(0,0,0,0.85)] border border-white/10 bg-black/75 backdrop-blur-2xl">
+              <div className="w-full p-4 xs:p-6 sm:p-10 md:p-12 rounded-2xl sm:rounded-3xl relative overflow-hidden shadow-[0_24px_80px_rgba(0,0,0,0.85)] border border-white/10 bg-black/75 backdrop-blur-2xl">
                 {/* Glowing Top Ambient Line */}
                 <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-[#EB0028] to-transparent" />
 
                 {/* Form Progress Indicator Header */}
-                <div className="space-y-5 pb-8 border-b border-white/10">
+                <div className="space-y-4 sm:space-y-5 pb-6 sm:pb-8 border-b border-white/10">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-[#EB0028] animate-ping" />
                       <span
-                        className="text-xs font-bold tracking-[0.2em] text-[#EB0028] uppercase"
+                        className="text-[11px] sm:text-xs font-bold tracking-[0.16em] sm:tracking-[0.2em] text-[#EB0028] uppercase"
                         style={{ fontFamily: "var(--font-dm-mono)" }}
                       >
                         STEP 0{step} OF 03 · {STEPS[step - 1].name}
@@ -531,7 +531,7 @@ export default function ApplyPage() {
                     </div>
 
                     <span
-                      className="text-[11px] text-white/40 tracking-wider uppercase"
+                      className="text-[10px] sm:text-[11px] text-white/40 tracking-wider uppercase font-mono"
                       style={{ fontFamily: "var(--font-dm-mono)" }}
                     >
                       {Math.round((step / 3) * 100)}% COMPLETE
@@ -539,7 +539,7 @@ export default function ApplyPage() {
                   </div>
 
                   {/* 3 Steps Indicator Tabs */}
-                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                  <div className="grid grid-cols-3 gap-1.5 sm:gap-3">
                     {STEPS.map((s) => {
                       const isCurrent = step === s.id;
                       const isDone = step > s.id;
@@ -550,7 +550,7 @@ export default function ApplyPage() {
                           onClick={() => {
                             if (isDone) setStep(s.id);
                           }}
-                          className={`py-3 px-2 rounded-xl border text-[10px] sm:text-xs font-semibold uppercase tracking-wider transition-all duration-300 text-center relative overflow-hidden ${
+                          className={`py-2.5 sm:py-3 px-1 sm:px-2 rounded-xl border text-[9px] xs:text-[10px] sm:text-xs font-semibold uppercase tracking-wider transition-all duration-300 text-center relative overflow-hidden ${
                             isCurrent
                               ? "border-[#EB0028] bg-[#EB0028]/15 text-[#EB0028] shadow-[0_0_18px_rgba(235,0,40,0.25)] font-bold"
                               : isDone
@@ -559,7 +559,7 @@ export default function ApplyPage() {
                           }`}
                           style={{ fontFamily: "var(--font-dm-mono)" }}
                         >
-                          <span>0{s.id}. </span>
+                          <span className="opacity-70">0{s.id}. </span>
                           <span>{s.name}</span>
                         </button>
                       );
@@ -568,7 +568,7 @@ export default function ApplyPage() {
                 </div>
 
                 {/* Step Form Panes */}
-                <div className="pt-8">
+                <div className="pt-6 sm:pt-8">
                   <AnimatePresence mode="wait">
                     {/* PHASE 1: PERSONAL INFORMATION */}
                     {step === 1 && (
@@ -582,7 +582,7 @@ export default function ApplyPage() {
                       >
                         <div>
                           <h2
-                            className="text-xl font-bold text-white uppercase tracking-tight"
+                            className="text-lg sm:text-xl font-bold text-white uppercase tracking-tight"
                             style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}
                           >
                             Personal Information
@@ -592,10 +592,10 @@ export default function ApplyPage() {
                           </p>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                           {/* First Name */}
-                          <div className="space-y-2">
-                            <label className="text-xs uppercase text-white/80 font-medium tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                          <div className="space-y-1.5 sm:space-y-2">
+                            <label className="text-[11px] sm:text-xs uppercase text-white/80 font-medium tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
                               First Name *
                             </label>
                             <input
@@ -603,7 +603,7 @@ export default function ApplyPage() {
                               value={form.firstName}
                               onChange={(e) => updateField("firstName", e.target.value)}
                               placeholder="e.g. John"
-                              className={`w-full h-12 px-4 rounded-xl border bg-white/[0.03] text-white text-sm placeholder-white/25 focus:outline-none transition-all ${
+                              className={`w-full h-11 sm:h-12 px-3.5 sm:px-4 rounded-xl border bg-white/[0.03] text-white text-base sm:text-sm placeholder-white/25 focus:outline-none transition-all ${
                                 errors.firstName ? "border-[#EB0028] ring-1 ring-[#EB0028]" : "border-white/10 focus:border-[#EB0028] focus:ring-1 focus:ring-[#EB0028]/50"
                               }`}
                               style={{ fontFamily: "var(--font-manrope)" }}
@@ -612,8 +612,9 @@ export default function ApplyPage() {
                           </div>
 
                           {/* Last Name */}
-                          <div className="space-y-2">
-                            <label className="text-xs uppercase text-white/80 font-medium tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                          {/* Last Name */}
+                          <div className="space-y-1.5 sm:space-y-2">
+                            <label className="text-[11px] sm:text-xs uppercase text-white/80 font-medium tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
                               Last Name *
                             </label>
                             <input
@@ -621,7 +622,7 @@ export default function ApplyPage() {
                               value={form.lastName}
                               onChange={(e) => updateField("lastName", e.target.value)}
                               placeholder="e.g. Doe"
-                              className={`w-full h-12 px-4 rounded-xl border bg-white/[0.03] text-white text-sm placeholder-white/25 focus:outline-none transition-all ${
+                              className={`w-full h-11 sm:h-12 px-3.5 sm:px-4 rounded-xl border bg-white/[0.03] text-white text-base sm:text-sm placeholder-white/25 focus:outline-none transition-all ${
                                 errors.lastName ? "border-[#EB0028] ring-1 ring-[#EB0028]" : "border-white/10 focus:border-[#EB0028] focus:ring-1 focus:ring-[#EB0028]/50"
                               }`}
                               style={{ fontFamily: "var(--font-manrope)" }}
@@ -630,8 +631,8 @@ export default function ApplyPage() {
                           </div>
 
                           {/* Email Address */}
-                          <div className="space-y-2">
-                            <label className="text-xs uppercase text-white/80 font-medium tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                          <div className="space-y-1.5 sm:space-y-2">
+                            <label className="text-[11px] sm:text-xs uppercase text-white/80 font-medium tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
                               Official Email Address *
                             </label>
                             <input
@@ -639,7 +640,7 @@ export default function ApplyPage() {
                               value={form.email}
                               onChange={(e) => updateField("email", e.target.value)}
                               placeholder="e.g. yourname@domain.com"
-                              className={`w-full h-12 px-4 rounded-xl border bg-white/[0.03] text-white text-sm placeholder-white/25 focus:outline-none transition-all ${
+                              className={`w-full h-11 sm:h-12 px-3.5 sm:px-4 rounded-xl border bg-white/[0.03] text-white text-base sm:text-sm placeholder-white/25 focus:outline-none transition-all ${
                                 errors.email ? "border-[#EB0028] ring-1 ring-[#EB0028]" : "border-white/10 focus:border-[#EB0028] focus:ring-1 focus:ring-[#EB0028]/50"
                               }`}
                               style={{ fontFamily: "var(--font-manrope)" }}
@@ -648,17 +649,18 @@ export default function ApplyPage() {
                           </div>
 
                           {/* Phone Number */}
-                          <div className="space-y-2">
-                            <label className="text-xs uppercase text-white/80 font-medium tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                          <div className="space-y-1.5 sm:space-y-2">
+                            <label className="text-[11px] sm:text-xs uppercase text-white/80 font-medium tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
                               Phone Number (10 Digits) *
                             </label>
                             <input
                               type="tel"
+                              inputMode="numeric"
                               value={form.phone}
                               onChange={(e) => updateField("phone", e.target.value.replace(/\D/g, "").slice(0, 10))}
                               placeholder="e.g. 9876543210"
                               maxLength={10}
-                              className={`w-full h-12 px-4 rounded-xl border bg-white/[0.03] text-white text-sm placeholder-white/25 focus:outline-none transition-all ${
+                              className={`w-full h-11 sm:h-12 px-3.5 sm:px-4 rounded-xl border bg-white/[0.03] text-white text-base sm:text-sm placeholder-white/25 focus:outline-none transition-all ${
                                 errors.phone ? "border-[#EB0028] ring-1 ring-[#EB0028]" : "border-white/10 focus:border-[#EB0028] focus:ring-1 focus:ring-[#EB0028]/50"
                               }`}
                               style={{ fontFamily: "var(--font-manrope)" }}
@@ -667,8 +669,8 @@ export default function ApplyPage() {
                           </div>
 
                           {/* College / Organization */}
-                          <div className="space-y-2">
-                            <label className="text-xs uppercase text-white/80 font-medium tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                          <div className="space-y-1.5 sm:space-y-2">
+                            <label className="text-[11px] sm:text-xs uppercase text-white/80 font-medium tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
                               College / Organization *
                             </label>
                             <input
@@ -676,7 +678,7 @@ export default function ApplyPage() {
                               value={form.organization}
                               onChange={(e) => updateField("organization", e.target.value)}
                               placeholder="e.g. KL University / Microsoft / Startup"
-                              className={`w-full h-12 px-4 rounded-xl border bg-white/[0.03] text-white text-sm placeholder-white/25 focus:outline-none transition-all ${
+                              className={`w-full h-11 sm:h-12 px-3.5 sm:px-4 rounded-xl border bg-white/[0.03] text-white text-base sm:text-sm placeholder-white/25 focus:outline-none transition-all ${
                                 errors.organization ? "border-[#EB0028] ring-1 ring-[#EB0028]" : "border-white/10 focus:border-[#EB0028] focus:ring-1 focus:ring-[#EB0028]/50"
                               }`}
                               style={{ fontFamily: "var(--font-manrope)" }}
@@ -685,8 +687,8 @@ export default function ApplyPage() {
                           </div>
 
                           {/* City */}
-                          <div className="space-y-2">
-                            <label className="text-xs uppercase text-white/80 font-medium tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                          <div className="space-y-1.5 sm:space-y-2">
+                            <label className="text-[11px] sm:text-xs uppercase text-white/80 font-medium tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
                               City *
                             </label>
                             <input
@@ -694,7 +696,7 @@ export default function ApplyPage() {
                               value={form.city}
                               onChange={(e) => updateField("city", e.target.value)}
                               placeholder="e.g. Hyderabad"
-                              className={`w-full h-12 px-4 rounded-xl border bg-white/[0.03] text-white text-sm placeholder-white/25 focus:outline-none transition-all ${
+                              className={`w-full h-11 sm:h-12 px-3.5 sm:px-4 rounded-xl border bg-white/[0.03] text-white text-base sm:text-sm placeholder-white/25 focus:outline-none transition-all ${
                                 errors.city ? "border-[#EB0028] ring-1 ring-[#EB0028]" : "border-white/10 focus:border-[#EB0028] focus:ring-1 focus:ring-[#EB0028]/50"
                               }`}
                               style={{ fontFamily: "var(--font-manrope)" }}
@@ -728,33 +730,33 @@ export default function ApplyPage() {
                         </div>
 
                         {/* Payment Card with QR & UPI */}
-                        <div className="p-6 rounded-2xl border border-white/10 bg-white/[0.02] flex flex-col sm:flex-row items-center gap-6">
+                        <div className="p-4 sm:p-6 rounded-2xl border border-white/10 bg-white/[0.02] flex flex-col sm:flex-row items-center gap-5 sm:gap-6">
                           {/* QR Code Container */}
-                          <div className="w-36 h-36 rounded-2xl bg-white p-2.5 flex items-center justify-center shrink-0 shadow-[0_0_30px_rgba(255,255,255,0.15)] relative group">
+                          <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-2xl bg-white p-2.5 flex items-center justify-center shrink-0 shadow-[0_0_30px_rgba(255,255,255,0.15)] relative group">
                             <div className="w-full h-full border border-black/20 rounded-lg flex flex-col items-center justify-center bg-white text-black p-2 text-center">
-                              <QrCode className="w-20 h-20 text-black mb-1" />
+                              <QrCode className="w-16 h-16 sm:w-20 sm:h-20 text-black mb-1" />
                               <span className="text-[8px] font-mono font-bold tracking-tighter text-black">SCAN TO PAY</span>
                             </div>
                           </div>
 
                           {/* UPI & Pass Fee Information */}
-                          <div className="space-y-3 flex-grow text-center sm:text-left">
+                          <div className="space-y-2.5 sm:space-y-3 flex-grow text-center sm:text-left w-full sm:w-auto">
                             <div>
-                              <span className="text-[10px] font-mono uppercase tracking-widest text-[#EB0028] font-bold">
+                              <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-widest text-[#EB0028] font-bold">
                                 OFFICIAL DELEGATE PASS TICKET
                               </span>
-                              <div className="text-2xl font-bold text-white tracking-tight" style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}>
+                              <div className="text-xl sm:text-2xl font-bold text-white tracking-tight" style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}>
                                 ₹499 <span className="text-xs font-normal text-white/50">/ Delegate</span>
                               </div>
                             </div>
 
                             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
-                              <div className="px-3.5 py-2 rounded-xl bg-black/60 border border-white/15 text-xs font-mono text-white/90 flex items-center gap-2">
+                              <div className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-black/60 border border-white/15 text-xs font-mono text-white/90 flex items-center gap-2">
                                 <span>UPI: tedxklh@upi</span>
                                 <button
                                   type="button"
                                   onClick={() => copyUpi("tedxklh@upi")}
-                                  className="text-white/50 hover:text-[#EB0028] transition-colors"
+                                  className="text-white/50 hover:text-[#EB0028] transition-colors p-0.5"
                                   title="Copy UPI ID"
                                 >
                                   {copiedUpi ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
@@ -772,9 +774,9 @@ export default function ApplyPage() {
                         </div>
 
                         {/* UTR NUMBER INPUT (Strictly 12 digits numeric) */}
-                        <div className="space-y-2">
+                        <div className="space-y-1.5 sm:space-y-2">
                           <div className="flex items-center justify-between">
-                            <label className="text-xs uppercase text-white/90 font-bold tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                            <label className="text-[11px] sm:text-xs uppercase text-white/90 font-bold tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
                               12-Digit UTR Number *
                             </label>
                             <span className="text-[11px] text-white/40 font-mono">
@@ -789,8 +791,8 @@ export default function ApplyPage() {
                             pattern="[0-9]{12}"
                             value={form.utrNumber}
                             onChange={handleUtrChange}
-                            placeholder="Enter 12-digit numeric UTR (e.g. 428901234567)"
-                            className={`w-full h-12 px-4 rounded-xl border bg-white/[0.03] text-white text-base tracking-widest font-mono placeholder-white/25 focus:outline-none transition-all ${
+                            placeholder="Enter 12-digit numeric UTR"
+                            className={`w-full h-11 sm:h-12 px-3.5 sm:px-4 rounded-xl border bg-white/[0.03] text-white text-base tracking-widest font-mono placeholder-white/25 focus:outline-none transition-all ${
                               errors.utrNumber ? "border-[#EB0028] ring-1 ring-[#EB0028]" : "border-white/15 focus:border-[#EB0028] focus:ring-1 focus:ring-[#EB0028]/50"
                             }`}
                           />
@@ -804,13 +806,13 @@ export default function ApplyPage() {
                         </div>
 
                         {/* PAYMENT SCREENSHOT UPLOAD */}
-                        <div className="space-y-2">
-                          <label className="text-xs uppercase text-white/90 font-bold tracking-wider flex items-center justify-between" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                        <div className="space-y-1.5 sm:space-y-2">
+                          <label className="text-[11px] sm:text-xs uppercase text-white/90 font-bold tracking-wider flex items-center justify-between" style={{ fontFamily: "var(--font-dm-mono)" }}>
                             <span>Payment Screenshot Upload *</span>
                             {form.screenshotBase64 && (
                               <span className="text-emerald-400 text-[10px] font-mono flex items-center gap-1">
                                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                                ATTACHED &amp; READY
+                                ATTACHED
                               </span>
                             )}
                           </label>
@@ -824,21 +826,21 @@ export default function ApplyPage() {
                               onDragLeave={() => setIsDragging(false)}
                               onDrop={handleDrop}
                               onClick={() => fileInputRef.current?.click()}
-                              className={`w-full p-8 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center gap-3 cursor-pointer transition-all ${
+                              className={`w-full p-6 sm:p-8 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center gap-3 cursor-pointer transition-all ${
                                 isDragging
                                   ? "border-[#EB0028] bg-[#EB0028]/10"
                                   : "border-white/15 bg-white/[0.02] hover:border-[#EB0028]/50 hover:bg-white/[0.04]"
                               }`}
                             >
-                              <div className="w-12 h-12 rounded-full bg-[#EB0028]/10 border border-[#EB0028]/30 flex items-center justify-center text-[#EB0028]">
-                                <Upload className="w-5 h-5" />
+                              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#EB0028]/10 border border-[#EB0028]/30 flex items-center justify-center text-[#EB0028]">
+                                <Upload className="w-4 h-4 sm:w-5 sm:h-5" />
                               </div>
                               <div className="text-center space-y-1">
-                                <div className="text-sm font-semibold text-white">
-                                  Drag &amp; drop payment screenshot, or <span className="text-[#EB0028]">Browse</span>
+                                <div className="text-xs sm:text-sm font-semibold text-white">
+                                  Drag &amp; drop screenshot, or <span className="text-[#EB0028]">Browse</span>
                                 </div>
-                                <div className="text-[11px] text-white/40 font-mono">
-                                  PNG, JPG, JPEG, or WEBP · Maximum 5 MB
+                                <div className="text-[10px] sm:text-[11px] text-white/40 font-mono">
+                                  PNG, JPG, JPEG, or WEBP · Max 5 MB
                                 </div>
                               </div>
                               <input
@@ -854,21 +856,21 @@ export default function ApplyPage() {
                             <motion.div
                               initial={{ opacity: 0, scale: 0.98 }}
                               animate={{ opacity: 1, scale: 1 }}
-                              className="p-5 rounded-2xl border-2 border-emerald-500/40 bg-emerald-950/20 backdrop-blur-xl space-y-3 relative overflow-hidden shadow-[0_0_25px_rgba(16,185,129,0.12)]"
+                              className="p-4 sm:p-5 rounded-2xl border-2 border-emerald-500/40 bg-emerald-950/20 backdrop-blur-xl space-y-3 relative overflow-hidden shadow-[0_0_25px_rgba(16,185,129,0.12)]"
                             >
-                              <div className="flex items-center justify-between border-b border-emerald-500/20 pb-3">
-                                <div className="flex items-center gap-2 text-emerald-400 text-xs font-bold font-mono uppercase tracking-wider">
-                                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                                  <span>RECEIPT SUCCESSFULLY ATTACHED</span>
+                              <div className="flex items-center justify-between border-b border-emerald-500/20 pb-2.5">
+                                <div className="flex items-center gap-1.5 text-emerald-400 text-[11px] sm:text-xs font-bold font-mono uppercase tracking-wider">
+                                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                                  <span>RECEIPT ATTACHED</span>
                                 </div>
-                                <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30">
+                                <span className="text-[9px] sm:text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30">
                                   READY TO SUBMIT
                                 </span>
                               </div>
 
-                              <div className="flex items-center justify-between gap-4">
-                                <div className="flex items-center gap-4 overflow-hidden">
-                                  <div className="w-16 h-16 rounded-xl overflow-hidden border border-emerald-500/30 shrink-0 relative bg-black/40 shadow-inner group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <div className="flex items-center gap-3 overflow-hidden min-w-0">
+                                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden border border-emerald-500/30 shrink-0 relative bg-black/40 shadow-inner group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img
                                       src={form.screenshotBase64}
@@ -876,23 +878,23 @@ export default function ApplyPage() {
                                       className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                                     />
                                   </div>
-                                  <div className="space-y-1 overflow-hidden">
-                                    <div className="text-xs font-bold text-white truncate max-w-[200px] sm:max-w-xs">
+                                  <div className="space-y-0.5 overflow-hidden min-w-0">
+                                    <div className="text-xs font-bold text-white truncate max-w-[180px] sm:max-w-xs">
                                       {form.screenshotName}
                                     </div>
-                                    <div className="text-[11px] text-emerald-300/80 font-mono">
-                                      {form.screenshotSize} · Valid Image Format
+                                    <div className="text-[10px] sm:text-[11px] text-emerald-300/80 font-mono truncate">
+                                      {form.screenshotSize} · Valid Format
                                     </div>
                                   </div>
                                 </div>
 
-                                <div className="flex items-center gap-2 shrink-0">
+                                <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
                                   <button
                                     type="button"
                                     onClick={() => fileInputRef.current?.click()}
                                     className="text-xs text-white/80 hover:text-white px-3 py-1.5 rounded-lg border border-white/20 bg-white/10 hover:bg-white/20 transition-all font-semibold cursor-pointer"
                                   >
-                                    Change Image
+                                    Change
                                   </button>
                                   <button
                                     type="button"
@@ -934,7 +936,7 @@ export default function ApplyPage() {
                       >
                         <div>
                           <h2
-                            className="text-xl font-bold text-white uppercase tracking-tight"
+                            className="text-lg sm:text-xl font-bold text-white uppercase tracking-tight"
                             style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}
                           >
                             Review &amp; Submit Application
@@ -945,54 +947,46 @@ export default function ApplyPage() {
                         </div>
 
                         {/* Summary Details Box */}
-                        <div className="p-6 rounded-2xl border border-white/10 bg-white/[0.02] space-y-4">
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                            <div>
+                        <div className="p-4 sm:p-6 rounded-2xl border border-white/10 bg-white/[0.02] space-y-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4 text-xs">
+                            <div className="space-y-0.5 min-w-0">
                               <span className="text-[10px] text-white/40 uppercase font-mono block">Delegate Name</span>
-                              <span className="font-semibold text-white">{form.firstName} {form.lastName}</span>
+                              <span className="font-semibold text-white break-words">{form.firstName} {form.lastName}</span>
                             </div>
-                            <div>
+                            <div className="space-y-0.5 min-w-0">
                               <span className="text-[10px] text-white/40 uppercase font-mono block">Email Address</span>
-                              <span className="font-semibold text-white truncate">{form.email}</span>
+                              <span className="font-semibold text-white break-all">{form.email}</span>
                             </div>
-                            <div>
+                            <div className="space-y-0.5 min-w-0">
                               <span className="text-[10px] text-white/40 uppercase font-mono block">Phone Coordinate</span>
                               <span className="font-semibold text-white font-mono">{form.phone}</span>
                             </div>
-                            <div>
+                            <div className="space-y-0.5 min-w-0">
                               <span className="text-[10px] text-white/40 uppercase font-mono block">Organization &amp; City</span>
-                              <span className="font-semibold text-white">{form.organization} · {form.city}</span>
+                              <span className="font-semibold text-white break-words">{form.organization} · {form.city}</span>
                             </div>
-                            <div className="sm:col-span-2">
+                            <div className="sm:col-span-2 space-y-0.5 min-w-0">
                               <span className="text-[10px] text-white/40 uppercase font-mono block">UTR Number</span>
-                              <span className="font-semibold text-[#EB0028] font-mono tracking-wider">{form.utrNumber}</span>
+                              <span className="font-semibold text-[#EB0028] font-mono tracking-wider break-all">{form.utrNumber}</span>
                             </div>
                           </div>
                         </div>
 
-                        {/* Server Error Alert */}
-                        {submitError && (
-                          <div className="p-4 rounded-xl border border-red-500/40 bg-red-500/10 text-red-400 text-xs flex items-start gap-2.5">
-                            <span className="font-bold shrink-0">⚠️</span>
-                            <span>{submitError}</span>
-                          </div>
-                        )}
-
                         {/* Terms & Code of Conduct Checkbox */}
-                        <div className="p-4 rounded-xl border border-white/10 bg-white/[0.01] space-y-2">
-                          <label className="flex items-start gap-3 cursor-pointer select-none">
+                        <div className="p-3.5 sm:p-4 rounded-xl border border-white/10 bg-white/[0.01] space-y-2">
+                          <label className="flex items-start gap-2.5 sm:gap-3 cursor-pointer select-none">
                             <input
                               type="checkbox"
                               checked={form.termsAccepted}
                               onChange={(e) => updateField("termsAccepted", e.target.checked)}
-                              className="mt-1 w-4 h-4 rounded border-white/20 bg-black text-[#EB0028] focus:ring-[#EB0028] focus:ring-offset-0 cursor-pointer"
+                              className="mt-0.5 sm:mt-1 w-4 h-4 rounded border-white/20 bg-black text-[#EB0028] focus:ring-[#EB0028] focus:ring-offset-0 cursor-pointer shrink-0"
                             />
                             <span className="text-xs text-white/80 leading-relaxed" style={{ fontFamily: "var(--font-manrope)" }}>
                               I confirm that all provided details and the 12-digit UTR payment transaction are authentic. I agree to uphold the official TEDx code of conduct and event policies.
                             </span>
                           </label>
                           {errors.termsAccepted && (
-                            <span className="text-[11px] text-[#EB0028] block pl-7">{errors.termsAccepted}</span>
+                            <span className="text-[11px] text-[#EB0028] block pl-6 sm:pl-7">{errors.termsAccepted}</span>
                           )}
                         </div>
                       </motion.div>
@@ -1011,12 +1005,12 @@ export default function ApplyPage() {
                   )}
 
                   {/* Form Action Controls: Back & Next / Submit */}
-                  <div className="flex items-center justify-between gap-4 pt-8 border-t border-white/10 mt-6">
+                  <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 pt-6 sm:pt-8 border-t border-white/10 mt-6 sm:mt-8">
                     {step > 1 ? (
                       <button
                         type="button"
                         onClick={handlePrev}
-                        className="px-6 py-3 rounded-full border border-white/15 bg-white/5 hover:bg-white/10 text-white font-semibold text-xs tracking-wider uppercase transition-all flex items-center gap-2 cursor-pointer"
+                        className="w-full sm:w-auto px-5 sm:px-6 py-3 sm:py-3.5 rounded-full border border-white/15 bg-white/5 hover:bg-white/10 text-white font-semibold text-xs tracking-wider uppercase transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                         style={{ fontFamily: "var(--font-sora)" }}
                       >
                         <ArrowLeft className="w-4 h-4" />
@@ -1025,7 +1019,7 @@ export default function ApplyPage() {
                     ) : (
                       <Link
                         href="/"
-                        className="px-5 py-3 rounded-full border border-white/10 text-white/60 hover:text-white text-xs uppercase tracking-wider transition-colors flex items-center gap-2"
+                        className="w-full sm:w-auto px-5 py-3 sm:py-3.5 rounded-full border border-white/10 text-white/60 hover:text-white text-xs uppercase tracking-wider transition-colors flex items-center justify-center gap-2"
                         style={{ fontFamily: "var(--font-dm-mono)" }}
                       >
                         <Home className="w-3.5 h-3.5" />
@@ -1038,7 +1032,7 @@ export default function ApplyPage() {
                         type="button"
                         onClick={handleNext}
                         disabled={isSubmitting}
-                        className="relative h-12 sm:h-13 px-8 rounded-full font-bold text-xs uppercase tracking-[0.16em] text-white flex items-center justify-center gap-2 shadow-[0_4px_30px_rgba(235,0,40,0.45)] hover:shadow-[0_8px_40px_rgba(235,0,40,0.7)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 cursor-pointer overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full sm:w-auto relative min-h-[48px] sm:h-13 px-6 sm:px-8 py-3.5 sm:py-0 rounded-full font-bold text-xs uppercase tracking-[0.14em] sm:tracking-[0.16em] text-white flex items-center justify-center gap-2 shadow-[0_4px_30px_rgba(235,0,40,0.45)] hover:shadow-[0_8px_40px_rgba(235,0,40,0.7)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 cursor-pointer overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
                         style={{
                           background: "linear-gradient(135deg, #EB0028 0%, #FF454A 100%)",
                           fontFamily: "var(--font-sora)",
@@ -1056,6 +1050,11 @@ export default function ApplyPage() {
                         ) : step === 3 ? (
                           <div className="flex items-center gap-2 relative z-10">
                             <span>SUBMIT APPLICATION</span>
+                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                          </div>
+                        ) : step === 2 ? (
+                          <div className="flex items-center gap-2 relative z-10">
+                            <span>REVIEW &amp; CONFIRM (STEP 03)</span>
                             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                           </div>
                         ) : (

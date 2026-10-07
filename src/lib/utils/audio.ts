@@ -10,6 +10,9 @@ export function playNotificationChime() {
     if (!AudioContextClass) return;
 
     const ctx = new AudioContextClass();
+    if (ctx.state === "suspended") {
+      ctx.resume().catch(() => {});
+    }
     
     // Note 1: F5 (698.46 Hz)
     const osc1 = ctx.createOscillator();

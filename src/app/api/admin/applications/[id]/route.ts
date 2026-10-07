@@ -107,7 +107,22 @@ export async function DELETE(
         .catch((e) => console.error("Error removing storage screenshot:", e));
     }
 
-    // 3. Delete application row (cascades to payment_verifications)
+    // 3. Clean up related rows (audit logs, payment verifications) prior to deleting application
+    try {
+      await supabaseAdmin
+        .from("admin_audit_logs")
+        .delete()
+        .eq("application_id", id);
+    } catch (e) {}
+
+    try {
+      await supabaseAdmin
+        .from("payment_verifications")
+        .delete()
+        .eq("application_id", id);
+    } catch (e) {}
+
+    // 4. Delete application row
     const { error: deleteError } = await supabaseAdmin
       .from("delegate_applications")
       .delete()
@@ -118,7 +133,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Failed to delete application" }, { status: 500 });
     }
 
-    // 4. Log deletion audit action
+    // 5. Log deletion audit action
     try {
       await supabaseAdmin.from("admin_audit_logs").insert({
         admin_user_id: admin.userId,

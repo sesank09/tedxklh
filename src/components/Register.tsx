@@ -239,7 +239,7 @@ export default function Register() {
                 className="text-xs text-[#EB0028] tracking-[0.25em] uppercase font-medium"
                 style={{ fontFamily: "var(--font-dm-mono)" }}
               >
-                ACCESS PORTAL // DELEGATE ADMISSION
+                ACCESS PORTAL • DELEGATE ADMISSION
               </span>
               <span className="h-px w-8 bg-[#EB0028]/40" />
             </div>
@@ -816,7 +816,7 @@ export default function Register() {
 
                   <div className="space-y-2">
                     <span className="text-xs text-[#EB0028] tracking-[0.25em] uppercase font-bold" style={{ fontFamily: "var(--font-dm-mono)" }}>
-                      APPLICATION RECEIVED // STATUS: VERIFICATION PENDING
+                      APPLICATION RECEIVED • STATUS: VERIFICATION PENDING
                     </span>
                     <h3 className="text-2xl sm:text-4xl font-bold text-white uppercase tracking-tight" style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}>
                       Welcome to the Metamorphosis

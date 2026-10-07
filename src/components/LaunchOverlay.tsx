@@ -176,7 +176,7 @@ export default function LaunchOverlay({ onLaunched }: LaunchOverlayProps) {
           />
           <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full border border-[#EB0028]/30 bg-[#EB0028]/10 text-[10px] font-mono tracking-widest text-[#EB0028]">
             <span className="w-1.5 h-1.5 rounded-full bg-[#EB0028] animate-ping" />
-            <span>SYS_READY // 2026.11.04</span>
+            <span>SYS_READY • 2026.11.04</span>
           </div>
         </div>
 
@@ -397,7 +397,7 @@ export default function LaunchOverlay({ onLaunched }: LaunchOverlayProps) {
             />
           ))}
           <span className="text-[9px] font-mono text-white/40 ml-2 hidden sm:inline-block">
-            AUDIO_FREQ // 48.0 kHz
+            AUDIO_FREQ • 48.0 kHz
           </span>
         </div>
 
@@ -470,7 +470,7 @@ export default function LaunchOverlay({ onLaunched }: LaunchOverlayProps) {
                 INITIALIZING <span className="text-[#EB0028]">METAMORPHOSIS</span>
               </div>
               <div className="text-sm font-mono text-[#EB0028] tracking-widest font-bold">
-                TELEPORTING TO HOMEPAGE // {warpProgress}%
+                TELEPORTING TO HOMEPAGE • {warpProgress}%
               </div>
             </div>
           </motion.div>

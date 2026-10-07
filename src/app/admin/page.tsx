@@ -200,7 +200,7 @@ export default function AdminDashboardPage() {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-mono text-[#EB0028] uppercase tracking-widest font-bold">
-              TEDx KLH 2026 // METAMORPHOSIS
+              TEDx KLH 2026 • METAMORPHOSIS
             </span>
             <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-[10px] font-mono font-bold flex items-center gap-1.5 animate-pulse">
               <Radio className="w-3 h-3 text-emerald-400" />

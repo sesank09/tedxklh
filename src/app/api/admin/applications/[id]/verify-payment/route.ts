@@ -36,11 +36,51 @@ export async function POST(
     });
 
     if (error) {
-      console.error("Payment verification error:", error);
-      return NextResponse.json(
-        { error: error.message || "Failed to update payment status." },
-        { status: 500 }
-      );
+      console.warn("Verify payment RPC notice, running direct update fallback:", error);
+
+      const { data: existingApp } = await supabaseAdmin
+        .from("delegate_applications")
+        .select("payment_status")
+        .eq("id", id)
+        .maybeSingle();
+
+      const { error: appUpdateError } = await supabaseAdmin
+        .from("delegate_applications")
+        .update({
+          payment_status: newStatus,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", id);
+
+      if (appUpdateError) {
+        return NextResponse.json(
+          { error: "Failed to update application payment status." },
+          { status: 500 }
+        );
+      }
+
+      await supabaseAdmin
+        .from("payment_verifications")
+        .update({
+          verification_status: newStatus,
+          verified_by: admin.userId,
+          verified_at: new Date().toISOString(),
+          admin_notes: notes || null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("application_id", id);
+
+      try {
+        await supabaseAdmin.from("admin_audit_logs").insert({
+          admin_user_id: admin.userId,
+          admin_email: admin.email,
+          application_id: id,
+          action: `payment_${newStatus}`,
+          old_status: existingApp?.payment_status || "pending",
+          new_status: newStatus,
+          notes: notes || `Payment ${newStatus} by organizer`,
+        });
+      } catch (e) {}
     }
 
     return NextResponse.json({

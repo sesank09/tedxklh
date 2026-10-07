@@ -1,16 +1,140 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { motion, AnimatePresence, useMotionValue, useSpring, useTransform, useReducedMotion } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform, useReducedMotion } from "framer-motion";
 import { Users } from "lucide-react";
 
-const DEPARTMENTS = ["All", "Leadership", "Curation", "Production", "Design", "Operations"] as const;
+const DEPARTMENTS = ["Board Members", "Leadership", "Curation", "Production", "Design", "Operations"] as const;
 
-interface TeamMember { id: string; role: string; department: typeof DEPARTMENTS[number]; code: string; }
+interface TeamMember {
+  id: string;
+  name?: string;
+  role: string;
+  designation?: string;
+  department: typeof DEPARTMENTS[number];
+  code: string;
+  image?: string;
+}
 
 const TEAM_MEMBERS: TeamMember[] = [
-  { id: "lead-01",     role: "Lead Organizer & Licensee",           department: "Leadership",  code: "DIR-01" },
-  { id: "lead-02",     role: "Co-Organizer & Executive Director",   department: "Leadership",  code: "DIR-02" },
+  {
+    id: "lead-president",
+    name: "Er. Koneru Satyanarayana",
+    role: "President",
+    designation: "Koneru Lakshmaiah Education Foundation",
+    department: "Board Members",
+    code: "DIR-01",
+    image: "/team/er-koneru-satyanarayana.jpg",
+  },
+  {
+    id: "lead-vp-havish",
+    name: "Er. Koneru Lakshman Havish",
+    role: "Vice-President",
+    designation: "Koneru Lakshmaiah Education Foundation",
+    department: "Board Members",
+    code: "DIR-02",
+    image: "/team/er-koneru-lakshman-havish.jpg",
+  },
+  {
+    id: "lead-vp-hareen",
+    name: "Er. Koneru Raja Hareen",
+    role: "Vice-President",
+    designation: "Koneru Lakshmaiah Education Foundation",
+    department: "Board Members",
+    code: "DIR-03",
+    image: "/team/er-koneru-raja-hareen.jpg",
+  },
+  {
+    id: "lead-vp-nikhila",
+    name: "Ms. Koneru Nikhila",
+    role: "Vice President",
+    designation: "Koneru Lakshmaiah Education Foundation",
+    department: "Board Members",
+    code: "DIR-04",
+    image: "/team/ms-koneru-nikhila.png",
+  },
+  {
+    id: "lead-sec-kanchanalatha",
+    name: "Smt. Koneru Sivakanchanalatha",
+    role: "Secretary",
+    designation: "Koneru Lakshmaiah Education Foundation",
+    department: "Board Members",
+    code: "DIR-05",
+    image: "/team/smt-koneru-sivakanchanalatha.png",
+  },
+  {
+    id: "lead-pro-chancellor",
+    name: "Dr. K.S. Jagannatha Rao",
+    role: "Pro Chancellor",
+    designation: "Koneru Lakshmaiah Education Foundation",
+    department: "Board Members",
+    code: "DIR-06",
+    image: "/team/dr-ks-jagannatha-rao.png",
+  },
+  {
+    id: "lead-vc",
+    name: "Dr. G. Pardha Saradhi Varma",
+    role: "Vice Chancellor",
+    designation: "KL Deemed to be University",
+    department: "Board Members",
+    code: "DIR-07",
+    image: "/team/dr-g-pardha-saradhi-varma.png",
+  },
+  {
+    id: "lead-pvc-rajasekhara",
+    name: "Dr. K. Rajasekhara Rao",
+    role: "Pro-Vice Chancellor",
+    designation: "Koneru Lakshmaiah Education Foundation",
+    department: "Board Members",
+    code: "DIR-08",
+    image: "/team/dr-k-rajasekhara-rao.png",
+  },
+  {
+    id: "lead-pvc-venkatram",
+    name: "Dr. N. Venkatram",
+    role: "Pro-Vice Chancellor",
+    designation: "Koneru Lakshmaiah Education Foundation",
+    department: "Board Members",
+    code: "DIR-09",
+    image: "/team/dr-n-venkatram.png",
+  },
+  {
+    id: "lead-principal",
+    name: "Dr. L Koteswara Rao",
+    role: "Principal",
+    designation: "KLH University Bowrampet",
+    department: "Leadership",
+    code: "DIR-10",
+    image: "/team/dr-l-koteswara-rao.png",
+  },
+  {
+    id: "lead-curator",
+    name: "Dr. V. Muniraju Naidu",
+    role: "TEDx Curator",
+    designation: "Associate Professor, CSE",
+    department: "Leadership",
+    code: "DIR-11",
+    image: "/team/dr-v-muniraju-naidu.png",
+  },
+  {
+    id: "lead-hod-cse",
+    name: "Dr. P Venkateshwara Rao",
+    role: "Associate Professor & HOD, CSE",
+    designation: "KLH University Bowrampet",
+    department: "Leadership",
+    code: "DIR-12",
+    image: "/team/dr-p-venkateshwara-rao.png",
+  },
+  {
+    id: "lead-licensee-aashish",
+    name: "Mr. Bobba Thambi Aashish",
+    role: "Licensee & Sponsorships",
+    designation: "KLH University Bowrampet",
+    department: "Leadership",
+    code: "DIR-13",
+    image: "/team/mr-bobba-thambi-aashish.png",
+  },
+  { id: "lead-02",     role: "Co-Organizer & Executive Director",   department: "Leadership",  code: "DIR-14" },
   { id: "curation-01", role: "Head of Speaker Curation",            department: "Curation",    code: "CUR-01" },
   { id: "design-01",   role: "Creative Director & Visual Lead",     department: "Design",      code: "DSN-01" },
   { id: "prod-01",     role: "Technical & Production Director",     department: "Production",  code: "PRD-01" },
@@ -46,10 +170,10 @@ function TeamCard({ member, index }: { member: TeamMember; index: number }) {
 
   return (
     <motion.div ref={cardRef}
-      initial={{ opacity: 0, scale: 0.82, rotate: -4, y: 28 }}
-      whileInView={{ opacity: 1, scale: 1, rotate: 0, y: 0 }}
+      initial={{ opacity: 0, scale: 0.88, y: 28 }}
+      whileInView={{ opacity: 1, scale: 1, y: 0 }}
       viewport={{ once: true, margin: "-30px" }}
-      transition={{ duration: 0.7, delay: index * 0.09, ease: [0.34, 1.4, 0.64, 1] }}
+      transition={{ duration: 0.7, delay: index * 0.07, ease: [0.34, 1.4, 0.64, 1] }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={handleMouseLeave}
       onMouseMove={handleMouseMove}
@@ -88,14 +212,14 @@ function TeamCard({ member, index }: { member: TeamMember; index: number }) {
       </div>
 
       {/* Content */}
-      <div className="relative flex flex-col" style={{ minHeight: "300px", zIndex: 10 }}>
-        <div className="flex-grow flex items-end justify-center px-5 pt-5" style={{ overflow: "visible" }}>
-          <motion.div className="relative" style={{ width: "100%", maxWidth: "155px", zIndex: 20 }}
-            animate={{ y: fx ? -10 : 0, scale: fx ? 1.06 : 1 }} transition={{ type: "spring", stiffness: 280, damping: 24 }}>
+      <div className="relative flex flex-col justify-between" style={{ minHeight: "clamp(290px,36vw,335px)", zIndex: 10 }}>
+        <div className="flex-grow flex items-end justify-center px-4 sm:px-5 pt-4 sm:pt-5" style={{ overflow: "visible" }}>
+          <motion.div className="relative" style={{ width: "100%", maxWidth: "140px", zIndex: 20 }}
+            animate={{ y: fx ? -8 : 0, scale: fx ? 1.05 : 1 }} transition={{ type: "spring", stiffness: 280, damping: 24 }}>
 
             {/* Rotating crystalline frame */}
             <motion.svg viewBox="0 0 136 136" className="absolute pointer-events-none"
-              style={{ inset: "-18px", width: "calc(100% + 36px)", height: "calc(100% + 36px)", zIndex: 25, opacity: fx ? 1 : 0, transition: "opacity .4s ease" }}>
+              style={{ inset: "-14px", width: "calc(100% + 28px)", height: "calc(100% + 28px)", zIndex: 25, opacity: fx ? 1 : 0, transition: "opacity .4s ease" }}>
               <motion.polygon points={CRYSTAL_POINTS} fill="none" stroke="rgba(235,0,40,.75)" strokeWidth="1" strokeDasharray="5 4"
                 animate={{ rotate: fx ? [0, 360] : 0 }} transition={{ duration: 8, repeat: Infinity, ease: "linear" }} style={{ transformOrigin: "68px 68px" }} />
               <motion.polygon points={CRYSTAL_POINTS} fill="none" stroke="rgba(255,255,255,.22)" strokeWidth="0.5"
@@ -103,37 +227,85 @@ function TeamCard({ member, index }: { member: TeamMember; index: number }) {
             </motion.svg>
 
             {/* Portrait */}
-            <div className="relative w-full aspect-square rounded-2xl flex flex-col items-center justify-center gap-2.5 overflow-hidden"
+            <div className="relative w-full aspect-square rounded-2xl flex flex-col items-center justify-center gap-2 overflow-hidden"
               style={{ background: fx ? "radial-gradient(circle at center,rgba(235,0,40,.14) 0%,rgba(10,10,10,.96) 70%)" : "linear-gradient(148deg,rgba(255,255,255,.03) 0%,rgba(10,10,10,.96) 100%)",
                 border: `1px solid ${fx ? "rgba(235,0,40,.38)" : "rgba(255,255,255,.06)"}`,
                 boxShadow: fx ? "0 12px 40px rgba(235,0,40,.28),0 0 0 1px rgba(235,0,40,.1)" : "0 8px 20px rgba(0,0,0,.6)",
                 transition: "all .4s ease" }}>
-              <Users style={{ width: 28, height: 28, color: fx ? "#EB0028" : "rgba(255,255,255,.2)", transition: "color .35s ease" }} />
-              <span style={{ fontFamily: "var(--font-dm-mono)", fontSize: "8px", letterSpacing: "0.2em", textTransform: "uppercase",
-                color: fx ? "rgba(255,255,255,.4)" : "rgba(255,255,255,.2)", transition: "color .35s ease" }}>PHOTO</span>
-              <div className="absolute inset-0 rounded-2xl pointer-events-none"
-                style={{ boxShadow: fx ? "inset 0 0 28px rgba(235,0,40,.32)" : "none", transition: "box-shadow .4s ease" }} />
+              {member.image ? (
+                <>
+                  <img
+                    src={member.image}
+                    alt={member.name || member.role}
+                    className="w-full h-full object-cover object-top"
+                    style={{
+                      filter: fx ? "brightness(1.08) contrast(1.05)" : "brightness(0.92) saturate(0.95)",
+                      transition: "filter .4s ease",
+                    }}
+                  />
+                  <div className="absolute inset-0 rounded-2xl pointer-events-none"
+                    style={{ boxShadow: fx ? "inset 0 0 24px rgba(235,0,40,.35)" : "inset 0 0 15px rgba(0,0,0,.6)", transition: "box-shadow .4s ease" }} />
+                </>
+              ) : (
+                <>
+                  <Users style={{ width: 24, height: 24, color: fx ? "#EB0028" : "rgba(255,255,255,.2)", transition: "color .35s ease" }} />
+                  <span style={{ fontFamily: "var(--font-dm-mono)", fontSize: "8px", letterSpacing: "0.2em", textTransform: "uppercase",
+                    color: fx ? "rgba(255,255,255,.4)" : "rgba(255,255,255,.2)", transition: "color .35s ease" }}>PHOTO</span>
+                  <div className="absolute inset-0 rounded-2xl pointer-events-none"
+                    style={{ boxShadow: fx ? "inset 0 0 28px rgba(235,0,40,.32)" : "none", transition: "box-shadow .4s ease" }} />
+                </>
+              )}
             </div>
           </motion.div>
         </div>
 
-        <div className="px-5 pb-5 pt-4 space-y-2 text-center">
+        <div className="px-4 sm:px-5 pb-4 sm:pb-5 pt-3 space-y-1.5 text-center">
           <div className="flex items-center justify-center gap-2">
             <span style={{ display: "inline-block", fontFamily: "var(--font-dm-mono)", fontSize: "8px", letterSpacing: "0.22em",
               textTransform: "uppercase", fontWeight: 600, color: "#EB0028", background: "rgba(235,0,40,.1)",
-              border: "1px solid rgba(235,0,40,.22)", padding: "2.5px 8px", borderRadius: 5 }}>{member.department}</span>
+              border: "1px solid rgba(235,0,40,.22)", padding: "2px 7px", borderRadius: 5 }}>{member.department}</span>
             <span style={{ fontFamily: "var(--font-dm-mono)", fontSize: "8px", color: "rgba(255,255,255,.25)", letterSpacing: "0.1em" }}>{member.code}</span>
           </div>
-          <motion.p animate={{ opacity: fx ? 1 : 0.55, y: fx ? 0 : 3 }} transition={{ duration: 0.3 }}
-            style={{ fontFamily: "var(--font-sora)", fontWeight: 700, fontSize: "0.84rem", color: fx ? "#FFFFFF" : "rgba(255,255,255,.55)",
+
+          {member.name && (
+            <motion.h4
+              animate={{ color: fx ? "#FFFFFF" : "rgba(255,255,255,0.95)" }}
+              style={{
+                fontFamily: "var(--font-sora)",
+                fontWeight: 700,
+                fontSize: "0.92rem",
+                letterSpacing: "-0.01em",
+                lineHeight: 1.2,
+              }}
+            >
+              {member.name}
+            </motion.h4>
+          )}
+
+          <motion.p animate={{ opacity: fx ? 1 : 0.85, y: fx ? 0 : 2 }} transition={{ duration: 0.3 }}
+            style={{ fontFamily: "var(--font-sora)", fontWeight: 600, fontSize: "0.78rem", color: fx ? "#EB0028" : "rgba(255,255,255,.85)",
               textTransform: "uppercase", letterSpacing: "-0.01em", lineHeight: 1.3 }}>{member.role}</motion.p>
+
+          {member.designation && (
+            <p
+              style={{
+                fontFamily: "var(--font-manrope)",
+                fontWeight: 500,
+                fontSize: "0.70rem",
+                color: "rgba(255,255,255,0.55)",
+                lineHeight: 1.2,
+              }}
+            >
+              {member.designation}
+            </p>
+          )}
+          
           <div className="flex justify-center">
-            <motion.div animate={{ width: fx ? 38 : 12, opacity: fx ? 1 : 0.3 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            <motion.div animate={{ width: fx ? 36 : 12, opacity: fx ? 1 : 0.3 }} transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
               style={{ height: 1.5, background: "#EB0028", borderRadius: 1 }} />
           </div>
-          <div style={{ paddingTop: 8, borderTop: "1px solid rgba(255,255,255,.05)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ paddingTop: 6, borderTop: "1px solid rgba(255,255,255,.05)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <span style={{ fontFamily: "var(--font-dm-mono)", fontSize: "8px", color: "rgba(255,255,255,.25)", letterSpacing: "0.12em" }}>TEDxKLH 2026</span>
-            <span style={{ fontFamily: "var(--font-dm-mono)", fontSize: "8px", color: "rgba(235,0,40,.5)" }}>// CONFIRMED</span>
           </div>
         </div>
       </div>
@@ -142,49 +314,56 @@ function TeamCard({ member, index }: { member: TeamMember; index: number }) {
 }
 
 export default function Team() {
-  const [activeDept, setActiveDept] = useState<typeof DEPARTMENTS[number]>("All");
-  const filteredMembers = activeDept === "All" ? TEAM_MEMBERS : TEAM_MEMBERS.filter((m) => m.department === activeDept);
+  const [selectedDept, setSelectedDept] = useState<typeof DEPARTMENTS[number]>("Board Members");
+
+  const filtered = TEAM_MEMBERS.filter(m => m.department === selectedDept);
 
   return (
-    <section id="team" className="relative w-full py-28 sm:py-40 px-4 sm:px-8 md:px-12 select-none overflow-hidden">
+    <section id="team" className="relative w-full py-[clamp(3.5rem,7vw,8.5rem)] px-[clamp(1rem,4vw,3.5rem)] select-none overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85vw] max-w-[1400px]"
-          style={{ height: 650, background: "radial-gradient(ellipse at center,rgba(235,0,40,.05),transparent 70%)" }} />
+        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg,transparent,rgba(235,0,40,.25),transparent)" }} />
+        <div className="absolute bottom-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg,transparent,rgba(235,0,40,.15),transparent)" }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85vw] max-w-[1300px]"
+          style={{ height: 600, background: "radial-gradient(ellipse at center,rgba(235,0,40,.06) 0%,transparent 70%)" }} />
       </div>
-      <div className="w-full max-w-[1400px] mx-auto space-y-16 relative z-20">
-        <div className="max-w-4xl mx-auto space-y-6 text-center sm:text-left">
+
+      <div className="w-full max-w-[1400px] mx-auto space-y-[clamp(2.5rem,5vw,4.5rem)] relative z-20">
+        <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6 text-center sm:text-left">
           <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.05 }}
-            className="text-4xl sm:text-6xl md:text-7xl font-extrabold text-white tracking-tight uppercase leading-[1.05]"
+            className="text-[clamp(2.1rem,5.5vw,4.5rem)] font-extrabold text-white tracking-tight uppercase leading-[1.05]"
             style={{ fontFamily: "var(--font-sora)", fontWeight: 800 }}>
-            The Minds Behind<br /><span className="text-[#EB0028]">Metamorphosis</span>
+            Organizing<br /><span className="text-[#EB0028]">Committee</span>
           </motion.h2>
           <motion.p initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.12 }}
-            className="text-sm sm:text-base text-white/70 font-normal max-w-xl leading-relaxed" style={{ fontFamily: "var(--font-manrope)", fontWeight: 400 }}>
+            className="text-sm sm:text-base text-white/70 font-normal max-w-xl leading-relaxed mx-auto sm:mx-0" style={{ fontFamily: "var(--font-manrope)", fontWeight: 400 }}>
             The dedicated team of student organizers, curators, and technologists bringing TEDxKLH 2026 to life.
           </motion.p>
         </div>
 
-        <div className="flex items-center justify-start sm:justify-center overflow-x-auto pb-2 sm:pb-0 gap-2 scrollbar-none">
-          {DEPARTMENTS.map((dept) => {
-            const isActive = activeDept === dept;
-            return (
-              <button key={dept} onClick={() => setActiveDept(dept)}
-                className={`px-4 py-2 rounded-full text-[10px] uppercase tracking-[0.15em] whitespace-nowrap transition-all duration-300 border cursor-pointer ${
-                  isActive ? "bg-[#EB0028] border-[#EB0028] text-white shadow-[0_0_20px_rgba(235,0,40,0.4)] font-bold" : "bg-white/[0.02] border-white/[0.08] text-white/50 hover:text-white hover:border-white/20"
-                }`} style={{ fontFamily: "var(--font-dm-mono)" }}>
-                {dept}
-              </button>
-            );
-          })}
+        {/* Filter Tabs */}
+        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1.5 sm:gap-2">
+          {DEPARTMENTS.map((dept) => (
+            <button
+              key={dept}
+              onClick={() => setSelectedDept(dept)}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-200 cursor-pointer min-h-[36px] flex items-center ${
+                selectedDept === dept
+                  ? "bg-[#EB0028] text-white shadow-[0_0_15px_rgba(235,0,40,0.4)]"
+                  : "bg-white/[0.04] text-white/60 hover:text-white hover:bg-white/[0.08] border border-white/[0.06]"
+              }`}
+              style={{ fontFamily: "var(--font-dm-mono)" }}
+            >
+              {dept}
+            </button>
+          ))}
         </div>
 
-        <motion.div layout className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
-          <AnimatePresence mode="popLayout">
-            {filteredMembers.map((member, idx) => (
-              <TeamCard key={member.id} member={member} index={idx} />
-            ))}
-          </AnimatePresence>
-        </motion.div>
+        {/* Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-[clamp(1rem,2vw,1.5rem)]">
+          {filtered.map((member, idx) => (
+            <TeamCard key={member.id} member={member} index={idx} />
+          ))}
+        </div>
       </div>
     </section>
   );

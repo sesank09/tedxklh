@@ -5,6 +5,13 @@ import Lenis from "lenis";
 
 export default function SmoothScroll({ children }: { children: React.ReactNode }) {
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    // Enforce manual scroll restoration so browsers do not displace hero on cold load
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+
     // Initialize ultra-smooth Lenis with natural deceleration
     const lenis = new Lenis({
       duration: 1.15,
@@ -16,6 +23,9 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
       touchMultiplier: 1.2,
       infinite: false,
     });
+
+    // Provide global instance for lock synchronization
+    (window as unknown as { __lenis?: Lenis }).__lenis = lenis;
 
     // RAF loop for smooth scrolling updates
     let rafId: number;
@@ -29,8 +39,10 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
     return () => {
       cancelAnimationFrame(rafId);
       lenis.destroy();
+      delete (window as unknown as { __lenis?: Lenis }).__lenis;
     };
   }, []);
 
   return <>{children}</>;
 }
+

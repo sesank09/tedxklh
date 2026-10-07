@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Minus, HelpCircle } from "lucide-react";
+import { Plus, Minus } from "lucide-react";
 
 const FAQ_ITEMS = [
   {
@@ -27,7 +27,7 @@ const FAQ_ITEMS = [
   },
   {
     question: "Are there opportunities for corporate partnerships or speaker nominations?",
-    answer: "We welcome forward-thinking organizations, labs, and research collectives to partner with us. You can submit partnership inquiries or speaker nominations via our official desk at tedx@klh.edu.in.",
+    answer: "We welcome forward-thinking organizations, labs, and research collectives to partner with us. You can submit partnership inquiries or speaker nominations via our official desk at tedxklhbowrampet@klh.edu.in.",
   },
 ];
 
@@ -37,23 +37,22 @@ export default function FAQ() {
   return (
     <section 
       id="faq" 
-      className="relative w-full py-28 sm:py-40 px-4 sm:px-8 md:px-12 select-none overflow-hidden"
+      className="relative w-full py-[clamp(3.5rem,7vw,8.5rem)] px-[clamp(1rem,4vw,3.5rem)] select-none overflow-hidden"
     >
       {/* Background Radial Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85vw] max-w-[1200px] h-[550px] bg-[radial-gradient(ellipse_at_center,rgba(235,0,40,0.06),transparent_70%)] pointer-events-none" />
 
       {/* Main Container */}
-      <div className="w-full max-w-[1400px] mx-auto space-y-16 relative z-20">
+      <div className="w-full max-w-[1400px] mx-auto space-y-[clamp(2.5rem,5vw,4.5rem)] relative z-20">
         
         {/* Section Header */}
-        <div className="max-w-4xl mx-auto space-y-6 text-center sm:text-left">
-
+        <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6 text-center sm:text-left">
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.05 }}
-            className="text-4xl sm:text-6xl md:text-7xl font-extrabold text-white tracking-tight uppercase leading-[1.05]" 
+            className="text-[clamp(2.1rem,5.5vw,4.5rem)] font-extrabold text-white tracking-tight uppercase leading-[1.05]" 
             style={{ fontFamily: "var(--font-sora)", fontWeight: 800 }}
           >
             FREQUENTLY <br />
@@ -69,29 +68,29 @@ export default function FAQ() {
         </div>
 
         {/* Accordion Cards */}
-        <div className="max-w-4xl mx-auto space-y-4">
+        <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4">
           {FAQ_ITEMS.map((item, index) => {
             const isOpen = openIndex === index;
             return (
               <div
                 key={index}
                 onClick={() => setOpenIndex(isOpen ? null : index)}
-                className={`p-6 sm:p-8 rounded-3xl border transition-all duration-400 overflow-hidden cursor-pointer ${
+                className={`p-[clamp(1.1rem,2.5vw,1.8rem)] rounded-3xl border transition-all duration-300 overflow-hidden cursor-pointer ${
                   isOpen
                     ? "border-[#EB0028]/50 bg-black/85 shadow-[0_15px_40px_rgba(235,0,40,0.15)]"
                     : "border-white/[0.08] bg-black/60 hover:border-white/20 hover:bg-black/75"
                 } backdrop-blur-xl`}
               >
-                <div className="flex justify-between items-center gap-6">
-                  <div className="flex items-center gap-4">
+                <div className="flex justify-between items-center gap-3 sm:gap-6">
+                  <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
                     <span 
-                      className="text-sm text-[#EB0028] font-bold"
+                      className="text-xs sm:text-sm text-[#EB0028] font-bold shrink-0"
                       style={{ fontFamily: "var(--font-dm-mono)" }}
                     >
                       0{index + 1}
                     </span>
                     <h3
-                      className={`text-base sm:text-lg font-bold tracking-tight transition-colors ${
+                      className={`text-[clamp(0.95rem,2vw,1.15rem)] font-bold tracking-tight transition-colors ${
                         isOpen ? "text-white" : "text-white/85"
                       }`}
                       style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}
@@ -100,10 +99,10 @@ export default function FAQ() {
                     </h3>
                   </div>
 
-                  <div className={`w-9 h-9 rounded-full border flex items-center justify-center shrink-0 transition-all duration-300 ${
+                  <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full border flex items-center justify-center shrink-0 transition-all duration-300 ${
                     isOpen ? "border-[#EB0028] bg-[#EB0028] text-white shadow-[0_0_12px_rgba(235,0,40,0.5)]" : "border-white/10 text-white/50"
                   }`}>
-                    {isOpen ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                    {isOpen ? <Minus className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
                   </div>
                 </div>
 
@@ -117,10 +116,10 @@ export default function FAQ() {
                       className="overflow-hidden"
                     >
                       {/* Geometric Decorative Line */}
-                      <div className="w-12 h-[2px] bg-[#EB0028]/60 mt-5 mb-4" />
+                      <div className="w-10 sm:w-12 h-[2px] bg-[#EB0028]/60 mt-4 sm:mt-5 mb-3 sm:mb-4" />
 
                       <p 
-                        className="text-sm sm:text-base text-white/70 font-normal leading-relaxed"
+                        className="text-xs sm:text-sm text-white/70 font-normal leading-relaxed"
                         style={{ fontFamily: "var(--font-manrope)", fontWeight: 400 }}
                       >
                         {item.answer}
