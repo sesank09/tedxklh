@@ -12,8 +12,7 @@ const TEXT_PLANE_H = 4.0;
 const TEXT_CANVAS_W = 2560;
 const TEXT_CANVAS_H = 1024;
 // Max width (px on the 2560 canvas) the title / subtitle may occupy.
-// Text is auto-shrunk to fit this, so it never overflows regardless of font.
-const TEXT_MAX_PX = 1150;
+const TEXT_MAX_PX = 1850;
 
 // ─────────────────────────────────────────────────────────────
 // 1. CONTINUOUS LIVING BUTTERFLY SHADER (3D Wing Flex & Crystal Shimmer)
@@ -247,12 +246,12 @@ function drawTypography(canvas: HTMLCanvasElement): number {
   const rightPart = "MORPHOSIS";
 
   // ── Title: measure and auto-fit to TEXT_MAX_PX ──
-  let fontSize = isNarrowScreen ? 140 : 165;
+  let fontSize = isNarrowScreen ? 160 : 200;
   const fontFam = `'Bebas Neue', 'Impact', 'Arial Black', sans-serif`;
   ctx.textBaseline = "middle";
   ctx.textAlign = "left";
   ctx.font = `400 ${fontSize}px ${fontFam}`;
-  setLetterSpacing("3px");
+  setLetterSpacing("4px");
 
   let leftWidth = ctx.measureText(leftPart).width;
   let rightWidth = ctx.measureText(rightPart).width;
@@ -261,7 +260,7 @@ function drawTypography(canvas: HTMLCanvasElement): number {
   if (fullWidth > TEXT_MAX_PX) {
     fontSize = Math.floor(fontSize * (TEXT_MAX_PX / fullWidth));
     ctx.font = `400 ${fontSize}px ${fontFam}`;
-    setLetterSpacing(`${Math.max(1, Math.round(3 * (fontSize / 165)))}px`);
+    setLetterSpacing(`${Math.max(1, Math.round(4 * (fontSize / 200)))}px`);
     leftWidth = ctx.measureText(leftPart).width;
     rightWidth = ctx.measureText(rightPart).width;
     fullWidth = leftWidth + rightWidth;
@@ -271,42 +270,42 @@ function drawTypography(canvas: HTMLCanvasElement): number {
 
   // 1. "META" (clean white with luminous halo)
   ctx.shadowColor = "rgba(255, 255, 255, 0.85)";
-  ctx.shadowBlur = 20;
+  ctx.shadowBlur = 24;
   ctx.fillStyle = "#FFFFFF";
   ctx.fillText(leftPart, startX, cy);
 
   // 2. "MORPHOSIS" (ruby red with vibrant crimson glow)
   ctx.shadowColor = "rgba(235, 0, 40, 0.95)";
-  ctx.shadowBlur = 30;
+  ctx.shadowBlur = 36;
   ctx.fillStyle = "#EB0028";
   ctx.fillText(rightPart, startX + leftWidth, cy);
 
   ctx.shadowBlur = 0;
 
   // 3. Subtitle — auto-scaled to stay within title width
-  let subSize = isNarrowScreen ? 22 : 28;
+  let subSize = isNarrowScreen ? 24 : 32;
   const subFontFam = `'Manrope', 'Helvetica Neue', sans-serif`;
   const subText = "THE UNSEEN PROCESS OF BECOMING.";
   ctx.font = `600 ${subSize}px ${subFontFam}`;
-  setLetterSpacing("5px");
+  setLetterSpacing("6px");
   ctx.textAlign = "center";
   let subWidth = ctx.measureText(subText).width;
-  const subMax = Math.max(fullWidth * 0.96, 500);
+  const subMax = Math.max(fullWidth * 0.96, 600);
   if (subWidth > subMax) {
     subSize = Math.floor(subSize * (subMax / subWidth));
     ctx.font = `600 ${subSize}px ${subFontFam}`;
-    setLetterSpacing(`${Math.max(2, Math.round(5 * (subSize / 28)))}px`);
+    setLetterSpacing(`${Math.max(2, Math.round(6 * (subSize / 32)))}px`);
     subWidth = ctx.measureText(subText).width;
   }
   ctx.fillStyle = "rgba(255, 255, 255, 0.92)";
-  ctx.fillText(subText, cx, cy + 140);
+  ctx.fillText(subText, cx, cy + 150);
 
   // 4. Red horizontal accent line
-  const barW = Math.min(200, Math.round(fullWidth * 0.22));
+  const barW = Math.min(260, Math.round(fullWidth * 0.24));
   ctx.shadowColor = "rgba(235, 0, 40, 0.95)";
-  ctx.shadowBlur = 16;
+  ctx.shadowBlur = 18;
   ctx.fillStyle = "#EB0028";
-  ctx.fillRect(cx - barW / 2, cy + 185, barW, 4);
+  ctx.fillRect(cx - barW / 2, cy + 200, barW, 4);
   ctx.shadowBlur = 0;
 
   // Real visual width of the widest element, in world units on the 10-wide plane
@@ -461,20 +460,20 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
 
     // ── 1. BUTTERFLY CONTAIN SCALING (Preserves 8.6 : 4.8 aspect ratio at all viewports) ──
     const targetButterflyWRatio = THREE.MathUtils.clamp(
-      0.48 + (1.0 - Math.min(aspect, 1.8)) * 0.20,
-      0.42,
-      0.72
+      0.52 + (1.0 - Math.min(aspect, 1.8)) * 0.22,
+      0.46,
+      0.76
     );
     const maxButterflyW = isSmallPhone
-      ? visibleW * 0.70
+      ? visibleW * 0.76
       : isLandscapeShort
-        ? visibleW * 0.48
-        : Math.min(visibleW * targetButterflyWRatio, 7.2);
+        ? visibleW * 0.54
+        : Math.min(visibleW * targetButterflyWRatio, 8.0);
 
-    const maxButterflyH = visibleH * (isLandscapeShort ? 0.42 : isMobilePortrait ? 0.36 : 0.46);
+    const maxButterflyH = visibleH * (isLandscapeShort ? 0.44 : isMobilePortrait ? 0.38 : 0.48);
     const scaleByW = maxButterflyW / 8.6;
     const scaleByH = maxButterflyH / 4.8;
-    const butterflyScale = Math.min(scaleByW, scaleByH, 1.0);
+    const butterflyScale = Math.min(scaleByW, scaleByH, 1.05);
 
     // Dynamic vertical anchor for butterfly (positioned in upper-center visual zone)
     const butterflyBaseY = isLandscapeShort
@@ -483,23 +482,26 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
         ? 0.13 * visibleH
         : 0.07 * visibleH;
 
-    // ── 2. TYPOGRAPHY CONTAIN SCALING (Guaranteed zero horizontal or vertical clipping) ──
-    const targetTextWRatio = THREE.MathUtils.clamp(
-      0.40 + (1.0 - Math.min(aspect, 1.8)) * 0.18,
-      0.36,
-      0.58
-    );
-    const maxTextW = isSmallPhone
-      ? visibleW * 0.56
-      : isLandscapeShort
-        ? visibleW * 0.48
-        : Math.min(visibleW * targetTextWRatio, 5.0);
+    // ── 2. TYPOGRAPHY SCALING (Prominent, bold, and fits every screen size proportionally) ──
+    // On small mobile: 74% of screen width (leaves 13% safe margins on both sides)
+    // On mobile portrait: 72% of screen width
+    // On tablet / landscape: 66% of screen width
+    // On desktop / ultrawide: 60% of screen width
+    const textWidthFraction = isSmallPhone
+      ? 0.74
+      : isMobilePortrait
+        ? 0.72
+        : isLandscapeShort
+          ? 0.62
+          : isTablet
+            ? 0.66
+            : 0.60;
 
-    const maxTextH = visibleH * (isLandscapeShort ? 0.26 : isMobilePortrait ? 0.24 : 0.32);
-    const measuredW = Math.max(textWorldWidthRef.current, 0.5);
-    const textScale = Math.min(maxTextW / measuredW, maxTextH / 4.0, 1.0);
+    const targetTextWorldW = Math.min(visibleW * textWidthFraction, 8.2);
+    const measuredW = Math.max(textWorldWidthRef.current, 1.0);
+    const textScale = targetTextWorldW / measuredW;
 
-    const textBaseY = (isMobilePortrait ? 0.09 * visibleH : 0.02 * visibleH);
+    const textBaseY = (isMobilePortrait ? 0.10 * visibleH : 0.03 * visibleH);
 
     const dissolveProgress = THREE.MathUtils.clamp(scrollY / (vh * 0.35), 0, 1);
 
