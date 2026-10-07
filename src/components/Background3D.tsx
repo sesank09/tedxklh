@@ -243,71 +243,74 @@ function drawTypography(canvas: HTMLCanvasElement): number {
     } catch (e) {}
   };
 
-  const fullText = "METAMORPHOSIS";
   const leftPart = "META";
   const rightPart = "MORPHOSIS";
 
-  // ── Title: measure and auto-fit ──
-  let fontSize = isNarrowScreen ? 145 : 170;
-  const titleFont = (size: number) => `400 ${size}px 'Bebas Neue', 'Impact', sans-serif`;
-
+  // ── Title: measure and auto-fit to TEXT_MAX_PX ──
+  let fontSize = isNarrowScreen ? 140 : 165;
+  const fontFam = `'Bebas Neue', 'Impact', 'Arial Black', sans-serif`;
   ctx.textBaseline = "middle";
   ctx.textAlign = "left";
-  ctx.font = titleFont(fontSize);
-  setLetterSpacing("4px");
-  let fullWidth = ctx.measureText(fullText).width;
+  ctx.font = `400 ${fontSize}px ${fontFam}`;
+  setLetterSpacing("3px");
+
+  let leftWidth = ctx.measureText(leftPart).width;
+  let rightWidth = ctx.measureText(rightPart).width;
+  let fullWidth = leftWidth + rightWidth;
 
   if (fullWidth > TEXT_MAX_PX) {
     fontSize = Math.floor(fontSize * (TEXT_MAX_PX / fullWidth));
-    ctx.font = titleFont(fontSize);
-    setLetterSpacing(`${Math.max(1, Math.round(4 * (fontSize / 170)))}px`);
-    fullWidth = ctx.measureText(fullText).width;
+    ctx.font = `400 ${fontSize}px ${fontFam}`;
+    setLetterSpacing(`${Math.max(1, Math.round(3 * (fontSize / 165)))}px`);
+    leftWidth = ctx.measureText(leftPart).width;
+    rightWidth = ctx.measureText(rightPart).width;
+    fullWidth = leftWidth + rightWidth;
   }
 
   const startX = cx - fullWidth / 2;
-  const leftWidth = ctx.measureText(leftPart).width;
 
-  // 1. "META" (white)
+  // 1. "META" (clean white with luminous halo)
   ctx.shadowColor = "rgba(255, 255, 255, 0.85)";
-  ctx.shadowBlur = 24;
+  ctx.shadowBlur = 20;
   ctx.fillStyle = "#FFFFFF";
   ctx.fillText(leftPart, startX, cy);
 
-  // 2. "MORPHOSIS" (ruby red)
+  // 2. "MORPHOSIS" (ruby red with vibrant crimson glow)
   ctx.shadowColor = "rgba(235, 0, 40, 0.95)";
-  ctx.shadowBlur = 36;
+  ctx.shadowBlur = 30;
   ctx.fillStyle = "#EB0028";
   ctx.fillText(rightPart, startX + leftWidth, cy);
 
   ctx.shadowBlur = 0;
 
-  // 3. Subtitle — also auto-fitted to the title width
-  let subSize = isNarrowScreen ? 24 : 30;
-  const subFont = (size: number) => `600 ${size}px 'Manrope', 'Helvetica Neue', sans-serif`;
+  // 3. Subtitle — auto-scaled to stay within title width
+  let subSize = isNarrowScreen ? 22 : 28;
+  const subFontFam = `'Manrope', 'Helvetica Neue', sans-serif`;
   const subText = "THE UNSEEN PROCESS OF BECOMING.";
-  ctx.font = subFont(subSize);
-  setLetterSpacing("6px");
+  ctx.font = `600 ${subSize}px ${subFontFam}`;
+  setLetterSpacing("5px");
   ctx.textAlign = "center";
   let subWidth = ctx.measureText(subText).width;
-  const subMax = Math.max(fullWidth, 600);
+  const subMax = Math.max(fullWidth * 0.96, 500);
   if (subWidth > subMax) {
     subSize = Math.floor(subSize * (subMax / subWidth));
-    ctx.font = subFont(subSize);
-    setLetterSpacing(`${Math.max(2, Math.round(6 * (subSize / 30)))}px`);
+    ctx.font = `600 ${subSize}px ${subFontFam}`;
+    setLetterSpacing(`${Math.max(2, Math.round(5 * (subSize / 28)))}px`);
     subWidth = ctx.measureText(subText).width;
   }
   ctx.fillStyle = "rgba(255, 255, 255, 0.92)";
-  ctx.fillText(subText, cx, cy + 150);
+  ctx.fillText(subText, cx, cy + 140);
 
-  // 4. Red accent line
+  // 4. Red horizontal accent line
+  const barW = Math.min(200, Math.round(fullWidth * 0.22));
   ctx.shadowColor = "rgba(235, 0, 40, 0.95)";
-  ctx.shadowBlur = 18;
+  ctx.shadowBlur = 16;
   ctx.fillStyle = "#EB0028";
-  ctx.fillRect(cx - 120, cy + 195, 240, 4);
+  ctx.fillRect(cx - barW / 2, cy + 185, barW, 4);
   ctx.shadowBlur = 0;
 
   // Real visual width of the widest element, in world units on the 10-wide plane
-  const widest = Math.max(fullWidth, subWidth, 240);
+  const widest = Math.max(fullWidth, subWidth, barW);
   return (widest / TEXT_CANVAS_W) * TEXT_PLANE_W;
 }
 
@@ -432,9 +435,10 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
     const isMobilePortrait = aspect < 1.0;
     const isMobile =
       isMobilePortrait || (typeof window !== "undefined" && window.innerWidth < 768);
-    const isSmallPhone = typeof window !== "undefined" && window.innerWidth < 480;
+    const isSmallPhone =
+      typeof window !== "undefined" && (window.innerWidth < 480 || aspect < 0.6);
 
-    const baseZ = isSmallPhone ? 10.2 : isMobilePortrait ? 9.6 : 7.2;
+    const baseZ = isSmallPhone ? 9.8 : isMobilePortrait ? 9.2 : 7.2;
     camera.position.z = baseZ - Math.min(scrollY / (vh * 0.8), 1.0) * 0.3;
     camera.position.x = 0;
     camera.position.y = 0;
@@ -445,19 +449,15 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
     const visibleH = 2 * Math.tan(vFovRad / 2) * camera.position.z;
     const visibleW = visibleH * aspect;
 
-    // ── TEXT SCALE (fits the REAL measured text width to the screen) ──
-    // Fraction of the visible width the title should occupy
-    const textFraction = isSmallPhone
-      ? 0.80
-      : isMobilePortrait
-        ? 0.80
-        : isMobile
-          ? 0.60
-          : 0.44;
+    // ── TEXT SCALE (guaranteed full containment within viewport) ──
+    // On small phones: text occupies 62% of viewport width (19% safe margin on left & right)
+    // On mobile portrait: text occupies 65% of viewport width (17.5% safe margin)
+    // On desktop: text occupies 44% of viewport width for balanced elegance
+    const textFraction = isSmallPhone ? 0.62 : isMobilePortrait ? 0.65 : isMobile ? 0.55 : 0.44;
 
     const measuredTextW = Math.max(textWorldWidthRef.current, 0.5);
-    const targetTextVisualWidth = Math.min(visibleW * textFraction, visibleW * 0.86);
-    const textScale = Math.min(1.0, targetTextVisualWidth / measuredTextW);
+    const targetTextVisualWidth = visibleW * textFraction;
+    const textScale = targetTextVisualWidth / measuredTextW;
 
     // Butterfly scaling
     const targetButterflyVisualWidth = visibleW * (isMobile ? 0.82 : 0.76);
