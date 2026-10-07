@@ -5,6 +5,7 @@ import { motion, useMotionValue, useSpring, useTransform, useReducedMotion } fro
 import { Users } from "lucide-react";
 
 const DEPARTMENTS = [
+  "All",
   "Board Members",
   "Leadership",
   "Curation",
@@ -20,7 +21,7 @@ interface TeamMember {
   name?: string;
   role: string;
   designation?: string;
-  department: typeof DEPARTMENTS[number];
+  department: Exclude<typeof DEPARTMENTS[number], "All">;
   code: string;
   image?: string;
 }
@@ -356,9 +357,11 @@ function TeamCard({ member, index }: { member: TeamMember; index: number }) {
 }
 
 export default function Team() {
-  const [selectedDept, setSelectedDept] = useState<typeof DEPARTMENTS[number]>("Board Members");
+  const [selectedDept, setSelectedDept] = useState<typeof DEPARTMENTS[number]>("All");
 
-  const filtered = TEAM_MEMBERS.filter(m => m.department === selectedDept);
+  const filtered = selectedDept === "All"
+    ? TEAM_MEMBERS
+    : TEAM_MEMBERS.filter(m => m.department === selectedDept);
 
   return (
     <section id="team" className="relative w-full py-[clamp(3.5rem,7vw,8.5rem)] px-[clamp(1rem,4vw,3.5rem)] select-none overflow-hidden">
