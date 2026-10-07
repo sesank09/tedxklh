@@ -227,8 +227,11 @@ function buildParticleSystemsData(count: number): ParticleSystemsData {
 // ─────────────────────────────────────────────────────────────
 // 3. CLEAN, CRISP RED & WHITE BACKSIDE TYPOGRAPHY PLANE
 // ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────
+// 3. CLEAN, CRISP RED & WHITE BACKSIDE TYPOGRAPHY PLANE
+// ─────────────────────────────────────────────────────────────
 function drawTypography(canvas: HTMLCanvasElement) {
-  canvas.width = 2048;
+  canvas.width = 2560;
   canvas.height = 1024;
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
@@ -239,9 +242,10 @@ function drawTypography(canvas: HTMLCanvasElement) {
   const cy = 480;
 
   // Render "METAMORPHOSIS": META (White) + MORPHOSIS (Red) with Bebas Neue
-  ctx.font = "400 260px 'Bebas Neue', 'Impact', sans-serif";
+  // 170px font gives ~1150px text width on 2560px canvas, guaranteeing ~700px safe margins on left and right
+  ctx.font = "400 170px 'Bebas Neue', 'Impact', sans-serif";
   ctx.textBaseline = "middle";
-  ctx.letterSpacing = "6px";
+  ctx.letterSpacing = "4px";
 
   const fullText = "METAMORPHOSIS";
   const fullWidth = ctx.measureText(fullText).width;
@@ -252,14 +256,14 @@ function drawTypography(canvas: HTMLCanvasElement) {
 
   // 1. Draw "META" (White / Silver with clean glow)
   ctx.shadowColor = "rgba(255, 255, 255, 0.85)";
-  ctx.shadowBlur = 28;
+  ctx.shadowBlur = 24;
   ctx.fillStyle = "#FFFFFF";
   ctx.textAlign = "left";
   ctx.fillText(leftPart, startX, cy);
 
   // 2. Draw "MORPHOSIS" (Ruby Red with vibrant glow)
   ctx.shadowColor = "rgba(235, 0, 40, 0.95)";
-  ctx.shadowBlur = 40;
+  ctx.shadowBlur = 36;
   ctx.fillStyle = "#EB0028";
   ctx.fillText("MORPHOSIS", startX + leftWidth, cy);
 
@@ -267,17 +271,17 @@ function drawTypography(canvas: HTMLCanvasElement) {
   ctx.shadowBlur = 0;
 
   // 3. Subtitle: "THE UNSEEN PROCESS OF BECOMING."
-  ctx.font = "600 36px 'Manrope', 'Helvetica Neue', sans-serif";
-  ctx.letterSpacing = "8px";
+  ctx.font = "600 30px 'Manrope', 'Helvetica Neue', sans-serif";
+  ctx.letterSpacing = "6px";
   ctx.textAlign = "center";
   ctx.fillStyle = "rgba(255, 255, 255, 0.92)";
-  ctx.fillText("THE UNSEEN PROCESS OF BECOMING.", cx, cy + 185);
+  ctx.fillText("THE UNSEEN PROCESS OF BECOMING.", cx, cy + 150);
 
   // 4. Red horizontal accent line
   ctx.shadowColor = "rgba(235, 0, 40, 0.95)";
-  ctx.shadowBlur = 20;
+  ctx.shadowBlur = 18;
   ctx.fillStyle = "#EB0028";
-  ctx.fillRect(cx - 140, cy + 240, 280, 5);
+  ctx.fillRect(cx - 120, cy + 195, 240, 4);
 }
 
 function createTypographyTexture(): { texture: THREE.CanvasTexture; canvas: HTMLCanvasElement } {
@@ -304,7 +308,7 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
   const textMatRef = useRef<THREE.MeshBasicMaterial>(null);
   const pointsRef = useRef<THREE.Points>(null);
   const pMatRef = useRef<THREE.PointsMaterial>(null);
-  const { camera, viewport } = useThree();
+  const { camera } = useThree();
 
   // Load butterfly artwork texture
   const butterflyTexture = useMemo(() => {
@@ -355,19 +359,33 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
     scrollYRef.current = scrollY;
 
     const time = state.clock.getElapsedTime();
-    const vpW = viewport.width;
-    const vpH = viewport.height;
     const vh = typeof window !== "undefined" ? Math.max(window.innerHeight, 500) : 800;
 
-    const isMobile = vpW < 7.6 || (typeof window !== "undefined" && window.innerWidth < 768);
+    // Accurate aspect ratio and camera distance calculated FIRST
+    const aspect = state.size.width / state.size.height;
+    const isMobilePortrait = aspect < 1.0;
+    const isMobile = isMobilePortrait || (typeof window !== "undefined" && window.innerWidth < 768);
+    const baseZ = isMobilePortrait ? 8.8 : 7.2;
 
-    // Responsive scaling with strict upper and lower safety bounds:
-    // Guarantees transformed typography and butterfly never exceed viewport bounds on any device (320px–3840px)
-    const maxTextWidth = vpW * (isMobile ? 0.90 : 0.84);
-    const textScale = Math.min(1.0, maxTextWidth / 11.6);
+    camera.position.z = baseZ - Math.min(scrollY / (vh * 0.8), 1.0) * 0.3;
+    camera.position.x = 0;
+    camera.position.y = 0;
+    camera.lookAt(0, 0, 0);
 
-    const maxButterflyWidth = vpW * (isMobile ? 0.88 : 0.82);
-    const butterflyScale = Math.min(1.0, maxButterflyWidth / 8.6);
+    // Exact visible viewport width and height in world units at z = 0
+    const vFovRad = THREE.MathUtils.degToRad((camera as THREE.PerspectiveCamera).fov || 46);
+    const visibleH = 2 * Math.tan(vFovRad / 2) * camera.position.z;
+    const visibleW = visibleH * aspect;
+
+    // On mobile, text occupies 78% of screen width with 11% safe margin on each side.
+    // On desktop, text occupies 42% of screen width for balanced elegance.
+    // The text on the 10.0-wide plane spans ~4.5 world units (1150 / 2560 * 10.0 = 4.49).
+    const targetTextVisualWidth = visibleW * (isMobile ? 0.78 : 0.44);
+    const textScale = Math.min(1.2, targetTextVisualWidth / 4.49);
+
+    // Butterfly scaling: 80% on mobile, 75% on desktop
+    const targetButterflyVisualWidth = visibleW * (isMobile ? 0.82 : 0.76);
+    const butterflyScale = Math.min(1.0, targetButterflyVisualWidth / 8.6);
 
     // Dynamic scroll timeline normalized to viewport height:
     const dissolveProgress = THREE.MathUtils.clamp(scrollY / (vh * 0.35), 0, 1);
@@ -386,7 +404,7 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
     }
 
     // 1:1 Parallax upward scroll translation
-    const scrollYOffset = (scrollY / vh) * (vpH * 0.95);
+    const scrollYOffset = (scrollY / vh) * (visibleH * 0.95);
 
     // ── 1. CONTINUOUS LIVING BUTTERFLY WING FLAP & SHATTER SHADER ──
     if (shaderMatRef.current) {
@@ -395,24 +413,17 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
     }
 
     // ── 2. ANCHORED BUTTERFLY — NEAR-ZERO BODY MOVEMENT ──
-    // The butterfly stays spatially anchored. Motion comes from vertex shader wing flex only.
-    // Micro-body movement is imperceptibly tiny (1-2% of butterfly height max).
     const bodyBobY = Math.sin(time * 1.8) * 0.006 * butterflyScale;
-
-    // Near-zero rotations (sub-1-degree, purely subconscious depth cue)
-    const rotPitchX = Math.sin(time * 1.3) * 0.008;  // ~0.5 deg
-    const rotYawY = Math.cos(time * 0.55) * 0.012;   // ~0.7 deg
-    const rotRollZ = Math.sin(time * 0.7) * 0.006;   // ~0.3 deg
+    const rotPitchX = Math.sin(time * 1.3) * 0.008;
+    const rotYawY = Math.cos(time * 0.55) * 0.012;
+    const rotRollZ = Math.sin(time * 0.7) * 0.006;
 
     if (quadRef.current) {
       quadRef.current.scale.set(butterflyScale, butterflyScale, butterflyScale);
-      
-      // Butterfly is spatially anchored — no X/Z drift, only imperceptible Y bob + scroll parallax
       quadRef.current.position.x = 0;
       quadRef.current.position.y = (0.15 * butterflyScale + bodyBobY) + scrollYOffset * 0.6;
       quadRef.current.position.z = 0;
 
-      // Imperceptible micro-rotations for subtle 3D depth cue
       quadRef.current.rotation.x = rotPitchX;
       quadRef.current.rotation.y = rotYawY;
       quadRef.current.rotation.z = rotRollZ;
@@ -432,16 +443,6 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
         textMeshRef.current.position.y = -0.02 * textScale + scrollYOffset * 0.6;
       }
     }
-
-    // ── 4. STATIC CAMERA (no Ken Burns / no drift / no moving-picture effect) ──
-    const aspect = state.viewport.aspect;
-    const isMobilePortrait = aspect < 1.0;
-    const baseZ = isMobilePortrait ? 8.8 : 7.2;
-
-    camera.position.z = baseZ - Math.min(scrollY / (vh * 0.8), 1.0) * 0.3;
-    camera.position.x = 0;
-    camera.position.y = 0;
-    camera.lookAt(0, 0, 0);
 
     // ── 5. GPU PARTICLES: LIVE FLOATING STARDUST & WING SHARDS ──
     if (!pointsRef.current || !pMatRef.current) return;
@@ -580,7 +581,7 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
 
       {/* ── 3. CLEAN, CRISP RED & WHITE BACKSIDE METAMORPHOSIS TYPOGRAPHY ── */}
       <mesh ref={textMeshRef} position={[0, -0.02, 0.05]}>
-        <planeGeometry args={[11.6, 5.8]} />
+        <planeGeometry args={[10.0, 4.0]} />
         <meshBasicMaterial
           ref={textMatRef}
           map={typographyTexture}

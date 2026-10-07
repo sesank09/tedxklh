@@ -1005,66 +1005,64 @@ export default function ApplyPage() {
                   )}
 
                   {/* Form Action Controls: Back & Next / Submit */}
-                  <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 pt-6 sm:pt-8 border-t border-white/10 mt-6 sm:mt-8">
+                  <div className="w-full flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 pt-6 sm:pt-8 border-t border-white/10 mt-6 sm:mt-8">
                     {step > 1 ? (
                       <button
                         type="button"
                         onClick={handlePrev}
-                        className="w-full sm:w-auto px-5 sm:px-6 py-3 sm:py-3.5 rounded-full border border-white/15 bg-white/5 hover:bg-white/10 text-white font-semibold text-xs tracking-wider uppercase transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                        className="w-full sm:w-auto h-12 px-6 rounded-full border border-white/15 bg-white/5 hover:bg-white/10 text-white font-semibold text-xs tracking-wider uppercase transition-all flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap active:scale-95"
                         style={{ fontFamily: "var(--font-sora)" }}
                       >
-                        <ArrowLeft className="w-4 h-4" />
+                        <ArrowLeft className="w-4 h-4 shrink-0" />
                         <span>Previous Step</span>
                       </button>
                     ) : (
                       <Link
                         href="/"
-                        className="w-full sm:w-auto px-5 py-3 sm:py-3.5 rounded-full border border-white/10 text-white/60 hover:text-white text-xs uppercase tracking-wider transition-colors flex items-center justify-center gap-2"
+                        className="w-full sm:w-auto h-12 px-6 rounded-full border border-white/10 text-white/60 hover:text-white text-xs uppercase tracking-wider transition-colors flex items-center justify-center gap-2 whitespace-nowrap active:scale-95"
                         style={{ fontFamily: "var(--font-dm-mono)" }}
                       >
-                        <Home className="w-3.5 h-3.5" />
+                        <Home className="w-3.5 h-3.5 shrink-0" />
                         <span>Back to Home</span>
                       </Link>
                     )}
 
-                    <Magnetic range={40} strength={0.25}>
-                      <button
-                        type="button"
-                        onClick={handleNext}
-                        disabled={isSubmitting}
-                        className="w-full sm:w-auto relative min-h-[48px] sm:h-13 px-6 sm:px-8 py-3.5 sm:py-0 rounded-full font-bold text-xs uppercase tracking-[0.14em] sm:tracking-[0.16em] text-white flex items-center justify-center gap-2 shadow-[0_4px_30px_rgba(235,0,40,0.45)] hover:shadow-[0_8px_40px_rgba(235,0,40,0.7)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 cursor-pointer overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
-                        style={{
-                          background: "linear-gradient(135deg, #EB0028 0%, #FF454A 100%)",
-                          fontFamily: "var(--font-sora)",
-                          fontWeight: 700,
-                        }}
-                      >
-                        {/* Hover Light Sweep */}
-                        <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out" />
+                    <button
+                      type="button"
+                      onClick={handleNext}
+                      disabled={isSubmitting}
+                      className="w-full sm:w-auto relative h-12 sm:h-13 px-6 sm:px-8 rounded-full font-bold text-xs sm:text-[13px] uppercase tracking-[0.12em] sm:tracking-[0.16em] text-white flex items-center justify-center gap-2 shadow-[0_4px_30px_rgba(235,0,40,0.45)] hover:shadow-[0_8px_40px_rgba(235,0,40,0.7)] active:scale-95 transition-all duration-300 cursor-pointer overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap shrink-0"
+                      style={{
+                        background: "linear-gradient(135deg, #EB0028 0%, #FF454A 100%)",
+                        fontFamily: "var(--font-sora)",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {/* Hover Light Sweep */}
+                      <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out" />
 
-                        {isSubmitting ? (
-                          <div className="flex items-center gap-2">
-                            <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                            <span>VERIFYING &amp; SUBMITTING...</span>
-                          </div>
-                        ) : step === 3 ? (
-                          <div className="flex items-center gap-2 relative z-10">
-                            <span>SUBMIT APPLICATION</span>
-                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                          </div>
-                        ) : step === 2 ? (
-                          <div className="flex items-center gap-2 relative z-10">
-                            <span>REVIEW &amp; CONFIRM (STEP 03)</span>
-                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2 relative z-10">
-                            <span>CONTINUE TO PAYMENT (STEP 02)</span>
-                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                          </div>
-                        )}
-                      </button>
-                    </Magnetic>
+                      {isSubmitting ? (
+                        <div className="flex items-center gap-2 relative z-10">
+                          <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          <span>SUBMITTING...</span>
+                        </div>
+                      ) : step === 3 ? (
+                        <div className="flex items-center gap-2 relative z-10">
+                          <span>SUBMIT APPLICATION</span>
+                          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </div>
+                      ) : step === 2 ? (
+                        <div className="flex items-center gap-2 relative z-10">
+                          <span>REVIEW APPLICATION</span>
+                          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 relative z-10">
+                          <span>CONTINUE TO PAYMENT</span>
+                          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </div>
+                      )}
+                    </button>
                   </div>
                 </div>
               </div>

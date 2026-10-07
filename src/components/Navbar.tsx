@@ -31,9 +31,13 @@ export default function Navbar() {
   const { scrollY } = useScroll();
 
   useMotionValueEvent(scrollY, "change", (y) => {
-    setScrolled(y > 30);
-    if (y > lastY.current + 8 && y > 140 && !mobileMenuOpen) setVisible(false);
-    else if (y < lastY.current - 4) setVisible(true);
+    setScrolled(y > 20);
+    // On mobile or on apply page, hide navbar quickly on scroll down so inputs are never covered
+    if (y > lastY.current + 6 && y > 60 && !mobileMenuOpen) {
+      setVisible(false);
+    } else if (y < lastY.current - 6 || y <= 30) {
+      setVisible(true);
+    }
     lastY.current = y;
   });
 

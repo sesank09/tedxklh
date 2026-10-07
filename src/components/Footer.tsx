@@ -133,11 +133,11 @@ export default function Footer() {
                 <MapPin className="w-4 h-4 text-[#EB0028] shrink-0 mt-0.5" />
                 <span>KLH University, Bowrampet Campus, Hyderabad, Telangana 500043</span>
               </div>
-              <div className="flex items-center gap-2.5">
-                <Mail className="w-4 h-4 text-[#EB0028] shrink-0" />
+              <div className="flex items-start gap-2.5">
+                <Mail className="w-4 h-4 text-[#EB0028] shrink-0 mt-0.5" />
                 <a 
                   href="mailto:tedxklhbowrampet@klh.edu.in" 
-                  className="hover:text-white transition-colors"
+                  className="hover:text-white transition-colors break-all"
                 >
                   tedxklhbowrampet@klh.edu.in
                 </a>
