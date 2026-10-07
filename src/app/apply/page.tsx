@@ -730,12 +730,21 @@ export default function ApplyPage() {
                         </div>
 
                         {/* Payment Card with QR & UPI */}
-                        <div className="p-4 sm:p-6 rounded-2xl border border-white/10 bg-white/[0.02] flex flex-col sm:flex-row items-center gap-5 sm:gap-6">
+                        <div className="p-5 sm:p-6 rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-md flex flex-col sm:flex-row items-center gap-5 sm:gap-6 relative overflow-hidden">
+                          <div className="absolute top-0 right-0 w-48 h-48 bg-[#EB0028]/10 rounded-full blur-3xl pointer-events-none" />
+
                           {/* QR Code Container */}
-                          <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-2xl bg-white p-2.5 flex items-center justify-center shrink-0 shadow-[0_0_30px_rgba(255,255,255,0.15)] relative group">
-                            <div className="w-full h-full border border-black/20 rounded-lg flex flex-col items-center justify-center bg-white text-black p-2 text-center">
-                              <QrCode className="w-16 h-16 sm:w-20 sm:h-20 text-black mb-1" />
-                              <span className="text-[8px] font-mono font-bold tracking-tighter text-black">SCAN TO PAY</span>
+                          <div className="relative group shrink-0">
+                            <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-[#EB0028]/40 to-white/20 blur-sm group-hover:blur-md transition-all duration-300 opacity-75" />
+                            <div className="relative w-36 h-36 sm:w-40 sm:h-40 rounded-2xl bg-white p-2.5 flex flex-col items-center justify-between shadow-[0_0_30px_rgba(235,0,40,0.25)]">
+                              <img
+                                src="/payment-qr.png"
+                                alt="TEDxKLH Official Payment QR Code"
+                                className="w-full h-auto aspect-square object-contain rounded-lg"
+                              />
+                              <span className="text-[8px] font-mono font-bold tracking-tight text-black uppercase pt-0.5">
+                                SCAN &amp; PAY · ANY UPI APP
+                              </span>
                             </div>
                           </div>
 
@@ -748,14 +757,18 @@ export default function ApplyPage() {
                               <div className="text-xl sm:text-2xl font-bold text-white tracking-tight" style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}>
                                 ₹499 <span className="text-xs font-normal text-white/50">/ Delegate</span>
                               </div>
+                              <p className="text-[11px] text-white/70 font-mono mt-0.5">
+                                Payee: <span className="text-white font-semibold">Koneru Lakshmaiah Education Foundation</span>
+                              </p>
                             </div>
 
-                            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
-                              <div className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-black/60 border border-white/15 text-xs font-mono text-white/90 flex items-center gap-2">
-                                <span>UPI: tedxklh@upi</span>
+                            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-0.5">
+                              <div className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-black/70 border border-white/15 text-xs font-mono text-white/90 flex items-center gap-2 shadow-inner">
+                                <span className="text-white/50 text-[11px]">UPI:</span>
+                                <span className="text-white font-bold select-all">kluedufoubowrampet@hdfcbank</span>
                                 <button
                                   type="button"
-                                  onClick={() => copyUpi("tedxklh@upi")}
+                                  onClick={() => copyUpi("kluedufoubowrampet@hdfcbank")}
                                   className="text-white/50 hover:text-[#EB0028] transition-colors p-0.5"
                                   title="Copy UPI ID"
                                 >
@@ -765,6 +778,14 @@ export default function ApplyPage() {
                               {copiedUpi && (
                                 <span className="text-[11px] text-emerald-400 font-mono">Copied!</span>
                               )}
+                            </div>
+
+                            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1.5 text-[10px] text-white/40 font-mono">
+                              <span className="px-1.5 py-0.5 rounded bg-white/[0.04] border border-white/5">GPay</span>
+                              <span className="px-1.5 py-0.5 rounded bg-white/[0.04] border border-white/5">PhonePe</span>
+                              <span className="px-1.5 py-0.5 rounded bg-white/[0.04] border border-white/5">Paytm</span>
+                              <span className="px-1.5 py-0.5 rounded bg-white/[0.04] border border-white/5">BHIM</span>
+                              <span className="px-1.5 py-0.5 rounded bg-white/[0.04] border border-white/5">PayZapp</span>
                             </div>
 
                             <p className="text-[11px] text-white/50 leading-relaxed" style={{ fontFamily: "var(--font-manrope)" }}>

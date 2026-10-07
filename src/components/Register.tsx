@@ -554,27 +554,32 @@ export default function Register() {
                         </div>
 
                         {/* Payment Card Info & QR Code */}
-                        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 p-6 rounded-2xl border border-white/10 bg-white/[0.02]">
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 p-6 rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-md relative overflow-hidden">
+                          <div className="absolute top-0 right-0 w-48 h-48 bg-[#EB0028]/10 rounded-full blur-3xl pointer-events-none" />
+
                           {/* Left: UPI details */}
                           <div className="md:col-span-7 space-y-4">
-                            <div className="flex items-center justify-between">
+                            <div>
                               <span className="text-xs text-[#EB0028] uppercase font-bold tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
-                                DELEGATE PASS FEE
+                                OFFICIAL DELEGATE PASS FEE
                               </span>
-                              <span className="text-xl font-bold text-white" style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}>
+                              <div className="text-xl font-bold text-white mt-1" style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}>
                                 ₹499 <span className="text-xs font-normal text-white/40" style={{ fontFamily: "var(--font-manrope)" }}>/ Pass</span>
-                              </span>
+                              </div>
+                              <p className="text-[11px] text-white/70 font-mono mt-0.5">
+                                Payee: <span className="text-white font-semibold">Koneru Lakshmaiah Education Foundation</span>
+                              </p>
                             </div>
 
                             <div className="space-y-2 text-xs">
-                              <div className="flex items-center justify-between p-3 rounded-xl bg-black/40 border border-white/5">
-                                <span className="text-white/60" style={{ fontFamily: "var(--font-dm-mono)" }}>UPI ID:</span>
+                              <div className="flex items-center justify-between p-3 rounded-xl bg-black/60 border border-white/10">
+                                <span className="text-white/60 text-[11px]" style={{ fontFamily: "var(--font-dm-mono)" }}>UPI ID:</span>
                                 <div className="flex items-center gap-2">
-                                  <span className="text-white font-bold" style={{ fontFamily: "var(--font-dm-mono)" }}>tedxklh@upi</span>
+                                  <span className="text-white font-bold select-all" style={{ fontFamily: "var(--font-dm-mono)" }}>kluedufoubowrampet@hdfcbank</span>
                                   <button
                                     type="button"
-                                    onClick={() => copyToClipboard("tedxklh@upi")}
-                                    className="p-1 rounded text-white/40 hover:text-white transition-colors cursor-pointer"
+                                    onClick={() => copyToClipboard("kluedufoubowrampet@hdfcbank")}
+                                    className="p-1 rounded text-white/50 hover:text-[#EB0028] transition-colors cursor-pointer"
                                     title="Copy UPI ID"
                                   >
                                     {copiedUpi ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
@@ -582,24 +587,26 @@ export default function Register() {
                                 </div>
                               </div>
 
-                              <div className="p-3 rounded-xl bg-black/40 border border-white/5 space-y-1 text-[11px] text-white/70" style={{ fontFamily: "var(--font-dm-mono)" }}>
-                                <div><span className="text-white/40">Account Name:</span> TEDx KLH Conferences</div>
-                                <div><span className="text-white/40">Account No:</span> 921020048192831</div>
-                                <div><span className="text-white/40">IFSC Code:</span> UTIB0002194</div>
-                                <div><span className="text-white/40">Bank:</span> Axis Bank, Bowrampet</div>
+                              <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-white/40 font-mono pt-1">
+                                <span className="px-1.5 py-0.5 rounded bg-white/[0.04] border border-white/5">GPay</span>
+                                <span className="px-1.5 py-0.5 rounded bg-white/[0.04] border border-white/5">PhonePe</span>
+                                <span className="px-1.5 py-0.5 rounded bg-white/[0.04] border border-white/5">Paytm</span>
+                                <span className="px-1.5 py-0.5 rounded bg-white/[0.04] border border-white/5">BHIM</span>
+                                <span className="px-1.5 py-0.5 rounded bg-white/[0.04] border border-white/5">PayZapp</span>
                               </div>
                             </div>
                           </div>
 
-                          {/* Right: Mock QR Code */}
-                          <div className="md:col-span-5 flex flex-col items-center justify-center p-4 rounded-xl bg-black/60 border border-white/10 space-y-2 text-center">
-                            <div className="w-28 h-28 bg-white p-2 rounded-lg flex items-center justify-center shadow-lg">
-                              {/* SVG Stylized QR */}
-                              <svg viewBox="0 0 100 100" className="w-full h-full text-black fill-current">
-                                <path d="M0,0 h30 v30 h-30 z M10,10 h10 v10 h-10 z M70,0 h30 v30 h-30 z M80,10 h10 v10 h-10 z M0,70 h30 v30 h-30 z M10,80 h10 v10 h-10 z M40,10 h10 v20 h-10 z M60,10 h10 v10 h-10 z M10,40 h10 v20 h-10 z M30,40 h20 v10 h-20 z M60,40 h30 v10 h-30 z M40,60 h20 v20 h-20 z M70,60 h10 v30 h-10 z M90,70 h10 v20 h-10 z" />
-                              </svg>
+                          {/* Right: Official QR Code */}
+                          <div className="md:col-span-5 flex flex-col items-center justify-center p-3 rounded-xl bg-black/60 border border-white/10 space-y-2 text-center relative group">
+                            <div className="relative w-32 h-32 sm:w-36 sm:h-36 bg-white p-2 rounded-xl flex flex-col items-center justify-between shadow-[0_0_25px_rgba(235,0,40,0.25)]">
+                              <img
+                                src="/payment-qr.png"
+                                alt="Official Payment QR"
+                                className="w-full h-auto aspect-square object-contain rounded-lg"
+                              />
                             </div>
-                            <span className="text-[10px] text-white/50 uppercase tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                            <span className="text-[9px] text-white/60 uppercase tracking-wider font-mono font-bold">
                               Scan with any UPI App
                             </span>
                           </div>
