@@ -402,10 +402,10 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
     const visibleH = 2 * Math.tan(vFovRad / 2) * camera.position.z;
     const visibleW = visibleH * aspect;
 
-    // On mobile, text occupies 78% of screen width with 11% safe margin on each side.
-    // On desktop, text occupies 42% of screen width for balanced elegance.
+    // On mobile, text occupies 58% of screen width with 21% safe margin on each side.
+    // On desktop, text occupies 44% of screen width for balanced elegance.
     // The text on the 10.0-wide plane spans ~4.5 world units (1150 / 2560 * 10.0 = 4.49).
-    const targetTextVisualWidth = visibleW * (isMobile ? 0.78 : 0.44);
+    const targetTextVisualWidth = visibleW * (isMobile ? 0.58 : 0.44);
     const textScale = Math.min(1.2, targetTextVisualWidth / 4.49);
 
     // Butterfly scaling: 80% on mobile, 75% on desktop

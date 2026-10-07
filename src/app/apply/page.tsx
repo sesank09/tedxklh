@@ -1058,7 +1058,8 @@ export default function ApplyPage() {
                         </div>
                       ) : (
                         <div className="flex items-center justify-center gap-2 relative z-10 leading-none">
-                          <span>CONTINUE TO PAYMENT</span>
+                          <span className="sm:hidden">CONTINUE</span>
+                          <span className="hidden sm:inline">CONTINUE TO PAYMENT</span>
                           <ArrowRight className="w-4 h-4 shrink-0 group-hover:translate-x-1 transition-transform" />
                         </div>
                       )}
