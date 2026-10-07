@@ -214,27 +214,31 @@ function buildParticleSystemsData(count: number): ParticleSystemsData {
 // ─────────────────────────────────────────────────────────────
 // 3. CLEAN, CRISP RED & WHITE BACKSIDE TYPOGRAPHY PLANE
 // ─────────────────────────────────────────────────────────────
+interface TypographyBounds {
+  width: number;
+  height: number;
+}
+
 /**
- * Draws the title + subtitle onto the canvas.
- * The title is auto-fitted: whatever font actually loads (Bebas Neue, Impact,
- * or a generic fallback), the font size is reduced until the full text fits
- * within TEXT_MAX_PX. Returns the real text width in WORLD units on the
- * typography plane so the scene can scale it exactly to the screen.
+ * Draws the title + subtitle onto the canvas at maximum 2.5K resolution.
+ * Auto-fits font sizing to utilize ~2200px of the 2560px canvas for crystal-clear
+ * vector-like sharpness. Returns the exact measured world-space width & height
+ * on the 10x4 3D plane so Three.js can scale it flawlessly to any screen.
  */
-function drawTypography(canvas: HTMLCanvasElement): number {
+function drawTypography(canvas: HTMLCanvasElement): TypographyBounds {
   canvas.width = TEXT_CANVAS_W;
   canvas.height = TEXT_CANVAS_H;
   const ctx = canvas.getContext("2d");
-  const fallbackWorldW = (TEXT_MAX_PX / TEXT_CANVAS_W) * TEXT_PLANE_W;
-  if (!ctx) return fallbackWorldW;
+  const fallbackBounds: TypographyBounds = {
+    width: (TEXT_MAX_PX / TEXT_CANVAS_W) * TEXT_PLANE_W,
+    height: 1.5,
+  };
+  if (!ctx) return fallbackBounds;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   const cx = canvas.width / 2;
-  const cy = 480;
-
-  const isNarrowScreen =
-    typeof window !== "undefined" && window.innerWidth < 480;
+  const cy = 440;
 
   const setLetterSpacing = (v: string) => {
     try {
@@ -244,23 +248,24 @@ function drawTypography(canvas: HTMLCanvasElement): number {
 
   const leftPart = "META";
   const rightPart = "MORPHOSIS";
+  const TARGET_CANVAS_WIDTH = 2200;
 
-  // ── Title: measure and auto-fit to TEXT_MAX_PX ──
-  let fontSize = isNarrowScreen ? 160 : 200;
+  // ── 1. Main Title: "METAMORPHOSIS" ──
+  let fontSize = 350;
   const fontFam = `'Bebas Neue', 'Impact', 'Arial Black', sans-serif`;
   ctx.textBaseline = "middle";
   ctx.textAlign = "left";
   ctx.font = `400 ${fontSize}px ${fontFam}`;
-  setLetterSpacing("4px");
+  setLetterSpacing("6px");
 
   let leftWidth = ctx.measureText(leftPart).width;
   let rightWidth = ctx.measureText(rightPart).width;
   let fullWidth = leftWidth + rightWidth;
 
-  if (fullWidth > TEXT_MAX_PX) {
-    fontSize = Math.floor(fontSize * (TEXT_MAX_PX / fullWidth));
+  if (fullWidth > TARGET_CANVAS_WIDTH) {
+    fontSize = Math.floor(fontSize * (TARGET_CANVAS_WIDTH / fullWidth));
     ctx.font = `400 ${fontSize}px ${fontFam}`;
-    setLetterSpacing(`${Math.max(1, Math.round(4 * (fontSize / 200)))}px`);
+    setLetterSpacing(`${Math.max(2, Math.round(6 * (fontSize / 350)))}px`);
     leftWidth = ctx.measureText(leftPart).width;
     rightWidth = ctx.measureText(rightPart).width;
     fullWidth = leftWidth + rightWidth;
@@ -268,63 +273,73 @@ function drawTypography(canvas: HTMLCanvasElement): number {
 
   const startX = cx - fullWidth / 2;
 
-  // 1. "META" (clean white with luminous halo)
-  ctx.shadowColor = "rgba(255, 255, 255, 0.85)";
-  ctx.shadowBlur = 24;
+  // "META" (luminous clean white)
+  ctx.shadowColor = "rgba(255, 255, 255, 0.95)";
+  ctx.shadowBlur = 36;
   ctx.fillStyle = "#FFFFFF";
   ctx.fillText(leftPart, startX, cy);
 
-  // 2. "MORPHOSIS" (ruby red with vibrant crimson glow)
-  ctx.shadowColor = "rgba(235, 0, 40, 0.95)";
-  ctx.shadowBlur = 36;
+  // "MORPHOSIS" (official TEDx ruby red with radiant crimson glow)
+  ctx.shadowColor = "rgba(235, 0, 40, 0.98)";
+  ctx.shadowBlur = 56;
   ctx.fillStyle = "#EB0028";
   ctx.fillText(rightPart, startX + leftWidth, cy);
 
   ctx.shadowBlur = 0;
 
-  // 3. Subtitle — auto-scaled to stay within title width
-  let subSize = isNarrowScreen ? 24 : 32;
+  // ── 2. Subtitle: "THE UNSEEN PROCESS OF BECOMING" ──
+  let subSize = Math.max(34, Math.round(fontSize * 0.118));
   const subFontFam = `'Manrope', 'Helvetica Neue', sans-serif`;
-  const subText = "THE UNSEEN PROCESS OF BECOMING.";
-  ctx.font = `600 ${subSize}px ${subFontFam}`;
-  setLetterSpacing("6px");
+  const subText = "THE UNSEEN PROCESS OF BECOMING";
+  ctx.font = `700 ${subSize}px ${subFontFam}`;
+  setLetterSpacing("8px");
   ctx.textAlign = "center";
   let subWidth = ctx.measureText(subText).width;
-  const subMax = Math.max(fullWidth * 0.96, 600);
-  if (subWidth > subMax) {
-    subSize = Math.floor(subSize * (subMax / subWidth));
-    ctx.font = `600 ${subSize}px ${subFontFam}`;
-    setLetterSpacing(`${Math.max(2, Math.round(6 * (subSize / 32)))}px`);
+  const maxSubWidth = Math.max(fullWidth * 0.94, 800);
+  if (subWidth > maxSubWidth) {
+    subSize = Math.floor(subSize * (maxSubWidth / subWidth));
+    ctx.font = `700 ${subSize}px ${subFontFam}`;
+    setLetterSpacing(`${Math.max(3, Math.round(8 * (subSize / 40)))}px`);
     subWidth = ctx.measureText(subText).width;
   }
-  ctx.fillStyle = "rgba(255, 255, 255, 0.92)";
-  ctx.fillText(subText, cx, cy + 150);
 
-  // 4. Red horizontal accent line
-  const barW = Math.min(260, Math.round(fullWidth * 0.24));
-  ctx.shadowColor = "rgba(235, 0, 40, 0.95)";
-  ctx.shadowBlur = 18;
-  ctx.fillStyle = "#EB0028";
-  ctx.fillRect(cx - barW / 2, cy + 200, barW, 4);
+  const subY = cy + fontSize * 0.52;
+  ctx.shadowColor = "rgba(255, 255, 255, 0.4)";
+  ctx.shadowBlur = 12;
+  ctx.fillStyle = "rgba(255, 255, 255, 0.92)";
+  ctx.fillText(subText, cx, subY);
   ctx.shadowBlur = 0;
 
-  // Real visual width of the widest element, in world units on the 10-wide plane
-  const widest = Math.max(fullWidth, subWidth, barW);
-  return (widest / TEXT_CANVAS_W) * TEXT_PLANE_W;
+  // ── 3. Red horizontal accent line ──
+  const barW = Math.min(360, Math.round(fullWidth * 0.22));
+  const barY = cy + fontSize * 0.72;
+  ctx.shadowColor = "rgba(235, 0, 40, 0.95)";
+  ctx.shadowBlur = 24;
+  ctx.fillStyle = "#EB0028";
+  ctx.fillRect(cx - barW / 2, barY, barW, 4);
+  ctx.shadowBlur = 0;
+
+  // Calculate exact measured content bounds in world units
+  const widestPx = Math.max(fullWidth, subWidth, barW);
+  const totalHeightPx = (barY + 6) - (cy - fontSize * 0.46);
+  const worldWidth = (widestPx / TEXT_CANVAS_W) * TEXT_PLANE_W;
+  const worldHeight = (totalHeightPx / TEXT_CANVAS_H) * TEXT_PLANE_H;
+
+  return { width: worldWidth, height: worldHeight };
 }
 
 function createTypographyTexture(): {
   texture: THREE.CanvasTexture;
   canvas: HTMLCanvasElement;
-  worldWidth: number;
+  bounds: TypographyBounds;
 } {
   const canvas = document.createElement("canvas");
-  const worldWidth = drawTypography(canvas);
+  const bounds = drawTypography(canvas);
   const tex = new THREE.CanvasTexture(canvas);
   tex.generateMipmaps = true;
   tex.minFilter = THREE.LinearMipmapLinearFilter;
   tex.magFilter = THREE.LinearFilter;
-  return { texture: tex, canvas, worldWidth };
+  return { texture: tex, canvas, bounds };
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -341,8 +356,11 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
   const textMatRef = useRef<THREE.MeshBasicMaterial>(null);
   const pointsRef = useRef<THREE.Points>(null);
   const pMatRef = useRef<THREE.PointsMaterial>(null);
-  // Real measured width of the typography (world units on the plane)
-  const textWorldWidthRef = useRef<number>((TEXT_MAX_PX / TEXT_CANVAS_W) * TEXT_PLANE_W);
+  // Real measured bounds of the typography (world units on the plane)
+  const textBoundsRef = useRef<TypographyBounds>({
+    width: (TEXT_MAX_PX / TEXT_CANVAS_W) * TEXT_PLANE_W,
+    height: 1.5,
+  });
   const { camera } = useThree();
 
   // Load butterfly artwork texture
@@ -356,28 +374,31 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
   }, []);
 
   // Typography texture with canvas ref
-  const { typographyTexture, typographyCanvas, initialWidth } = useMemo(() => {
+  const { typographyTexture, typographyCanvas, initialBounds } = useMemo(() => {
     if (typeof document === "undefined") {
       return {
         typographyTexture: new THREE.Texture(),
         typographyCanvas: null as HTMLCanvasElement | null,
-        initialWidth: (TEXT_MAX_PX / TEXT_CANVAS_W) * TEXT_PLANE_W,
+        initialBounds: {
+          width: (TEXT_MAX_PX / TEXT_CANVAS_W) * TEXT_PLANE_W,
+          height: 1.5,
+        },
       };
     }
-    const { texture, canvas, worldWidth } = createTypographyTexture();
-    return { typographyTexture: texture, typographyCanvas: canvas, initialWidth: worldWidth };
+    const { texture, canvas, bounds } = createTypographyTexture();
+    return { typographyTexture: texture, typographyCanvas: canvas, initialBounds: bounds };
   }, []);
 
   useEffect(() => {
-    textWorldWidthRef.current = initialWidth;
-  }, [initialWidth]);
+    textBoundsRef.current = initialBounds;
+  }, [initialBounds]);
 
   // Re-draw typography once web fonts are loaded (and on resize / rotate)
   useEffect(() => {
     if (typeof document === "undefined" || !typographyCanvas) return;
 
     const redraw = () => {
-      textWorldWidthRef.current = drawTypography(typographyCanvas);
+      textBoundsRef.current = drawTypography(typographyCanvas);
       typographyTexture.needsUpdate = true;
     };
 
@@ -385,14 +406,14 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
 
     if (document.fonts) {
       document.fonts.ready.then(redraw);
-      document.fonts.load("400 170px 'Bebas Neue'").then(redraw).catch(() => {});
-      document.fonts.load("400 145px 'Bebas Neue'").then(redraw).catch(() => {});
-      document.fonts.load("600 30px 'Manrope'").then(redraw).catch(() => {});
+      document.fonts.load("400 350px 'Bebas Neue'").then(redraw).catch(() => {});
+      document.fonts.load("700 40px 'Manrope'").then(redraw).catch(() => {});
     }
 
     const t1 = setTimeout(redraw, 150);
     const t2 = setTimeout(redraw, 500);
     const t3 = setTimeout(redraw, 1200);
+    const t4 = setTimeout(redraw, 2500);
 
     window.addEventListener("resize", redraw);
     window.addEventListener("orientationchange", redraw);
@@ -401,6 +422,7 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
       clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);
+      clearTimeout(t4);
       window.removeEventListener("resize", redraw);
       window.removeEventListener("orientationchange", redraw);
     };
@@ -433,10 +455,11 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
     const height = state.size.height;
     const aspect = width / height;
 
-    const isMobilePortrait = aspect < 0.95;
+    const isMobilePortrait = aspect < 0.92;
+    const isSmallPhone = width < 480 || (aspect < 0.58 && width < 600);
     const isLandscapeShort = aspect >= 1.0 && height < 520;
-    const isSmallPhone = width < 480 || (aspect < 0.6 && width < 600);
-    const isTablet = aspect >= 0.7 && aspect <= 1.3 && width >= 600 && width <= 1368;
+    const isTablet = aspect >= 0.72 && aspect <= 1.35 && width >= 600 && width <= 1368;
+    const isUltrawide = aspect >= 1.95;
 
     const baseZ = isSmallPhone
       ? 10.0
@@ -462,18 +485,18 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
     const targetButterflyWRatio = THREE.MathUtils.clamp(
       0.52 + (1.0 - Math.min(aspect, 1.8)) * 0.22,
       0.46,
-      0.76
+      0.78
     );
     const maxButterflyW = isSmallPhone
-      ? visibleW * 0.76
+      ? visibleW * 0.78
       : isLandscapeShort
         ? visibleW * 0.54
-        : Math.min(visibleW * targetButterflyWRatio, 8.0);
+        : Math.min(visibleW * targetButterflyWRatio, 8.2);
 
     const maxButterflyH = visibleH * (isLandscapeShort ? 0.44 : isMobilePortrait ? 0.38 : 0.48);
     const scaleByW = maxButterflyW / 8.6;
     const scaleByH = maxButterflyH / 4.8;
-    const butterflyScale = Math.min(scaleByW, scaleByH, 1.05);
+    const butterflyScale = Math.min(scaleByW, scaleByH, 1.08);
 
     // Dynamic vertical anchor for butterfly (positioned in upper-center visual zone)
     const butterflyBaseY = isLandscapeShort
@@ -482,33 +505,51 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
         ? 0.13 * visibleH
         : 0.07 * visibleH;
 
-    // ── 2. TYPOGRAPHY SCALING (Prominent, bold, and fits every screen size proportionally) ──
-    // On small mobile: 74% of screen width (leaves 13% safe margins on both sides)
-    // On mobile portrait: 72% of screen width
-    // On tablet / landscape: 66% of screen width
-    // On desktop / ultrawide: 60% of screen width
-    const textWidthFraction = isSmallPhone
-      ? 0.74
+    // ── 2. METAMORPHOSIS TYPOGRAPHY RESPONSIVE FITTING (Fits every screen size dynamically) ──
+    // - On small mobile: 86% of visible screen width (7% clean margin on both sides, zero clipping)
+    // - On mobile portrait: 84% of visible screen width
+    // - On tablet: 78% of visible screen width
+    // - On desktop / laptop (16:9): 72% of visible screen width (bold, majestic, grand centerpiece)
+    // - On ultrawide (21:9 / cropped wide): 60% - 66% width, height-contained
+    let textWidthFraction = 0.72;
+    if (isSmallPhone) {
+      textWidthFraction = 0.86;
+    } else if (isMobilePortrait) {
+      textWidthFraction = 0.84;
+    } else if (isTablet) {
+      textWidthFraction = 0.78;
+    } else if (isLandscapeShort) {
+      textWidthFraction = 0.70;
+    } else if (isUltrawide) {
+      textWidthFraction = THREE.MathUtils.clamp(0.72 - (aspect - 1.95) * 0.10, 0.58, 0.68);
+    }
+
+    const maxTextHeightFraction = isLandscapeShort
+      ? 0.40
       : isMobilePortrait
-        ? 0.72
-        : isLandscapeShort
-          ? 0.62
-          : isTablet
-            ? 0.66
-            : 0.60;
+        ? 0.26
+        : 0.32;
 
-    const targetTextWorldW = Math.min(visibleW * textWidthFraction, 8.2);
-    const measuredW = Math.max(textWorldWidthRef.current, 1.0);
-    const textScale = targetTextWorldW / measuredW;
+    const targetTextWorldW = visibleW * textWidthFraction;
+    const targetTextWorldH = visibleH * maxTextHeightFraction;
 
-    const textBaseY = (isMobilePortrait ? 0.10 * visibleH : 0.03 * visibleH);
+    const measuredW = Math.max(textBoundsRef.current.width, 1.0);
+    const measuredH = Math.max(textBoundsRef.current.height, 0.5);
+
+    const textScaleW = targetTextWorldW / measuredW;
+    const textScaleH = targetTextWorldH / measuredH;
+
+    // Dual-axis containment: guarantees it perfectly fits width AND height on every screen size
+    const textScale = Math.min(textScaleW, textScaleH);
+
+    const textBaseY = (isMobilePortrait ? 0.08 * visibleH : 0.02 * visibleH);
 
     const dissolveProgress = THREE.MathUtils.clamp(scrollY / (vh * 0.35), 0, 1);
 
-    const fadeStart = vh * 0.12;
-    const peakStart = vh * 0.35;
-    const fadeOutStart = vh * 0.52;
-    const fadeOutEnd = vh * 0.72;
+    const fadeStart = vh * 0.10;
+    const peakStart = vh * 0.30;
+    const fadeOutStart = vh * 0.54;
+    const fadeOutEnd = vh * 0.74;
 
     let textOpacity = 0;
     if (scrollY >= fadeStart && scrollY <= fadeOutEnd) {
@@ -517,7 +558,7 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
       textOpacity = fadeIn * fadeOut;
     }
 
-    const scrollYOffset = (scrollY / vh) * (visibleH * 0.95);
+    const scrollYOffset = (scrollY / vh) * (visibleH * 0.70);
 
     // ── 1. BUTTERFLY SHADER UNIFORMS ──
     if (shaderMatRef.current) {
@@ -554,7 +595,7 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
         textMatRef.current.opacity = textOpacity;
         textMeshRef.current.scale.set(textScale, textScale, textScale);
         textMeshRef.current.position.x = 0;
-        textMeshRef.current.position.y = textBaseY + scrollYOffset * 0.6;
+        textMeshRef.current.position.y = textBaseY + scrollYOffset * 0.55;
       }
     }
 
