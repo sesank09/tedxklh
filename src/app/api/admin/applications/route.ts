@@ -13,6 +13,7 @@ export async function GET(req: NextRequest) {
     const search = (searchParams.get("search") || "").trim();
     const appStatus = searchParams.get("appStatus") || "all";
     const paymentStatus = searchParams.get("paymentStatus") || "all";
+    const ticketFilter = searchParams.get("ticketFilter") || "all";
     const sortBy = searchParams.get("sortBy") || "newest";
     const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
     const limit = Math.min(50, Math.max(5, parseInt(searchParams.get("limit") || "15", 10)));
@@ -31,7 +32,10 @@ export async function GET(req: NextRequest) {
         phone,
         college_organization,
         city,
+        roll_number,
         pass_type,
+        ticket_type,
+        ticket_price,
         ticket_count,
         total_amount,
         group_members,
@@ -53,14 +57,24 @@ export async function GET(req: NextRequest) {
       query = query.eq("application_status", appStatus);
     }
 
+    // Payment Filter
     if (paymentStatus && paymentStatus !== "all") {
       query = query.eq("payment_status", paymentStatus);
     }
 
-    // Search
+    // Ticket Tier Filter
+    if (ticketFilter && ticketFilter !== "all") {
+      if (ticketFilter === "individual" || ticketFilter === "549") {
+        query = query.or("pass_type.eq.individual,ticket_type.ilike.%549%");
+      } else if (ticketFilter === "group_of_4" || ticketFilter === "1999") {
+        query = query.or("pass_type.eq.group_of_4,ticket_type.ilike.%1999%");
+      }
+    }
+
+    // Comprehensive Search across Application No, First Name, Last Name, Email, Phone, Roll Number, Delegate ID, Ticket Type
     if (search) {
       query = query.or(
-        `application_number.ilike.%${search}%,first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%,delegate_id.ilike.%${search}%`
+        `application_number.ilike.%${search}%,first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%,roll_number.ilike.%${search}%,delegate_id.ilike.%${search}%,ticket_type.ilike.%${search}%,college_organization.ilike.%${search}%`
       );
     }
 
@@ -71,6 +85,8 @@ export async function GET(req: NextRequest) {
       query = query.order("first_name", { ascending: true });
     } else if (sortBy === "app_number") {
       query = query.order("application_number", { ascending: true });
+    } else if (sortBy === "roll_number") {
+      query = query.order("roll_number", { ascending: true, nullsFirst: false });
     } else {
       query = query.order("created_at", { ascending: false });
     }

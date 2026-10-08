@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminClient } from "@/lib/supabase/admin";
+import { getTicketConfig } from "@/lib/constants";
 
 export async function POST(req: NextRequest) {
   let uploadedFilePath: string | null = null;
@@ -14,12 +15,18 @@ export async function POST(req: NextRequest) {
     const phone = (formData.get("phone") as string || "").replace(/\D/g, "");
     const organization = (formData.get("organization") as string || "").trim();
     const city = (formData.get("city") as string || "").trim();
+    const rollNumber = (formData.get("rollNumber") as string || "").trim();
     const utrNumber = (formData.get("utrNumber") as string || "").replace(/\D/g, "");
     const screenshot = formData.get("screenshot") as File | null;
     const rawPassType = (formData.get("passType") as string || "individual").trim();
-    const passType = rawPassType === "group_of_4" ? "group_of_4" : "individual";
-    const totalAmount = passType === "group_of_4" ? 1999 : 549;
-    const ticketCount = passType === "group_of_4" ? 4 : 1;
+
+    // Authoritative Server-Controlled Pricing
+    const ticketConfig = getTicketConfig(rawPassType);
+    const passType = ticketConfig.id;
+    const ticketType = ticketConfig.name;
+    const ticketPrice = ticketConfig.price;
+    const totalAmount = ticketPrice;
+    const ticketCount = ticketConfig.seats;
 
     // Parse and validate group members if group pass
     let groupMembers: Array<{ name: string; email: string; phone: string }> = [];
@@ -74,7 +81,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 1. Validate required fields
+    // 1. Validate required personal fields
     if (!firstName) {
       return NextResponse.json(
         { error: "First name is required." },
@@ -100,6 +107,14 @@ export async function POST(req: NextRequest) {
     if (!organization) {
       return NextResponse.json(
         { error: "College / University or Organization is required." },
+        { status: 400 }
+      );
+    }
+
+    // Validate Roll Number (Required string, 1 to 50 characters, trimmed, alphanumeric allowed)
+    if (!rollNumber || rollNumber.length < 1 || rollNumber.length > 50) {
+      return NextResponse.json(
+        { error: "Roll Number is required (1 to 50 characters, e.g. 23CSE001)." },
         { status: 400 }
       );
     }
@@ -218,6 +233,9 @@ export async function POST(req: NextRequest) {
          p_total_amount: totalAmount,
          p_ticket_count: ticketCount,
          p_group_members: groupMembers,
+         p_roll_number: rollNumber,
+         p_ticket_type: ticketType,
+         p_ticket_price: ticketPrice,
        }
      );
 
@@ -249,7 +267,10 @@ export async function POST(req: NextRequest) {
            phone: phone,
            college_organization: organization,
            city: city,
+           roll_number: rollNumber,
            pass_type: passType,
+           ticket_type: ticketType,
+           ticket_price: ticketPrice,
            ticket_count: ticketCount,
            total_amount: totalAmount,
            group_members: groupMembers,
@@ -294,6 +315,9 @@ export async function POST(req: NextRequest) {
      return NextResponse.json({
        success: true,
        application_number: appNumber,
+       roll_number: rollNumber,
+       ticket_type: ticketType,
+       ticket_price: ticketPrice,
        pass_type: passType,
        total_amount: totalAmount,
        ticket_count: ticketCount,

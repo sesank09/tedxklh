@@ -4,8 +4,6 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import {
   Search,
-  Filter,
-  ArrowUpDown,
   ChevronLeft,
   ChevronRight,
   RefreshCw,
@@ -13,7 +11,9 @@ import {
   Trash2,
   AlertTriangle,
   Radio,
+  Ticket,
 } from "lucide-react";
+import { formatINR } from "@/lib/constants";
 
 interface ApplicationItem {
   id: string;
@@ -24,12 +24,15 @@ interface ApplicationItem {
   phone: string;
   college_organization: string;
   city: string;
+  roll_number?: string | null;
+  pass_type?: string;
+  ticket_type?: string;
+  ticket_price?: number;
+  ticket_count?: number;
+  total_amount?: number;
   application_status: string;
   payment_status: string;
   delegate_id: string | null;
-  pass_type?: string;
-  ticket_count?: number;
-  total_amount?: number;
   created_at: string;
   payment_verifications?: Array<{
     utr_number: string;
@@ -42,12 +45,13 @@ export default function AdminApplicationsPage() {
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
-  const [limit] = useState(12);
+  const [limit] = useState(15);
 
   // Filters
   const [search, setSearch] = useState("");
   const [appStatus, setAppStatus] = useState("all");
   const [paymentStatus, setPaymentStatus] = useState("all");
+  const [ticketFilter, setTicketFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
   const [loading, setLoading] = useState(true);
 
@@ -64,6 +68,7 @@ export default function AdminApplicationsPage() {
         search: search.trim(),
         appStatus,
         paymentStatus,
+        ticketFilter,
         sortBy,
       });
 
@@ -80,13 +85,13 @@ export default function AdminApplicationsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, limit, search, appStatus, paymentStatus, sortBy]);
+  }, [page, limit, search, appStatus, paymentStatus, ticketFilter, sortBy]);
 
   useEffect(() => {
     fetchApplications();
     const interval = setInterval(() => {
       fetchApplications(true);
-    }, 8000);
+    }, 6000);
 
     return () => clearInterval(interval);
   }, [fetchApplications]);
@@ -129,6 +134,8 @@ export default function AdminApplicationsPage() {
         return "bg-red-500/20 text-red-400 border-red-500/40";
       case "under_review":
         return "bg-amber-500/20 text-amber-400 border-amber-500/40";
+      case "cancelled":
+        return "bg-neutral-500/20 text-neutral-400 border-neutral-500/40";
       default:
         return "bg-white/10 text-white/70 border-white/20";
     }
@@ -178,7 +185,7 @@ export default function AdminApplicationsPage() {
 
       {/* Search & Filter Controls Bar */}
       <div className="p-4 sm:p-5 rounded-2xl border border-white/10 bg-black/60 backdrop-blur-xl space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
           {/* Search Bar */}
           <form onSubmit={handleSearchSubmit} className="relative flex items-center lg:col-span-1">
             <Search className="w-4 h-4 text-white/40 absolute left-3.5" />
@@ -186,11 +193,28 @@ export default function AdminApplicationsPage() {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search ID, Name, Email, Phone, UTR..."
+              placeholder="Search ID, Roll No, Name, UTR..."
               className="w-full h-10 pl-10 pr-4 rounded-xl border border-white/10 bg-white/[0.03] text-xs text-white placeholder-white/30 focus:outline-none focus:border-[#EB0028] transition-all"
               style={{ fontFamily: "var(--font-manrope)" }}
             />
           </form>
+
+          {/* Ticket Filter */}
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-mono uppercase text-white/40 shrink-0">Ticket:</span>
+            <select
+              value={ticketFilter}
+              onChange={(e) => {
+                setTicketFilter(e.target.value);
+                setPage(1);
+              }}
+              className="w-full h-10 px-3 rounded-xl border border-white/10 bg-neutral-900 text-xs text-white focus:outline-none focus:border-[#EB0028]"
+            >
+              <option value="all">All Tickets</option>
+              <option value="individual">₹549 Ticket</option>
+              <option value="group_of_4">₹1999 Ticket (Group of 4)</option>
+            </select>
+          </div>
 
           {/* Application Status Filter */}
           <div className="flex items-center gap-2">
@@ -244,6 +268,7 @@ export default function AdminApplicationsPage() {
               <option value="newest">Newest First</option>
               <option value="oldest">Oldest First</option>
               <option value="name">Name (A-Z)</option>
+              <option value="roll_number">Roll Number</option>
               <option value="app_number">Application #</option>
             </select>
           </div>
@@ -253,14 +278,16 @@ export default function AdminApplicationsPage() {
       {/* Applications Data Table */}
       <div className="p-4 sm:p-6 rounded-3xl border border-white/10 bg-black/70 backdrop-blur-2xl space-y-4">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full text-left text-xs min-w-[900px]">
             <thead>
               <tr className="border-b border-white/10 text-[10px] font-mono uppercase tracking-wider text-white/40">
                 <th className="py-3 px-3">Application #</th>
                 <th className="py-3 px-3">Delegate Name</th>
+                <th className="py-3 px-3">Roll Number</th>
                 <th className="py-3 px-3">Contact</th>
                 <th className="py-3 px-3">College / City</th>
-                <th className="py-3 px-3">UTR Reference</th>
+                <th className="py-3 px-3">Ticket</th>
+                <th className="py-3 px-3">Amount</th>
                 <th className="py-3 px-3">Payment</th>
                 <th className="py-3 px-3">Status</th>
                 <th className="py-3 px-3">Delegate ID</th>
@@ -270,21 +297,24 @@ export default function AdminApplicationsPage() {
             <tbody className="divide-y divide-white/5">
               {loading && applications.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-white/40 font-mono">
+                  <td colSpan={11} className="py-12 text-center text-white/40 font-mono">
                     <div className="w-6 h-6 border-2 border-[#EB0028] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
                     Querying delegate records...
                   </td>
                 </tr>
               ) : applications.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-14 text-center text-white/40 font-mono space-y-1">
+                  <td colSpan={11} className="py-14 text-center text-white/40 font-mono space-y-1">
                     <p className="text-sm font-semibold text-white/60">No matching applications found</p>
                     <p className="text-xs text-white/30">When new applications arrive, they will appear here live.</p>
                   </td>
                 </tr>
               ) : (
                 applications.map((app) => {
-                  const utr = app.payment_verifications?.[0]?.utr_number || "—";
+                  const isGroup = app.pass_type === "group_of_4" || (app.ticket_type && app.ticket_type.includes("1999"));
+                  const ticketName = app.ticket_type || (isGroup ? "₹1999 Ticket" : "₹549 Ticket");
+                  const price = app.ticket_price || app.total_amount || (isGroup ? 1999 : 549);
+
                   return (
                     <tr key={app.id} className="hover:bg-white/[0.02] transition-colors group">
                       <td className="py-3.5 px-3 font-mono font-bold text-[#EB0028]">
@@ -292,28 +322,31 @@ export default function AdminApplicationsPage() {
                       </td>
                       <td className="py-3.5 px-3 font-semibold text-white">
                         <div>{app.first_name} {app.last_name}</div>
-                        <div className="mt-1">
-                          {app.pass_type === "group_of_4" ? (
-                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono font-bold uppercase bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                              Squad of 4 · ₹1999
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono uppercase bg-white/5 text-white/60 border border-white/10">
-                              Individual · ₹549
-                            </span>
-                          )}
-                        </div>
+                      </td>
+                      <td className="py-3.5 px-3 font-mono font-bold text-white/95">
+                        {app.roll_number || "—"}
                       </td>
                       <td className="py-3.5 px-3">
                         <div className="text-white/80">{app.email}</div>
                         <div className="text-[10px] text-white/40 font-mono">{app.phone}</div>
                       </td>
-                      <td className="py-3.5 px-3 text-white/70">
-                        <div>{app.college_organization}</div>
+                      <td className="py-3.5 px-3 text-white/70 max-w-[150px] truncate">
+                        <div>{app.college_organization || "—"}</div>
                         <div className="text-[10px] text-white/40">{app.city}</div>
                       </td>
-                      <td className="py-3.5 px-3 font-mono text-white/60">
-                        {utr}
+                      <td className="py-3.5 px-3">
+                        <span
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase ${
+                            isGroup
+                              ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                              : "bg-white/5 text-white/70 border border-white/10"
+                          }`}
+                        >
+                          {ticketName}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-3 font-mono font-bold text-emerald-400">
+                        {formatINR(price)}
                       </td>
                       <td className="py-3.5 px-3">
                         <span

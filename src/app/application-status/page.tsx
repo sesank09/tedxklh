@@ -25,6 +25,10 @@ import Magnetic from "@/components/Magnetic";
 interface ApplicationData {
   application_number: string;
   first_name: string;
+  last_name?: string;
+  roll_number?: string;
+  ticket_type?: string;
+  ticket_price?: number;
   application_status: string;
   payment_status: string;
   delegate_id: string | null;
@@ -268,8 +272,13 @@ export default function ApplicationStatusPage() {
                   >
                     {result.application_number}
                   </div>
-                  <div className="text-xs text-white/60 font-mono">
-                    Tier: <span className="text-white font-bold">{result.pass_type === "group_of_4" ? "Group Pass (Squad of 4)" : "Individual Pass"}</span> · {result.total_amount ? `₹${result.total_amount}` : (result.pass_type === "group_of_4" ? "₹1,999" : "₹549")}
+                  <div className="text-xs text-white/60 font-mono space-y-0.5">
+                    <div>
+                      Ticket: <span className="text-white font-bold">{result.ticket_type || (result.pass_type === "group_of_4" ? "₹1999 Ticket" : "₹549 Ticket")}</span> · {result.total_amount ? `₹${result.total_amount}` : (result.pass_type === "group_of_4" ? "₹1,999" : "₹549")}
+                    </div>
+                    <div>
+                      Roll Number: <span className="text-white font-bold">{result.roll_number || "—"}</span>
+                    </div>
                   </div>
                 </div>
 

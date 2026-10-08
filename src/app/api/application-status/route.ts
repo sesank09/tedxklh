@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     // Query by email and match phone
     const { data: applications, error } = await supabaseAdmin
       .from("delegate_applications")
-      .select("application_number, first_name, last_name, email, phone, application_status, payment_status, delegate_id, pass_type, ticket_count, total_amount, group_members, created_at")
+      .select("application_number, first_name, last_name, email, phone, roll_number, pass_type, ticket_type, ticket_price, ticket_count, total_amount, group_members, application_status, payment_status, delegate_id, created_at")
       .eq("email", email)
       .order("created_at", { ascending: false });
 
@@ -53,9 +53,12 @@ export async function POST(req: NextRequest) {
         application_number: matchedApp.application_number,
         first_name: matchedApp.first_name,
         last_name: matchedApp.last_name,
+        roll_number: matchedApp.roll_number || "—",
+        ticket_type: matchedApp.ticket_type || (matchedApp.pass_type === "group_of_4" ? "₹1999 Ticket" : "₹549 Ticket"),
+        ticket_price: matchedApp.ticket_price || (matchedApp.pass_type === "group_of_4" ? 1999 : 549),
         pass_type: matchedApp.pass_type || "individual",
-        ticket_count: matchedApp.ticket_count || 1,
-        total_amount: matchedApp.total_amount || (matchedApp.pass_type === "group_of_4" ? 1999 : 549),
+        ticket_count: matchedApp.ticket_count || (matchedApp.pass_type === "group_of_4" ? 4 : 1),
+        total_amount: matchedApp.ticket_price || matchedApp.total_amount || (matchedApp.pass_type === "group_of_4" ? 1999 : 549),
         group_members: matchedApp.group_members || [],
         application_status: matchedApp.application_status,
         payment_status: matchedApp.payment_status,

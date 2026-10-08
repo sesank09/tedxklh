@@ -39,6 +39,7 @@ interface FormData {
   email: string;
   phone: string;
   whatsapp: string;
+  rollNumber: string;
   city: string;
   organization: string;
   role: string;
@@ -61,6 +62,7 @@ const INITIAL_FORM: FormData = {
   email: "",
   phone: "",
   whatsapp: "",
+  rollNumber: "",
   city: "",
   organization: "KL University Hyderabad",
   role: "Delegate",
@@ -218,6 +220,8 @@ export default function Register() {
       if (!form.lastName.trim()) newErrors.lastName = "Last name is required";
       if (!form.email.trim() || !/^\S+@\S+\.\S+$/.test(form.email)) newErrors.email = "Valid email address is required";
       if (!form.phone.trim() || form.phone.replace(/\D/g, "").length < 10) newErrors.phone = "Valid 10-digit phone is required";
+      if (!form.organization.trim()) newErrors.organization = "College / Organization is required";
+      if (!form.rollNumber.trim()) newErrors.rollNumber = "Roll Number is required (e.g. 23CSE001)";
       if (!form.city.trim()) newErrors.city = "City is required";
 
       if (form.passType === "group_of_4") {
@@ -278,34 +282,42 @@ export default function Register() {
     setIsSubmitting(true);
     setSubmitError(null);
 
-    const generatedFallbackId = `TEDxKLH-2026-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+    const generatedFallbackId = `TEDxKLH-${String(Date.now()).slice(-4)}`;
 
     try {
+      const formData = new FormData();
+      formData.append("passType", form.passType);
+      formData.append("firstName", form.firstName.trim());
+      formData.append("lastName", form.lastName.trim());
+      formData.append("email", form.email.trim().toLowerCase());
+      formData.append("phone", form.phone.replace(/\D/g, ""));
+      formData.append("rollNumber", form.rollNumber.trim());
+      formData.append("organization", form.organization.trim());
+      formData.append("city", form.city.trim());
+      formData.append("utrNumber", form.utrNumber.replace(/\D/g, ""));
+
+      if (form.passType === "group_of_4") {
+        formData.append("groupMembers", JSON.stringify(form.groupMembers));
+      }
+
+      if (form.screenshotBase64) {
+        const resBlob = await fetch(form.screenshotBase64);
+        const blob = await resBlob.blob();
+        const fileFromBlob = new File([blob], form.screenshotName || "payment-proof.jpg", { type: blob.type || "image/jpeg" });
+        formData.append("screenshot", fileFromBlob);
+      }
+
       const res = await fetch("/api/apply", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          passType: form.passType,
-          firstName: form.firstName,
-          lastName: form.lastName,
-          email: form.email,
-          phone: form.phone,
-          organization: form.organization,
-          city: form.city,
-          groupMembers: form.passType === "group_of_4" ? form.groupMembers : [],
-          utrNumber: form.utrNumber,
-          screenshotBase64: form.screenshotBase64,
-          screenshotName: form.screenshotName,
-          termsAccepted: form.termsAccepted,
-        }),
+        body: formData,
       });
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        throw new Error(data.message || "Failed to submit registration");
+        throw new Error(data.error || data.message || "Failed to submit registration");
       }
 
-      setPassId(data.applicationId || generatedFallbackId);
+      setPassId(data.application_number || generatedFallbackId);
       setIsSubmitted(true);
       localStorage.removeItem("tedxklh_register_form_v3");
 
@@ -704,9 +716,26 @@ export default function Register() {
                                 style={{ fontFamily: "var(--font-manrope)" }}
                                 className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#EB0028] transition-colors"
                               />
+                              {errors.organization && <span className="text-[10px] text-red-400 font-medium" style={{ fontFamily: "var(--font-dm-mono)" }}>{errors.organization}</span>}
                             </div>
 
                             <div className="space-y-1.5">
+                              <label className="text-xs uppercase text-white/70 font-medium" style={{ fontFamily: "var(--font-dm-mono)" }}>Roll Number *</label>
+                              <input
+                                type="text"
+                                value={form.rollNumber}
+                                onChange={(e) => updateForm("rollNumber", e.target.value)}
+                                placeholder="e.g. 23CSE001 / 22BCE104"
+                                maxLength={50}
+                                style={{ fontFamily: "var(--font-manrope)" }}
+                                className={`w-full px-4 py-3 rounded-xl bg-white/[0.03] border text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#EB0028] transition-colors ${
+                                  errors.rollNumber ? "border-red-500" : "border-white/10"
+                                }`}
+                              />
+                              {errors.rollNumber && <span className="text-[10px] text-red-400 font-medium" style={{ fontFamily: "var(--font-dm-mono)" }}>{errors.rollNumber}</span>}
+                            </div>
+
+                            <div className="space-y-1.5 sm:col-span-2">
                               <label className="text-xs uppercase text-white/70 font-medium" style={{ fontFamily: "var(--font-dm-mono)" }}>City &amp; State *</label>
                               <input
                                 type="text"

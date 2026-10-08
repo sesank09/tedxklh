@@ -20,7 +20,9 @@ import {
   Save,
   AlertCircle,
   Users,
+  Ticket,
 } from "lucide-react";
+import { formatINR } from "@/lib/constants";
 
 interface ApplicationDetail {
   id: string;
@@ -31,13 +33,16 @@ interface ApplicationDetail {
   phone: string;
   college_organization: string;
   city: string;
-  application_status: string;
-  payment_status: string;
-  delegate_id: string | null;
+  roll_number?: string | null;
   pass_type?: string;
+  ticket_type?: string;
+  ticket_price?: number;
   ticket_count?: number;
   total_amount?: number;
   group_members?: Array<{ name: string; email: string; phone: string }>;
+  application_status: string;
+  payment_status: string;
+  delegate_id: string | null;
   admin_notes: string | null;
   created_at: string;
   updated_at: string;
@@ -362,6 +367,13 @@ export default function ApplicationDetailPage({
               </div>
 
               <div>
+                <span className="text-[10px] uppercase font-mono text-white/40 block">Roll Number</span>
+                <span className="text-sm font-bold text-white font-mono">
+                  {application.roll_number || "—"}
+                </span>
+              </div>
+
+              <div>
                 <span className="text-[10px] uppercase font-mono text-white/40 block">Email Address</span>
                 <a
                   href={`mailto:${application.email}`}
@@ -386,9 +398,50 @@ export default function ApplicationDetailPage({
                 <span className="text-white">{application.city || "—"}</span>
               </div>
 
-              <div className="sm:col-span-2">
+              <div>
                 <span className="text-[10px] uppercase font-mono text-white/40 block">College / Organization</span>
                 <span className="text-white font-medium">{application.college_organization || "—"}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Ticket Information Card */}
+          <div className="p-6 sm:p-8 rounded-3xl border border-white/10 bg-black/70 backdrop-blur-2xl space-y-5">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div className="flex items-center gap-2.5">
+                <Ticket className="w-4 h-4 text-[#EB0028]" />
+                <h2
+                  className="text-sm font-bold uppercase tracking-wider text-white"
+                  style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}
+                >
+                  Ticket &amp; Seat Allocation
+                </h2>
+              </div>
+              <span className="text-xs font-mono font-bold text-emerald-400">
+                {formatINR(application.ticket_price || application.total_amount || (application.pass_type === "group_of_4" ? 1999 : 549))}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+              <div className="p-3.5 rounded-xl border border-white/10 bg-white/[0.02] space-y-1">
+                <span className="text-[10px] uppercase font-mono text-white/40 block">Ticket Type</span>
+                <span className="text-xs sm:text-sm font-bold text-white font-mono">
+                  {application.ticket_type || (application.pass_type === "group_of_4" ? "₹1999 Ticket" : "₹549 Ticket")}
+                </span>
+              </div>
+
+              <div className="p-3.5 rounded-xl border border-white/10 bg-white/[0.02] space-y-1">
+                <span className="text-[10px] uppercase font-mono text-white/40 block">Purchase Price</span>
+                <span className="text-xs sm:text-sm font-bold text-emerald-400 font-mono">
+                  {formatINR(application.ticket_price || application.total_amount || (application.pass_type === "group_of_4" ? 1999 : 549))}
+                </span>
+              </div>
+
+              <div className="p-3.5 rounded-xl border border-white/10 bg-white/[0.02] space-y-1">
+                <span className="text-[10px] uppercase font-mono text-white/40 block">Seats Included</span>
+                <span className="text-xs sm:text-sm font-bold text-white font-mono">
+                  {application.ticket_count || (application.pass_type === "group_of_4" ? 4 : 1)} {application.pass_type === "group_of_4" ? "Delegates (Squad)" : "Delegate"}
+                </span>
               </div>
             </div>
           </div>

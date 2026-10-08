@@ -45,6 +45,7 @@ interface FormData {
   lastName: string;
   email: string;
   phone: string;
+  rollNumber: string;
   organization: string;
   city: string;
 
@@ -67,6 +68,7 @@ const INITIAL_FORM: FormData = {
   lastName: "",
   email: "",
   phone: "",
+  rollNumber: "",
   organization: "",
   city: "",
   groupMembers: [
@@ -276,6 +278,7 @@ export default function ApplyPage() {
       const digits = form.phone.replace(/\D/g, "");
       if (!digits || digits.length < 10) errs.phone = "Valid 10-digit phone number is required";
       if (!form.organization.trim()) errs.organization = "College / University or Organization is required";
+      if (!form.rollNumber.trim()) errs.rollNumber = "Roll Number is required (e.g. 23CSE001)";
       if (!form.city.trim()) errs.city = "Current city is required";
 
       // Validate group members if group pass
@@ -350,6 +353,7 @@ export default function ApplyPage() {
       formData.append("lastName", form.lastName.trim());
       formData.append("email", form.email.trim().toLowerCase());
       formData.append("phone", form.phone.replace(/\D/g, ""));
+      formData.append("rollNumber", form.rollNumber.trim());
       formData.append("organization", form.organization.trim());
       formData.append("city", form.city.trim());
       formData.append("utrNumber", form.utrNumber.replace(/\D/g, ""));
@@ -866,8 +870,27 @@ export default function ApplyPage() {
                               {errors.organization && <span className="text-[11px] text-[#EB0028] block">{errors.organization}</span>}
                             </div>
 
-                            {/* City */}
+                            {/* Roll Number */}
                             <div className="space-y-1.5 sm:space-y-2">
+                              <label className="text-[11px] sm:text-xs uppercase text-white/80 font-medium tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                                Roll Number *
+                              </label>
+                              <input
+                                type="text"
+                                value={form.rollNumber}
+                                onChange={(e) => updateField("rollNumber", e.target.value)}
+                                placeholder="e.g. 23CSE001 / 22BCE104"
+                                maxLength={50}
+                                className={`w-full h-11 sm:h-12 px-3.5 sm:px-4 rounded-xl border bg-white/[0.03] text-white text-base sm:text-sm placeholder-white/25 focus:outline-none transition-all ${
+                                  errors.rollNumber ? "border-[#EB0028] ring-1 ring-[#EB0028]" : "border-white/10 focus:border-[#EB0028] focus:ring-1 focus:ring-[#EB0028]/50"
+                                }`}
+                                style={{ fontFamily: "var(--font-manrope)" }}
+                              />
+                              {errors.rollNumber && <span className="text-[11px] text-[#EB0028] block">{errors.rollNumber}</span>}
+                            </div>
+
+                            {/* City */}
+                            <div className="space-y-1.5 sm:space-y-2 sm:col-span-2">
                               <label className="text-[11px] sm:text-xs uppercase text-white/80 font-medium tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
                                 City *
                               </label>
@@ -1272,6 +1295,10 @@ export default function ApplyPage() {
                               <span className="font-semibold text-white break-words">{form.firstName} {form.lastName}</span>
                             </div>
                             <div className="space-y-0.5 min-w-0">
+                              <span className="text-[10px] text-white/40 uppercase font-mono block">Roll Number</span>
+                              <span className="font-semibold text-white font-mono break-all">{form.rollNumber || "—"}</span>
+                            </div>
+                            <div className="space-y-0.5 min-w-0">
                               <span className="text-[10px] text-white/40 uppercase font-mono block">Lead Contact Email</span>
                               <span className="font-semibold text-white break-all">{form.email}</span>
                             </div>
@@ -1279,7 +1306,7 @@ export default function ApplyPage() {
                               <span className="text-[10px] text-white/40 uppercase font-mono block">Lead Contact Phone</span>
                               <span className="font-semibold text-white font-mono">{form.phone}</span>
                             </div>
-                            <div className="space-y-0.5 min-w-0">
+                            <div className="space-y-0.5 min-w-0 sm:col-span-2">
                               <span className="text-[10px] text-white/40 uppercase font-mono block">Organization &amp; City</span>
                               <span className="font-semibold text-white break-words">{form.organization} · {form.city}</span>
                             </div>
@@ -1459,14 +1486,22 @@ export default function ApplyPage() {
 
               <div className="grid grid-cols-2 gap-4 text-xs">
                 <div>
-                  <span className="text-[10px] text-white/40 uppercase font-mono block">PASS TYPE</span>
+                  <span className="text-[10px] text-white/40 uppercase font-mono block">TICKET PURCHASED</span>
                   <span className="font-semibold text-white">
-                    {form.passType === "group_of_4" ? "Group Pass (4 Delegates · ₹1,999)" : "Individual Pass (1 Delegate · ₹549)"}
+                    {form.passType === "group_of_4" ? "₹1999 Ticket (Squad of 4)" : "₹549 Ticket (1 Pass)"}
                   </span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-white/40 uppercase font-mono block">ROLL NUMBER</span>
+                  <span className="font-semibold text-white font-mono">{form.rollNumber || "—"}</span>
                 </div>
                 <div>
                   <span className="text-[10px] text-white/40 uppercase font-mono block">DATE &amp; VENUE</span>
                   <span className="font-semibold text-white">NOV 4, 2026 · BOWRAMPET</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-white/40 uppercase font-mono block">PAYMENT STATUS</span>
+                  <span className="font-semibold text-amber-400 font-mono">Under Verification</span>
                 </div>
                 <div className="col-span-2">
                   <span className="text-[10px] text-white/40 uppercase font-mono block">DELEGATE(S)</span>

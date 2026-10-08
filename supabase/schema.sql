@@ -28,8 +28,11 @@ CREATE TABLE IF NOT EXISTS delegate_applications (
   phone TEXT NOT NULL,
   college_organization TEXT,
   city TEXT,
+  roll_number TEXT,
   pass_type TEXT NOT NULL DEFAULT 'individual'
     CHECK (pass_type IN ('individual', 'group_of_4')),
+  ticket_type TEXT NOT NULL DEFAULT '₹549 Ticket',
+  ticket_price NUMERIC NOT NULL DEFAULT 549,
   ticket_count INTEGER NOT NULL DEFAULT 1,
   total_amount NUMERIC NOT NULL DEFAULT 549,
   group_members JSONB DEFAULT '[]'::jsonb,
@@ -51,6 +54,8 @@ EXECUTE FUNCTION update_updated_at_column();
 
 CREATE INDEX IF NOT EXISTS idx_delegate_applications_email ON delegate_applications(email);
 CREATE INDEX IF NOT EXISTS idx_delegate_applications_phone ON delegate_applications(phone);
+CREATE INDEX IF NOT EXISTS idx_delegate_applications_roll_number ON delegate_applications(roll_number);
+CREATE INDEX IF NOT EXISTS idx_delegate_applications_ticket_type ON delegate_applications(ticket_type);
 CREATE INDEX IF NOT EXISTS idx_delegate_applications_app_num ON delegate_applications(application_number);
 CREATE INDEX IF NOT EXISTS idx_delegate_applications_delegate_id ON delegate_applications(delegate_id);
 CREATE INDEX IF NOT EXISTS idx_delegate_applications_status ON delegate_applications(application_status);
@@ -204,7 +209,10 @@ CREATE OR REPLACE FUNCTION submit_delegate_application(
   p_pass_type TEXT DEFAULT 'individual',
   p_total_amount NUMERIC DEFAULT 549,
   p_ticket_count INTEGER DEFAULT 1,
-  p_group_members JSONB DEFAULT '[]'::jsonb
+  p_group_members JSONB DEFAULT '[]'::jsonb,
+  p_roll_number TEXT DEFAULT NULL,
+  p_ticket_type TEXT DEFAULT '₹549 Ticket',
+  p_ticket_price NUMERIC DEFAULT 549
 )
 RETURNS JSONB AS $$
 DECLARE
@@ -213,15 +221,27 @@ DECLARE
   v_app_number TEXT;
   v_clean_utr VARCHAR(12);
   v_clean_email TEXT;
+  v_clean_roll TEXT;
   v_valid_pass_type TEXT;
-  v_valid_amount NUMERIC;
+  v_valid_ticket_type TEXT;
+  v_valid_ticket_price NUMERIC;
   v_valid_count INTEGER;
 BEGIN
   v_clean_utr := regexp_replace(p_utr_number, '\D', '', 'g');
   v_clean_email := lower(trim(p_email));
-  v_valid_pass_type := CASE WHEN p_pass_type = 'group_of_4' THEN 'group_of_4' ELSE 'individual' END;
-  v_valid_amount := CASE WHEN v_valid_pass_type = 'group_of_4' THEN 1999 ELSE 549 END;
-  v_valid_count := CASE WHEN v_valid_pass_type = 'group_of_4' THEN 4 ELSE 1 END;
+  v_clean_roll := trim(p_roll_number);
+
+  IF p_pass_type = 'group_of_4' OR p_ticket_type ILIKE '%1999%' THEN
+    v_valid_pass_type := 'group_of_4';
+    v_valid_ticket_type := '₹1999 Ticket';
+    v_valid_ticket_price := 1999;
+    v_valid_count := 4;
+  ELSE
+    v_valid_pass_type := 'individual';
+    v_valid_ticket_type := '₹549 Ticket';
+    v_valid_ticket_price := 549;
+    v_valid_count := 1;
+  END IF;
 
   IF length(v_clean_utr) != 12 THEN
     RAISE EXCEPTION 'UTR must be exactly 12 numeric digits.' USING ERRCODE = '22000';
@@ -250,7 +270,10 @@ BEGIN
     phone,
     college_organization,
     city,
+    roll_number,
     pass_type,
+    ticket_type,
+    ticket_price,
     ticket_count,
     total_amount,
     group_members,
@@ -264,9 +287,12 @@ BEGIN
     trim(p_phone),
     trim(p_organization),
     trim(p_city),
+    v_clean_roll,
     v_valid_pass_type,
+    v_valid_ticket_type,
+    v_valid_ticket_price,
     v_valid_count,
-    v_valid_amount,
+    v_valid_ticket_price,
     COALESCE(p_group_members, '[]'::jsonb),
     'submitted',
     'pending'
@@ -288,8 +314,11 @@ BEGIN
     'success', true,
     'application_id', v_app_id,
     'application_number', v_app_number,
+    'roll_number', v_clean_roll,
+    'ticket_type', v_valid_ticket_type,
+    'ticket_price', v_valid_ticket_price,
     'pass_type', v_valid_pass_type,
-    'total_amount', v_valid_amount,
+    'total_amount', v_valid_ticket_price,
     'message', 'Application submitted successfully.'
   );
 END;
