@@ -16,6 +16,63 @@ export async function POST(req: NextRequest) {
     const city = (formData.get("city") as string || "").trim();
     const utrNumber = (formData.get("utrNumber") as string || "").replace(/\D/g, "");
     const screenshot = formData.get("screenshot") as File | null;
+    const rawPassType = (formData.get("passType") as string || "individual").trim();
+    const passType = rawPassType === "group_of_4" ? "group_of_4" : "individual";
+    const totalAmount = passType === "group_of_4" ? 1999 : 549;
+    const ticketCount = passType === "group_of_4" ? 4 : 1;
+
+    // Parse and validate group members if group pass
+    let groupMembers: Array<{ name: string; email: string; phone: string }> = [];
+    if (passType === "group_of_4") {
+      const rawGroupMembers = formData.get("groupMembers") as string;
+      if (rawGroupMembers) {
+        try {
+          const parsed = JSON.parse(rawGroupMembers);
+          if (Array.isArray(parsed)) {
+            groupMembers = parsed.map((m: any) => ({
+              name: String(m.name || "").trim(),
+              email: String(m.email || "").trim().toLowerCase(),
+              phone: String(m.phone || "").replace(/\D/g, ""),
+            }));
+          }
+        } catch (e) {
+          return NextResponse.json(
+            { error: "Invalid group members format." },
+            { status: 400 }
+          );
+        }
+      }
+
+      if (groupMembers.length !== 3) {
+        return NextResponse.json(
+          { error: "Group pass requires exactly 3 additional group members (squad of 4 total)." },
+          { status: 400 }
+        );
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      for (let i = 0; i < groupMembers.length; i++) {
+        const member = groupMembers[i];
+        if (!member.name) {
+          return NextResponse.json(
+            { error: `Group member #${i + 2} name is required.` },
+            { status: 400 }
+          );
+        }
+        if (!member.email || !emailRegex.test(member.email)) {
+          return NextResponse.json(
+            { error: `Group member #${i + 2} valid email is required.` },
+            { status: 400 }
+          );
+        }
+        if (!member.phone || member.phone.length < 10) {
+          return NextResponse.json(
+            { error: `Group member #${i + 2} valid 10-digit phone number is required.` },
+            { status: 400 }
+          );
+        }
+      }
+    }
 
     // 1. Validate required fields
     if (!firstName) {
@@ -157,6 +214,10 @@ export async function POST(req: NextRequest) {
          p_city: city,
          p_utr_number: utrNumber,
          p_screenshot_path: storagePath,
+         p_pass_type: passType,
+         p_total_amount: totalAmount,
+         p_ticket_count: ticketCount,
+         p_group_members: groupMembers,
        }
      );
 
@@ -188,6 +249,10 @@ export async function POST(req: NextRequest) {
            phone: phone,
            college_organization: organization,
            city: city,
+           pass_type: passType,
+           ticket_count: ticketCount,
+           total_amount: totalAmount,
+           group_members: groupMembers,
            application_status: "submitted",
            payment_status: "pending",
          })
@@ -229,6 +294,9 @@ export async function POST(req: NextRequest) {
      return NextResponse.json({
        success: true,
        application_number: appNumber,
+       pass_type: passType,
+       total_amount: totalAmount,
+       ticket_count: ticketCount,
        message: "Application submitted successfully.",
      });
   } catch (err: any) {

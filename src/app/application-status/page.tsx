@@ -28,6 +28,10 @@ interface ApplicationData {
   application_status: string;
   payment_status: string;
   delegate_id: string | null;
+  pass_type?: string;
+  ticket_count?: number;
+  total_amount?: number;
+  group_members?: Array<{ name: string; email: string; phone: string }>;
   created_at: string;
 }
 
@@ -264,6 +268,9 @@ export default function ApplicationStatusPage() {
                   >
                     {result.application_number}
                   </div>
+                  <div className="text-xs text-white/60 font-mono">
+                    Tier: <span className="text-white font-bold">{result.pass_type === "group_of_4" ? "Group Pass (Squad of 4)" : "Individual Pass"}</span> · {result.total_amount ? `₹${result.total_amount}` : (result.pass_type === "group_of_4" ? "₹1,999" : "₹549")}
+                  </div>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
@@ -286,6 +293,28 @@ export default function ApplicationStatusPage() {
                   </span>
                 </div>
               </div>
+
+              {/* Group Delegates List if Group of 4 */}
+              {result.pass_type === "group_of_4" && result.group_members && result.group_members.length > 0 && (
+                <div className="p-5 rounded-2xl border border-white/10 bg-white/[0.02] space-y-3">
+                  <span className="text-xs font-mono uppercase text-emerald-400 font-bold tracking-wider block">
+                    Squad Delegates (4 Passes Included)
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5 space-y-0.5">
+                      <span className="text-[10px] text-white/40 uppercase font-mono block">Lead Delegate</span>
+                      <span className="font-semibold text-white">{result.first_name}</span>
+                    </div>
+                    {result.group_members.map((m, i) => (
+                      <div key={i} className="p-3 rounded-xl bg-white/[0.02] border border-white/5 space-y-0.5">
+                        <span className="text-[10px] text-white/40 uppercase font-mono block">Delegate 0{i + 2}</span>
+                        <span className="font-semibold text-white">{m.name}</span>
+                        <span className="text-[11px] text-white/50 block font-mono">{m.email} · {m.phone}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Accredited Delegate Pass Badge (If Approved) */}
               {result.delegate_id && (

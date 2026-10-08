@@ -19,6 +19,7 @@ import {
   History,
   Save,
   AlertCircle,
+  Users,
 } from "lucide-react";
 
 interface ApplicationDetail {
@@ -33,6 +34,10 @@ interface ApplicationDetail {
   application_status: string;
   payment_status: string;
   delegate_id: string | null;
+  pass_type?: string;
+  ticket_count?: number;
+  total_amount?: number;
+  group_members?: Array<{ name: string; email: string; phone: string }>;
   admin_notes: string | null;
   created_at: string;
   updated_at: string;
@@ -251,6 +256,15 @@ export default function ApplicationDetailPage({
               {application.application_number}
             </h1>
 
+            {/* Pass Tier Badge */}
+            <span className={`px-3 py-1 rounded-full text-xs font-mono font-bold uppercase border ${
+              application.pass_type === "group_of_4"
+                ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
+                : "bg-white/10 text-white/80 border-white/20"
+            }`}>
+              {application.pass_type === "group_of_4" ? "Group Pass · Squad of 4" : "Individual Pass"}
+            </span>
+
             {/* Status Badges */}
             <span
               className={`px-3 py-1 rounded-full text-xs font-mono font-bold uppercase border ${
@@ -335,7 +349,7 @@ export default function ApplicationDetailPage({
                 className="text-sm font-bold uppercase tracking-wider text-white"
                 style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}
               >
-                Personal &amp; Contact Details
+                {application.pass_type === "group_of_4" ? "Lead Delegate Details" : "Personal & Contact Details"}
               </h2>
             </div>
 
@@ -379,6 +393,40 @@ export default function ApplicationDetailPage({
             </div>
           </div>
 
+          {/* Squad Members Card if Group Pass */}
+          {application.pass_type === "group_of_4" && (
+            <div className="p-6 sm:p-8 rounded-3xl border border-white/10 bg-black/70 backdrop-blur-2xl space-y-5">
+              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                <div className="flex items-center gap-2.5">
+                  <Users className="w-4 h-4 text-emerald-400" />
+                  <h2
+                    className="text-sm font-bold uppercase tracking-wider text-white"
+                    style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}
+                  >
+                    Squad Delegates (Group of 4)
+                  </h2>
+                </div>
+                <span className="text-xs font-mono text-emerald-400 font-semibold">4 Passes Total</span>
+              </div>
+
+              <div className="space-y-3 text-xs">
+                <div className="p-3.5 rounded-xl border border-white/10 bg-white/[0.02] space-y-1">
+                  <span className="text-[10px] uppercase font-mono text-white/40 block">Delegate 01 (Lead / Point of Contact)</span>
+                  <div className="text-white font-bold">{application.first_name} {application.last_name}</div>
+                  <div className="text-[11px] text-white/50 font-mono">{application.email} · {application.phone}</div>
+                </div>
+
+                {application.group_members && application.group_members.map((m, idx) => (
+                  <div key={idx} className="p-3.5 rounded-xl border border-white/10 bg-white/[0.02] space-y-1">
+                    <span className="text-[10px] uppercase font-mono text-emerald-400 font-bold block">Delegate 0{idx + 2}</span>
+                    <div className="text-white font-bold">{m.name || "—"}</div>
+                    <div className="text-[11px] text-white/50 font-mono">{m.email || "—"} · {m.phone || "—"}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Payment Verification Card */}
           <div className="p-6 sm:p-8 rounded-3xl border border-white/10 bg-black/70 backdrop-blur-2xl space-y-6">
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
@@ -391,7 +439,9 @@ export default function ApplicationDetailPage({
                   Payment Proof &amp; UTR Verification
                 </h2>
               </div>
-              <span className="text-xs font-mono font-bold text-white">₹499 INR</span>
+              <span className="text-xs font-mono font-bold text-white">
+                {application.total_amount ? `₹${application.total_amount} INR` : (application.pass_type === "group_of_4" ? "₹1,999 INR" : "₹549 INR")}
+              </span>
             </div>
 
             <div className="space-y-5">

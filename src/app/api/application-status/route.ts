@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     // Query by email and match phone
     const { data: applications, error } = await supabaseAdmin
       .from("delegate_applications")
-      .select("application_number, first_name, email, phone, application_status, payment_status, delegate_id, created_at")
+      .select("application_number, first_name, last_name, email, phone, application_status, payment_status, delegate_id, pass_type, ticket_count, total_amount, group_members, created_at")
       .eq("email", email)
       .order("created_at", { ascending: false });
 
@@ -52,6 +52,11 @@ export async function POST(req: NextRequest) {
       application: {
         application_number: matchedApp.application_number,
         first_name: matchedApp.first_name,
+        last_name: matchedApp.last_name,
+        pass_type: matchedApp.pass_type || "individual",
+        ticket_count: matchedApp.ticket_count || 1,
+        total_amount: matchedApp.total_amount || (matchedApp.pass_type === "group_of_4" ? 1999 : 549),
+        group_members: matchedApp.group_members || [],
         application_status: matchedApp.application_status,
         payment_status: matchedApp.payment_status,
         delegate_id: matchedApp.delegate_id,

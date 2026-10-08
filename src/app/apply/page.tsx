@@ -19,20 +19,37 @@ import {
   Download,
   Home,
   Search,
+  Users,
+  User,
+  UserCheck,
 } from "lucide-react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Magnetic from "@/components/Magnetic";
 
+export type PassType = "individual" | "group_of_4";
+
+export interface GroupMember {
+  name: string;
+  email: string;
+  phone: string;
+}
+
 interface FormData {
-  // Phase 1: Personal
+  // Pass Category
+  passType: PassType;
+
+  // Phase 1: Lead / Primary Delegate
   firstName: string;
   lastName: string;
   email: string;
   phone: string;
   organization: string;
   city: string;
+
+  // Squad Members (Members 2, 3, 4 if group_of_4)
+  groupMembers: GroupMember[];
 
   // Phase 2: Payment
   utrNumber: string;
@@ -45,12 +62,18 @@ interface FormData {
 }
 
 const INITIAL_FORM: FormData = {
+  passType: "individual",
   firstName: "",
   lastName: "",
   email: "",
   phone: "",
   organization: "",
   city: "",
+  groupMembers: [
+    { name: "", email: "", phone: "" },
+    { name: "", email: "", phone: "" },
+    { name: "", email: "", phone: "" },
+  ],
   utrNumber: "",
   screenshotBase64: null,
   screenshotName: null,
@@ -59,7 +82,7 @@ const INITIAL_FORM: FormData = {
 };
 
 const STEPS = [
-  { id: 1, name: "PERSONAL", title: "Personal Information", desc: "Identity and contact coordinates" },
+  { id: 1, name: "PERSONAL", title: "Personal & Pass Selection", desc: "Pass tier, identity & squad coordinates" },
   { id: 2, name: "PAYMENT", title: "Payment & Verification", desc: "12-digit UTR reference & screenshot" },
   { id: 3, name: "CONFIRM", title: "Review & Dispatch", desc: "Verify application and accept charter" },
 ];
@@ -87,9 +110,16 @@ export default function ApplyPage() {
   // Restore autosaved draft
   useEffect(() => {
     try {
-      const saved = localStorage.getItem("tedxklh_apply_draft_v2");
+      const saved = localStorage.getItem("tedxklh_apply_draft_v3");
       if (saved) {
-        setForm(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        setForm({
+          ...INITIAL_FORM,
+          ...parsed,
+          groupMembers: Array.isArray(parsed.groupMembers) && parsed.groupMembers.length === 3
+            ? parsed.groupMembers
+            : INITIAL_FORM.groupMembers,
+        });
       }
     } catch (e) {
       console.error(e);
@@ -100,7 +130,7 @@ export default function ApplyPage() {
     setForm((prev) => {
       const updated = { ...prev, [field]: val };
       try {
-        localStorage.setItem("tedxklh_apply_draft_v2", JSON.stringify(updated));
+        localStorage.setItem("tedxklh_apply_draft_v3", JSON.stringify(updated));
       } catch (e) {}
       return updated;
     });
@@ -110,6 +140,27 @@ export default function ApplyPage() {
       setErrors((prev) => {
         const next = { ...prev };
         delete next[field];
+        return next;
+      });
+    }
+  };
+
+  const updateGroupMember = (index: number, field: keyof GroupMember, value: string) => {
+    setForm((prev) => {
+      const nextMembers = [...prev.groupMembers];
+      nextMembers[index] = { ...nextMembers[index], [field]: value };
+      const updated = { ...prev, groupMembers: nextMembers };
+      try {
+        localStorage.setItem("tedxklh_apply_draft_v3", JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
+    });
+
+    const errKey = `groupMember_${index}_${field}`;
+    if (errors[errKey]) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[errKey];
         return next;
       });
     }
@@ -211,6 +262,17 @@ export default function ApplyPage() {
       if (!digits || digits.length < 10) errs.phone = "Valid 10-digit phone number is required";
       if (!form.organization.trim()) errs.organization = "College / University or Organization is required";
       if (!form.city.trim()) errs.city = "Current city is required";
+
+      // Validate group members if group pass
+      if (form.passType === "group_of_4") {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        form.groupMembers.forEach((m, idx) => {
+          if (!m.name.trim()) errs[`groupMember_${idx}_name`] = `Member #${idx + 2} name is required`;
+          if (!m.email.trim() || !emailRegex.test(m.email)) errs[`groupMember_${idx}_email`] = `Valid email required`;
+          const mDigits = m.phone.replace(/\D/g, "");
+          if (!mDigits || mDigits.length < 10) errs[`groupMember_${idx}_phone`] = `10-digit phone required`;
+        });
+      }
     } else if (currentStep === 2) {
       const cleanUtr = form.utrNumber.trim();
       if (!/^\d{12}$/.test(cleanUtr)) {
@@ -256,6 +318,7 @@ export default function ApplyPage() {
 
     try {
       const formData = new FormData();
+      formData.append("passType", form.passType);
       formData.append("firstName", form.firstName.trim());
       formData.append("lastName", form.lastName.trim());
       formData.append("email", form.email.trim().toLowerCase());
@@ -263,6 +326,10 @@ export default function ApplyPage() {
       formData.append("organization", form.organization.trim());
       formData.append("city", form.city.trim());
       formData.append("utrNumber", form.utrNumber.replace(/\D/g, ""));
+
+      if (form.passType === "group_of_4") {
+        formData.append("groupMembers", JSON.stringify(form.groupMembers));
+      }
 
       // Attach file binary
       if (screenshotFile) {
@@ -293,7 +360,7 @@ export default function ApplyPage() {
       setIsSubmitted(true);
 
       try {
-        localStorage.removeItem("tedxklh_apply_draft_v2");
+        localStorage.removeItem("tedxklh_apply_draft_v3");
       } catch (e) {}
 
       confetti({
@@ -570,7 +637,7 @@ export default function ApplyPage() {
                 {/* Step Form Panes */}
                 <div className="pt-6 sm:pt-8">
                   <AnimatePresence mode="wait">
-                    {/* PHASE 1: PERSONAL INFORMATION */}
+                    {/* PHASE 1: PASS CATEGORY & DELEGATE DETAILS */}
                     {step === 1 && (
                       <motion.div
                         key="step1"
@@ -585,125 +652,306 @@ export default function ApplyPage() {
                             className="text-lg sm:text-xl font-bold text-white uppercase tracking-tight"
                             style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}
                           >
-                            Personal Information
+                            Select Pass &amp; Delegate Information
                           </h2>
                           <p className="text-xs text-white/50 mt-1" style={{ fontFamily: "var(--font-manrope)" }}>
-                            Enter your legal name and contact details for badge issuing and summit accreditation.
+                            Choose your pass category and enter delegate details for summit accreditation and badging.
                           </p>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-                          {/* First Name */}
-                          <div className="space-y-1.5 sm:space-y-2">
-                            <label className="text-[11px] sm:text-xs uppercase text-white/80 font-medium tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
-                              First Name *
-                            </label>
-                            <input
-                              type="text"
-                              value={form.firstName}
-                              onChange={(e) => updateField("firstName", e.target.value)}
-                              placeholder="e.g. John"
-                              className={`w-full h-11 sm:h-12 px-3.5 sm:px-4 rounded-xl border bg-white/[0.03] text-white text-base sm:text-sm placeholder-white/25 focus:outline-none transition-all ${
-                                errors.firstName ? "border-[#EB0028] ring-1 ring-[#EB0028]" : "border-white/10 focus:border-[#EB0028] focus:ring-1 focus:ring-[#EB0028]/50"
+                        {/* PASS TIER SELECTION CARDS */}
+                        <div className="space-y-2">
+                          <label className="text-[11px] sm:text-xs uppercase text-white/80 font-bold tracking-wider block" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                            Pass Category *
+                          </label>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                            {/* Individual Pass */}
+                            <button
+                              type="button"
+                              onClick={() => updateField("passType", "individual")}
+                              className={`p-4 rounded-2xl border text-left transition-all relative overflow-hidden cursor-pointer ${
+                                form.passType === "individual"
+                                  ? "border-[#EB0028] bg-[#EB0028]/15 ring-1 ring-[#EB0028] shadow-[0_0_20px_rgba(235,0,40,0.25)]"
+                                  : "border-white/10 bg-white/[0.02] hover:border-white/25 hover:bg-white/[0.04]"
                               }`}
-                              style={{ fontFamily: "var(--font-manrope)" }}
-                            />
-                            {errors.firstName && <span className="text-[11px] text-[#EB0028] block">{errors.firstName}</span>}
-                          </div>
+                            >
+                              <div className="flex items-start justify-between">
+                                <div className="space-y-1">
+                                  <div className="flex items-center gap-1.5">
+                                    <User className={`w-4 h-4 ${form.passType === "individual" ? "text-[#EB0028]" : "text-white/60"}`} />
+                                    <span className="text-xs font-bold uppercase tracking-wider text-white" style={{ fontFamily: "var(--font-sora)" }}>
+                                      Individual Pass
+                                    </span>
+                                  </div>
+                                  <div className="text-[11px] text-white/50" style={{ fontFamily: "var(--font-manrope)" }}>
+                                    Single delegate entry ticket
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <div className="text-base sm:text-lg font-extrabold text-white" style={{ fontFamily: "var(--font-sora)" }}>
+                                    ₹549
+                                  </div>
+                                  <div className="text-[9px] text-white/40 uppercase font-mono">1 Delegate</div>
+                                </div>
+                              </div>
+                            </button>
 
-                          {/* Last Name */}
-                          {/* Last Name */}
-                          <div className="space-y-1.5 sm:space-y-2">
-                            <label className="text-[11px] sm:text-xs uppercase text-white/80 font-medium tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
-                              Last Name *
-                            </label>
-                            <input
-                              type="text"
-                              value={form.lastName}
-                              onChange={(e) => updateField("lastName", e.target.value)}
-                              placeholder="e.g. Doe"
-                              className={`w-full h-11 sm:h-12 px-3.5 sm:px-4 rounded-xl border bg-white/[0.03] text-white text-base sm:text-sm placeholder-white/25 focus:outline-none transition-all ${
-                                errors.lastName ? "border-[#EB0028] ring-1 ring-[#EB0028]" : "border-white/10 focus:border-[#EB0028] focus:ring-1 focus:ring-[#EB0028]/50"
+                            {/* Group Pass (Squad of 4) */}
+                            <button
+                              type="button"
+                              onClick={() => updateField("passType", "group_of_4")}
+                              className={`p-4 rounded-2xl border text-left transition-all relative overflow-hidden cursor-pointer ${
+                                form.passType === "group_of_4"
+                                  ? "border-[#EB0028] bg-[#EB0028]/15 ring-1 ring-[#EB0028] shadow-[0_0_25px_rgba(235,0,40,0.3)]"
+                                  : "border-white/10 bg-white/[0.02] hover:border-white/25 hover:bg-white/[0.04]"
                               }`}
-                              style={{ fontFamily: "var(--font-manrope)" }}
-                            />
-                            {errors.lastName && <span className="text-[11px] text-[#EB0028] block">{errors.lastName}</span>}
-                          </div>
-
-                          {/* Email Address */}
-                          <div className="space-y-1.5 sm:space-y-2">
-                            <label className="text-[11px] sm:text-xs uppercase text-white/80 font-medium tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
-                              Official Email Address *
-                            </label>
-                            <input
-                              type="email"
-                              value={form.email}
-                              onChange={(e) => updateField("email", e.target.value)}
-                              placeholder="e.g. yourname@domain.com"
-                              className={`w-full h-11 sm:h-12 px-3.5 sm:px-4 rounded-xl border bg-white/[0.03] text-white text-base sm:text-sm placeholder-white/25 focus:outline-none transition-all ${
-                                errors.email ? "border-[#EB0028] ring-1 ring-[#EB0028]" : "border-white/10 focus:border-[#EB0028] focus:ring-1 focus:ring-[#EB0028]/50"
-                              }`}
-                              style={{ fontFamily: "var(--font-manrope)" }}
-                            />
-                            {errors.email && <span className="text-[11px] text-[#EB0028] block">{errors.email}</span>}
-                          </div>
-
-                          {/* Phone Number */}
-                          <div className="space-y-1.5 sm:space-y-2">
-                            <label className="text-[11px] sm:text-xs uppercase text-white/80 font-medium tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
-                              Phone Number (10 Digits) *
-                            </label>
-                            <input
-                              type="tel"
-                              inputMode="numeric"
-                              value={form.phone}
-                              onChange={(e) => updateField("phone", e.target.value.replace(/\D/g, "").slice(0, 10))}
-                              placeholder="e.g. 9876543210"
-                              maxLength={10}
-                              className={`w-full h-11 sm:h-12 px-3.5 sm:px-4 rounded-xl border bg-white/[0.03] text-white text-base sm:text-sm placeholder-white/25 focus:outline-none transition-all ${
-                                errors.phone ? "border-[#EB0028] ring-1 ring-[#EB0028]" : "border-white/10 focus:border-[#EB0028] focus:ring-1 focus:ring-[#EB0028]/50"
-                              }`}
-                              style={{ fontFamily: "var(--font-manrope)" }}
-                            />
-                            {errors.phone && <span className="text-[11px] text-[#EB0028] block">{errors.phone}</span>}
-                          </div>
-
-                          {/* College / Organization */}
-                          <div className="space-y-1.5 sm:space-y-2">
-                            <label className="text-[11px] sm:text-xs uppercase text-white/80 font-medium tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
-                              College / Organization *
-                            </label>
-                            <input
-                              type="text"
-                              value={form.organization}
-                              onChange={(e) => updateField("organization", e.target.value)}
-                              placeholder="e.g. KL University / Microsoft / Startup"
-                              className={`w-full h-11 sm:h-12 px-3.5 sm:px-4 rounded-xl border bg-white/[0.03] text-white text-base sm:text-sm placeholder-white/25 focus:outline-none transition-all ${
-                                errors.organization ? "border-[#EB0028] ring-1 ring-[#EB0028]" : "border-white/10 focus:border-[#EB0028] focus:ring-1 focus:ring-[#EB0028]/50"
-                              }`}
-                              style={{ fontFamily: "var(--font-manrope)" }}
-                            />
-                            {errors.organization && <span className="text-[11px] text-[#EB0028] block">{errors.organization}</span>}
-                          </div>
-
-                          {/* City */}
-                          <div className="space-y-1.5 sm:space-y-2">
-                            <label className="text-[11px] sm:text-xs uppercase text-white/80 font-medium tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
-                              City *
-                            </label>
-                            <input
-                              type="text"
-                              value={form.city}
-                              onChange={(e) => updateField("city", e.target.value)}
-                              placeholder="e.g. Hyderabad"
-                              className={`w-full h-11 sm:h-12 px-3.5 sm:px-4 rounded-xl border bg-white/[0.03] text-white text-base sm:text-sm placeholder-white/25 focus:outline-none transition-all ${
-                                errors.city ? "border-[#EB0028] ring-1 ring-[#EB0028]" : "border-white/10 focus:border-[#EB0028] focus:ring-1 focus:ring-[#EB0028]/50"
-                              }`}
-                              style={{ fontFamily: "var(--font-manrope)" }}
-                            />
-                            {errors.city && <span className="text-[11px] text-[#EB0028] block">{errors.city}</span>}
+                            >
+                              <div className="absolute top-0 right-0">
+                                <span className="text-[8px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-bl-lg bg-[#EB0028] text-white">
+                                  Group of 4 Offer
+                                </span>
+                              </div>
+                              <div className="flex items-start justify-between">
+                                <div className="space-y-1">
+                                  <div className="flex items-center gap-1.5">
+                                    <Users className={`w-4 h-4 ${form.passType === "group_of_4" ? "text-[#EB0028]" : "text-white/60"}`} />
+                                    <span className="text-xs font-bold uppercase tracking-wider text-white" style={{ fontFamily: "var(--font-sora)" }}>
+                                      Group Pass (4 Seats)
+                                    </span>
+                                  </div>
+                                  <div className="text-[11px] text-emerald-400 font-medium" style={{ fontFamily: "var(--font-manrope)" }}>
+                                    Squad of 4 · Only ₹1999 total
+                                  </div>
+                                </div>
+                                <div className="text-right pt-2 sm:pt-0">
+                                  <div className="text-base sm:text-lg font-extrabold text-white" style={{ fontFamily: "var(--font-sora)" }}>
+                                    ₹1,999
+                                  </div>
+                                  <div className="text-[9px] text-emerald-400 uppercase font-mono font-bold">4 Delegates Included</div>
+                                </div>
+                              </div>
+                            </button>
                           </div>
                         </div>
+
+                        {/* SECTION 1: PRIMARY / LEAD DELEGATE */}
+                        <div className="space-y-4 pt-2">
+                          <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                            <h3 className="text-xs font-bold uppercase tracking-widest text-[#EB0028] flex items-center gap-2" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                              <UserCheck className="w-3.5 h-3.5" />
+                              {form.passType === "group_of_4" ? "Lead Delegate (Point of Contact)" : "Delegate Details"}
+                            </h3>
+                            {form.passType === "group_of_4" && (
+                              <span className="text-[10px] font-mono text-white/40">Member 1 of 4</span>
+                            )}
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+                            {/* First Name */}
+                            <div className="space-y-1.5 sm:space-y-2">
+                              <label className="text-[11px] sm:text-xs uppercase text-white/80 font-medium tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                                First Name *
+                              </label>
+                              <input
+                                type="text"
+                                value={form.firstName}
+                                onChange={(e) => updateField("firstName", e.target.value)}
+                                placeholder="e.g. John"
+                                className={`w-full h-11 sm:h-12 px-3.5 sm:px-4 rounded-xl border bg-white/[0.03] text-white text-base sm:text-sm placeholder-white/25 focus:outline-none transition-all ${
+                                  errors.firstName ? "border-[#EB0028] ring-1 ring-[#EB0028]" : "border-white/10 focus:border-[#EB0028] focus:ring-1 focus:ring-[#EB0028]/50"
+                                }`}
+                                style={{ fontFamily: "var(--font-manrope)" }}
+                              />
+                              {errors.firstName && <span className="text-[11px] text-[#EB0028] block">{errors.firstName}</span>}
+                            </div>
+
+                            {/* Last Name */}
+                            <div className="space-y-1.5 sm:space-y-2">
+                              <label className="text-[11px] sm:text-xs uppercase text-white/80 font-medium tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                                Last Name *
+                              </label>
+                              <input
+                                type="text"
+                                value={form.lastName}
+                                onChange={(e) => updateField("lastName", e.target.value)}
+                                placeholder="e.g. Doe"
+                                className={`w-full h-11 sm:h-12 px-3.5 sm:px-4 rounded-xl border bg-white/[0.03] text-white text-base sm:text-sm placeholder-white/25 focus:outline-none transition-all ${
+                                  errors.lastName ? "border-[#EB0028] ring-1 ring-[#EB0028]" : "border-white/10 focus:border-[#EB0028] focus:ring-1 focus:ring-[#EB0028]/50"
+                                }`}
+                                style={{ fontFamily: "var(--font-manrope)" }}
+                              />
+                              {errors.lastName && <span className="text-[11px] text-[#EB0028] block">{errors.lastName}</span>}
+                            </div>
+
+                            {/* Email Address */}
+                            <div className="space-y-1.5 sm:space-y-2">
+                              <label className="text-[11px] sm:text-xs uppercase text-white/80 font-medium tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                                Official Email Address *
+                              </label>
+                              <input
+                                type="email"
+                                value={form.email}
+                                onChange={(e) => updateField("email", e.target.value)}
+                                placeholder="e.g. yourname@domain.com"
+                                className={`w-full h-11 sm:h-12 px-3.5 sm:px-4 rounded-xl border bg-white/[0.03] text-white text-base sm:text-sm placeholder-white/25 focus:outline-none transition-all ${
+                                  errors.email ? "border-[#EB0028] ring-1 ring-[#EB0028]" : "border-white/10 focus:border-[#EB0028] focus:ring-1 focus:ring-[#EB0028]/50"
+                                }`}
+                                style={{ fontFamily: "var(--font-manrope)" }}
+                              />
+                              {errors.email && <span className="text-[11px] text-[#EB0028] block">{errors.email}</span>}
+                            </div>
+
+                            {/* Phone Number */}
+                            <div className="space-y-1.5 sm:space-y-2">
+                              <label className="text-[11px] sm:text-xs uppercase text-white/80 font-medium tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                                Phone Number (10 Digits) *
+                              </label>
+                              <input
+                                type="tel"
+                                inputMode="numeric"
+                                value={form.phone}
+                                onChange={(e) => updateField("phone", e.target.value.replace(/\D/g, "").slice(0, 10))}
+                                placeholder="e.g. 9876543210"
+                                maxLength={10}
+                                className={`w-full h-11 sm:h-12 px-3.5 sm:px-4 rounded-xl border bg-white/[0.03] text-white text-base sm:text-sm placeholder-white/25 focus:outline-none transition-all ${
+                                  errors.phone ? "border-[#EB0028] ring-1 ring-[#EB0028]" : "border-white/10 focus:border-[#EB0028] focus:ring-1 focus:ring-[#EB0028]/50"
+                                }`}
+                                style={{ fontFamily: "var(--font-manrope)" }}
+                              />
+                              {errors.phone && <span className="text-[11px] text-[#EB0028] block">{errors.phone}</span>}
+                            </div>
+
+                            {/* College / Organization */}
+                            <div className="space-y-1.5 sm:space-y-2">
+                              <label className="text-[11px] sm:text-xs uppercase text-white/80 font-medium tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                                College / Organization *
+                              </label>
+                              <input
+                                type="text"
+                                value={form.organization}
+                                onChange={(e) => updateField("organization", e.target.value)}
+                                placeholder="e.g. KL University / Microsoft / Startup"
+                                className={`w-full h-11 sm:h-12 px-3.5 sm:px-4 rounded-xl border bg-white/[0.03] text-white text-base sm:text-sm placeholder-white/25 focus:outline-none transition-all ${
+                                  errors.organization ? "border-[#EB0028] ring-1 ring-[#EB0028]" : "border-white/10 focus:border-[#EB0028] focus:ring-1 focus:ring-[#EB0028]/50"
+                                }`}
+                                style={{ fontFamily: "var(--font-manrope)" }}
+                              />
+                              {errors.organization && <span className="text-[11px] text-[#EB0028] block">{errors.organization}</span>}
+                            </div>
+
+                            {/* City */}
+                            <div className="space-y-1.5 sm:space-y-2">
+                              <label className="text-[11px] sm:text-xs uppercase text-white/80 font-medium tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                                City *
+                              </label>
+                              <input
+                                type="text"
+                                value={form.city}
+                                onChange={(e) => updateField("city", e.target.value)}
+                                placeholder="e.g. Hyderabad"
+                                className={`w-full h-11 sm:h-12 px-3.5 sm:px-4 rounded-xl border bg-white/[0.03] text-white text-base sm:text-sm placeholder-white/25 focus:outline-none transition-all ${
+                                  errors.city ? "border-[#EB0028] ring-1 ring-[#EB0028]" : "border-white/10 focus:border-[#EB0028] focus:ring-1 focus:ring-[#EB0028]/50"
+                                }`}
+                                style={{ fontFamily: "var(--font-manrope)" }}
+                              />
+                              {errors.city && <span className="text-[11px] text-[#EB0028] block">{errors.city}</span>}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* SECTION 2: SQUAD MEMBERS (Only if Group Pass selected) */}
+                        {form.passType === "group_of_4" && (
+                          <div className="space-y-5 pt-4 border-t border-white/10">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <h3 className="text-xs font-bold uppercase tracking-widest text-emerald-400 flex items-center gap-2" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                                  <Users className="w-3.5 h-3.5" />
+                                  Squad Delegates (Members 2, 3 &amp; 4)
+                                </h3>
+                                <p className="text-[11px] text-white/50 mt-0.5" style={{ fontFamily: "var(--font-manrope)" }}>
+                                  Enter details for the 3 additional delegates in your group of 4.
+                                </p>
+                              </div>
+                              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/30">
+                                3 Squad Members
+                              </span>
+                            </div>
+
+                            <div className="space-y-4">
+                              {form.groupMembers.map((member, idx) => {
+                                const memberNum = idx + 2;
+                                return (
+                                  <div
+                                    key={idx}
+                                    className="p-4 sm:p-5 rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-md space-y-3 relative"
+                                  >
+                                    <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                                      <span className="text-[11px] font-bold text-white uppercase tracking-wider font-mono">
+                                        Delegate 0{memberNum}
+                                      </span>
+                                      <span className="text-[10px] text-white/40 font-mono">Pass #{memberNum}</span>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                      {/* Member Full Name */}
+                                      <div className="space-y-1">
+                                        <label className="text-[10px] uppercase text-white/70 font-mono">Full Name *</label>
+                                        <input
+                                          type="text"
+                                          value={member.name}
+                                          onChange={(e) => updateGroupMember(idx, "name", e.target.value)}
+                                          placeholder={`Delegate 0${memberNum} Name`}
+                                          className={`w-full h-10 px-3 rounded-xl border bg-white/[0.03] text-white text-xs placeholder-white/25 focus:outline-none transition-all ${
+                                            errors[`member_${idx}_name`] ? "border-[#EB0028] ring-1 ring-[#EB0028]" : "border-white/10 focus:border-[#EB0028]"
+                                          }`}
+                                        />
+                                        {errors[`member_${idx}_name`] && (
+                                          <span className="text-[10px] text-[#EB0028] block">{errors[`member_${idx}_name`]}</span>
+                                        )}
+                                      </div>
+
+                                      {/* Member Email */}
+                                      <div className="space-y-1">
+                                        <label className="text-[10px] uppercase text-white/70 font-mono">Email Address *</label>
+                                        <input
+                                          type="email"
+                                          value={member.email}
+                                          onChange={(e) => updateGroupMember(idx, "email", e.target.value)}
+                                          placeholder="email@domain.com"
+                                          className={`w-full h-10 px-3 rounded-xl border bg-white/[0.03] text-white text-xs placeholder-white/25 focus:outline-none transition-all ${
+                                            errors[`member_${idx}_email`] ? "border-[#EB0028] ring-1 ring-[#EB0028]" : "border-white/10 focus:border-[#EB0028]"
+                                          }`}
+                                        />
+                                        {errors[`member_${idx}_email`] && (
+                                          <span className="text-[10px] text-[#EB0028] block">{errors[`member_${idx}_email`]}</span>
+                                        )}
+                                      </div>
+
+                                      {/* Member Phone */}
+                                      <div className="space-y-1">
+                                        <label className="text-[10px] uppercase text-white/70 font-mono">Phone (10 Digits) *</label>
+                                        <input
+                                          type="tel"
+                                          inputMode="numeric"
+                                          maxLength={10}
+                                          value={member.phone}
+                                          onChange={(e) => updateGroupMember(idx, "phone", e.target.value.replace(/\D/g, "").slice(0, 10))}
+                                          placeholder="10 digit number"
+                                          className={`w-full h-10 px-3 rounded-xl border bg-white/[0.03] text-white text-xs placeholder-white/25 focus:outline-none transition-all ${
+                                            errors[`member_${idx}_phone`] ? "border-[#EB0028] ring-1 ring-[#EB0028]" : "border-white/10 focus:border-[#EB0028]"
+                                          }`}
+                                        />
+                                        {errors[`member_${idx}_phone`] && (
+                                          <span className="text-[10px] text-[#EB0028] block">{errors[`member_${idx}_phone`]}</span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
                       </motion.div>
                     )}
 
@@ -752,10 +1000,13 @@ export default function ApplyPage() {
                           <div className="space-y-2.5 sm:space-y-3 flex-grow text-center sm:text-left w-full sm:w-auto">
                             <div>
                               <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-widest text-[#EB0028] font-bold">
-                                OFFICIAL DELEGATE PASS TICKET
+                                {form.passType === "group_of_4" ? "GROUP PASS (SQUAD OF 4) TICKET" : "OFFICIAL DELEGATE PASS TICKET"}
                               </span>
                               <div className="text-xl sm:text-2xl font-bold text-white tracking-tight" style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}>
-                                ₹499 <span className="text-xs font-normal text-white/50">/ Delegate</span>
+                                {form.passType === "group_of_4" ? "₹1,999" : "₹549"}
+                                <span className="text-xs font-normal text-white/50">
+                                  {form.passType === "group_of_4" ? " / Squad of 4 (₹499.75 each)" : " / Delegate"}
+                                </span>
                               </div>
                               <p className="text-[11px] text-white/70 font-mono mt-0.5">
                                 Payee: <span className="text-white font-semibold">Koneru Lakshmaiah Education Foundation</span>
@@ -789,7 +1040,9 @@ export default function ApplyPage() {
                             </div>
 
                             <p className="text-[11px] text-white/50 leading-relaxed" style={{ fontFamily: "var(--font-manrope)" }}>
-                              Includes summit admission, kit, delegate luncheon &amp; verified certificate.
+                              {form.passType === "group_of_4"
+                                ? "Includes summit admission, kit, delegate luncheon & verified certificate for all 4 delegates."
+                                : "Includes summit admission, kit, delegate luncheon & verified certificate."}
                             </p>
                           </div>
                         </div>
@@ -963,31 +1216,65 @@ export default function ApplyPage() {
                             Review &amp; Submit Application
                           </h2>
                           <p className="text-xs text-white/50 mt-1" style={{ fontFamily: "var(--font-manrope)" }}>
-                            Review your delegate application coordinates before final dispatch.
+                            Review your delegate coordinates and pass category before final dispatch.
                           </p>
                         </div>
 
                         {/* Summary Details Box */}
                         <div className="p-4 sm:p-6 rounded-2xl border border-white/10 bg-white/[0.02] space-y-4">
+                          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                            <div>
+                              <span className="text-[10px] text-white/40 uppercase font-mono block">Pass Category</span>
+                              <span className="font-bold text-sm text-white" style={{ fontFamily: "var(--font-sora)" }}>
+                                {form.passType === "group_of_4" ? "Group Pass (Squad of 4)" : "Individual Delegate Pass"}
+                              </span>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-[10px] text-white/40 uppercase font-mono block">Total Fee</span>
+                              <span className="font-extrabold text-base text-[#EB0028]" style={{ fontFamily: "var(--font-sora)" }}>
+                                {form.passType === "group_of_4" ? "₹1,999" : "₹549"}
+                              </span>
+                            </div>
+                          </div>
+
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4 text-xs">
                             <div className="space-y-0.5 min-w-0">
-                              <span className="text-[10px] text-white/40 uppercase font-mono block">Delegate Name</span>
+                              <span className="text-[10px] text-white/40 uppercase font-mono block">
+                                {form.passType === "group_of_4" ? "Lead Delegate (Member 1)" : "Delegate Name"}
+                              </span>
                               <span className="font-semibold text-white break-words">{form.firstName} {form.lastName}</span>
                             </div>
                             <div className="space-y-0.5 min-w-0">
-                              <span className="text-[10px] text-white/40 uppercase font-mono block">Email Address</span>
+                              <span className="text-[10px] text-white/40 uppercase font-mono block">Lead Contact Email</span>
                               <span className="font-semibold text-white break-all">{form.email}</span>
                             </div>
                             <div className="space-y-0.5 min-w-0">
-                              <span className="text-[10px] text-white/40 uppercase font-mono block">Phone Coordinate</span>
+                              <span className="text-[10px] text-white/40 uppercase font-mono block">Lead Contact Phone</span>
                               <span className="font-semibold text-white font-mono">{form.phone}</span>
                             </div>
                             <div className="space-y-0.5 min-w-0">
                               <span className="text-[10px] text-white/40 uppercase font-mono block">Organization &amp; City</span>
                               <span className="font-semibold text-white break-words">{form.organization} · {form.city}</span>
                             </div>
-                            <div className="sm:col-span-2 space-y-0.5 min-w-0">
-                              <span className="text-[10px] text-white/40 uppercase font-mono block">UTR Number</span>
+
+                            {form.passType === "group_of_4" && (
+                              <div className="sm:col-span-2 p-3.5 rounded-xl border border-white/10 bg-white/[0.01] space-y-2">
+                                <span className="text-[10px] text-emerald-400 uppercase font-mono font-bold block">
+                                  Squad Delegates (Members 2, 3 &amp; 4)
+                                </span>
+                                <div className="space-y-1.5 text-xs">
+                                  {form.groupMembers.map((m, i) => (
+                                    <div key={i} className="flex flex-wrap items-center justify-between text-white/80 border-b border-white/5 pb-1">
+                                      <span className="font-semibold text-white">0{i + 2}. {m.name}</span>
+                                      <span className="text-white/50 text-[11px] font-mono">{m.email} · {m.phone}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="sm:col-span-2 space-y-0.5 min-w-0 pt-2 border-t border-white/5">
+                              <span className="text-[10px] text-white/40 uppercase font-mono block">12-Digit UTR Number</span>
                               <span className="font-semibold text-[#EB0028] font-mono tracking-wider break-all">{form.utrNumber}</span>
                             </div>
                           </div>
@@ -1145,12 +1432,22 @@ export default function ApplyPage() {
 
               <div className="grid grid-cols-2 gap-4 text-xs">
                 <div>
-                  <span className="text-[10px] text-white/40 uppercase font-mono block">DELEGATE</span>
-                  <span className="font-semibold text-white">{form.firstName} {form.lastName}</span>
+                  <span className="text-[10px] text-white/40 uppercase font-mono block">PASS TYPE</span>
+                  <span className="font-semibold text-white">
+                    {form.passType === "group_of_4" ? "Group Pass (4 Delegates · ₹1,999)" : "Individual Pass (1 Delegate · ₹549)"}
+                  </span>
                 </div>
                 <div>
                   <span className="text-[10px] text-white/40 uppercase font-mono block">DATE &amp; VENUE</span>
                   <span className="font-semibold text-white">NOV 4, 2026 · BOWRAMPET</span>
+                </div>
+                <div className="col-span-2">
+                  <span className="text-[10px] text-white/40 uppercase font-mono block">DELEGATE(S)</span>
+                  <span className="font-semibold text-white">
+                    {form.passType === "group_of_4"
+                      ? `${form.firstName} ${form.lastName} (Lead), ${form.groupMembers.map((m) => m.name).filter(Boolean).join(", ")}`
+                      : `${form.firstName} ${form.lastName}`}
+                  </span>
                 </div>
               </div>
             </div>

@@ -27,6 +27,9 @@ interface ApplicationItem {
   application_status: string;
   payment_status: string;
   delegate_id: string | null;
+  pass_type?: string;
+  ticket_count?: number;
+  total_amount?: number;
   created_at: string;
   payment_verifications?: Array<{
     utr_number: string;
@@ -288,7 +291,18 @@ export default function AdminApplicationsPage() {
                         {app.application_number}
                       </td>
                       <td className="py-3.5 px-3 font-semibold text-white">
-                        {app.first_name} {app.last_name}
+                        <div>{app.first_name} {app.last_name}</div>
+                        <div className="mt-1">
+                          {app.pass_type === "group_of_4" ? (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono font-bold uppercase bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                              Squad of 4 · ₹1999
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono uppercase bg-white/5 text-white/60 border border-white/10">
+                              Individual · ₹549
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="py-3.5 px-3">
                         <div className="text-white/80">{app.email}</div>
