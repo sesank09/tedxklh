@@ -129,6 +129,15 @@ export default function ApplyPage() {
   const updateField = (field: keyof FormData, val: any) => {
     setForm((prev) => {
       const updated = { ...prev, [field]: val };
+      if (field === "passType" && val === "group_of_4") {
+        if (!Array.isArray(updated.groupMembers) || updated.groupMembers.length !== 3) {
+          updated.groupMembers = [
+            { name: "", email: "", phone: "" },
+            { name: "", email: "", phone: "" },
+            { name: "", email: "", phone: "" },
+          ];
+        }
+      }
       try {
         localStorage.setItem("tedxklh_apply_draft_v3", JSON.stringify(updated));
       } catch (e) {}
@@ -147,16 +156,22 @@ export default function ApplyPage() {
 
   const updateGroupMember = (index: number, field: keyof GroupMember, value: string) => {
     setForm((prev) => {
-      const nextMembers = [...prev.groupMembers];
-      nextMembers[index] = { ...nextMembers[index], [field]: value };
-      const updated = { ...prev, groupMembers: nextMembers };
+      const currentMembers = Array.isArray(prev.groupMembers) && prev.groupMembers.length === 3
+        ? [...prev.groupMembers]
+        : [
+            { name: "", email: "", phone: "" },
+            { name: "", email: "", phone: "" },
+            { name: "", email: "", phone: "" },
+          ];
+      currentMembers[index] = { ...currentMembers[index], [field]: value };
+      const updated = { ...prev, groupMembers: currentMembers };
       try {
         localStorage.setItem("tedxklh_apply_draft_v3", JSON.stringify(updated));
       } catch (e) {}
       return updated;
     });
 
-    const errKey = `groupMember_${index}_${field}`;
+    const errKey = `member_${index}_${field}`;
     if (errors[errKey]) {
       setErrors((prev) => {
         const next = { ...prev };
@@ -207,7 +222,7 @@ export default function ApplyPage() {
           screenshotSize: sizeFormatted,
         };
         try {
-          localStorage.setItem("tedxklh_apply_draft_v2", JSON.stringify(updated));
+          localStorage.setItem("tedxklh_apply_draft_v3", JSON.stringify(updated));
         } catch (e) {}
         return updated;
       });
@@ -237,7 +252,7 @@ export default function ApplyPage() {
         screenshotSize: null,
       };
       try {
-        localStorage.setItem("tedxklh_apply_draft_v2", JSON.stringify(updated));
+        localStorage.setItem("tedxklh_apply_draft_v3", JSON.stringify(updated));
       } catch (e) {}
       return updated;
     });
@@ -266,11 +281,19 @@ export default function ApplyPage() {
       // Validate group members if group pass
       if (form.passType === "group_of_4") {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        form.groupMembers.forEach((m, idx) => {
-          if (!m.name.trim()) errs[`groupMember_${idx}_name`] = `Member #${idx + 2} name is required`;
-          if (!m.email.trim() || !emailRegex.test(m.email)) errs[`groupMember_${idx}_email`] = `Valid email required`;
-          const mDigits = m.phone.replace(/\D/g, "");
-          if (!mDigits || mDigits.length < 10) errs[`groupMember_${idx}_phone`] = `10-digit phone required`;
+        const squadMembers = Array.isArray(form.groupMembers) && form.groupMembers.length === 3
+          ? form.groupMembers
+          : [
+              { name: "", email: "", phone: "" },
+              { name: "", email: "", phone: "" },
+              { name: "", email: "", phone: "" },
+            ];
+
+        squadMembers.forEach((m, idx) => {
+          if (!m.name?.trim()) errs[`member_${idx}_name`] = `Delegate 0${idx + 2} full name is required`;
+          if (!m.email?.trim() || !emailRegex.test(m.email)) errs[`member_${idx}_email`] = `Valid email required`;
+          const mDigits = (m.phone || "").replace(/\D/g, "");
+          if (!mDigits || mDigits.length < 10) errs[`member_${idx}_phone`] = `10-digit phone number required`;
         });
       }
     } else if (currentStep === 2) {
@@ -293,12 +316,16 @@ export default function ApplyPage() {
 
   const handleNext = () => {
     if (validateStep(step)) {
+      setSubmitError(null);
       if (step < 3) {
         setStep(step + 1);
         window.scrollTo({ top: 320, behavior: "smooth" });
       } else {
         handleSubmit();
       }
+    } else {
+      setSubmitError("Please fill in all required fields highlighted in red to proceed.");
+      window.scrollTo({ top: 320, behavior: "smooth" });
     }
   };
 

@@ -127,7 +127,16 @@ export default function Register() {
   }, []);
 
   const updateForm = (field: keyof FormData, val: any) => {
-    const updated = { ...form, [field]: val };
+    let updated = { ...form, [field]: val };
+    if (field === "passType" && val === "group_of_4") {
+      if (!Array.isArray(updated.groupMembers) || updated.groupMembers.length !== 3) {
+        updated.groupMembers = [
+          { name: "", email: "", phone: "" },
+          { name: "", email: "", phone: "" },
+          { name: "", email: "", phone: "" },
+        ];
+      }
+    }
     setForm(updated);
     try {
       localStorage.setItem("tedxklh_register_form_v3", JSON.stringify(updated));
@@ -145,9 +154,15 @@ export default function Register() {
   };
 
   const updateGroupMember = (index: number, field: keyof GroupMember, value: string) => {
-    const updated = [...form.groupMembers];
-    updated[index] = { ...updated[index], [field]: value };
-    updateForm("groupMembers", updated);
+    const currentMembers = Array.isArray(form.groupMembers) && form.groupMembers.length === 3
+      ? [...form.groupMembers]
+      : [
+          { name: "", email: "", phone: "" },
+          { name: "", email: "", phone: "" },
+          { name: "", email: "", phone: "" },
+        ];
+    currentMembers[index] = { ...currentMembers[index], [field]: value };
+    updateForm("groupMembers", currentMembers);
     const errKey = `member_${index}_${field}`;
     if (errors[errKey]) {
       setErrors((prev) => {
@@ -206,10 +221,18 @@ export default function Register() {
       if (!form.city.trim()) newErrors.city = "City is required";
 
       if (form.passType === "group_of_4") {
-        form.groupMembers.forEach((m, idx) => {
-          if (!m.name.trim()) newErrors[`member_${idx}_name`] = `Member 0${idx + 2} name required`;
-          if (!m.email.trim() || !/^\S+@\S+\.\S+$/.test(m.email)) newErrors[`member_${idx}_email`] = `Member 0${idx + 2} valid email required`;
-          if (!m.phone.trim() || m.phone.replace(/\D/g, "").length < 10) newErrors[`member_${idx}_phone`] = `Member 0${idx + 2} valid phone required`;
+        const squadMembers = Array.isArray(form.groupMembers) && form.groupMembers.length === 3
+          ? form.groupMembers
+          : [
+              { name: "", email: "", phone: "" },
+              { name: "", email: "", phone: "" },
+              { name: "", email: "", phone: "" },
+            ];
+
+        squadMembers.forEach((m, idx) => {
+          if (!m.name?.trim()) newErrors[`member_${idx}_name`] = `Delegate 0${idx + 2} name required`;
+          if (!m.email?.trim() || !/^\S+@\S+\.\S+$/.test(m.email)) newErrors[`member_${idx}_email`] = `Delegate 0${idx + 2} valid email required`;
+          if (!m.phone?.trim() || m.phone.replace(/\D/g, "").length < 10) newErrors[`member_${idx}_phone`] = `Delegate 0${idx + 2} valid phone required`;
         });
       }
     } else if (currentStep === 2) {
