@@ -26,6 +26,8 @@ interface TeamMember {
   department: Exclude<typeof DEPARTMENTS[number], "All">;
   code: string;
   image?: string;
+  imagePosition?: string;
+  imageScale?: number;
 }
 
 const TEAM_MEMBERS: TeamMember[] = [
@@ -182,6 +184,7 @@ const TEAM_MEMBERS: TeamMember[] = [
     department: "Hospitality",
     code: "HOS-01",
     image: "/team/dharani.png",
+    imagePosition: "center 42%",
   },
   {
     id: "social-sahasra",
@@ -191,6 +194,8 @@ const TEAM_MEMBERS: TeamMember[] = [
     department: "Social Media",
     code: "SOC-01",
     image: "/team/sahasra.png",
+    imagePosition: "center 32%",
+    imageScale: 1.15,
   },
   {
     id: "doc-nyshitha",
@@ -200,6 +205,8 @@ const TEAM_MEMBERS: TeamMember[] = [
     department: "Documentation",
     code: "DOC-01",
     image: "/team/nyshitha.png",
+    imagePosition: "center 30%",
+    imageScale: 1.15,
   },
   {
     id: "prod-nishanth",
@@ -209,6 +216,7 @@ const TEAM_MEMBERS: TeamMember[] = [
     department: "Production",
     code: "PRD-01",
     image: "/team/babbula-nishanth.png",
+    imagePosition: "center 38%",
   },
   { id: "prod-02",     role: "Digital Experience & Systems Lead",   department: "Production",  code: "PRD-02" },
   { id: "design-01",   role: "Creative Director & Visual Lead",     department: "Design",      code: "DSN-01" },
@@ -308,10 +316,12 @@ function TeamCard({ member, index }: { member: TeamMember; index: number }) {
                   <img
                     src={member.image}
                     alt={member.name || member.role}
-                    className="w-full h-full object-cover object-top"
+                    className="w-full h-full object-cover transition-transform duration-500"
                     style={{
+                      objectPosition: member.imagePosition || "center top",
+                      transform: member.imageScale ? `scale(${member.imageScale})` : undefined,
                       filter: fx ? "brightness(1.08) contrast(1.05)" : "brightness(0.92) saturate(0.95)",
-                      transition: "filter .4s ease",
+                      transition: "filter .4s ease, transform .4s ease",
                     }}
                   />
                   <div className="absolute inset-0 rounded-2xl pointer-events-none"
