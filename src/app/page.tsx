@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
+import Preloader from "@/components/Preloader";
 import Background3D from "@/components/Background3D";
 import Hero from "@/components/Hero";
 import EventDateBanner from "@/components/EventDateBanner";
@@ -32,6 +33,9 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen w-full bg-transparent text-white overflow-x-clip">
+      {/* Cinematic TEDx Preloader */}
+      <Preloader />
+
       {/* Centralized Single Source of Truth 3D Background — exactly ONE WebGL Canvas */}
       <Background3D />
 
