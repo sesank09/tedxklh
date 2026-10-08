@@ -481,29 +481,41 @@ function CinematicMetamorphosisScene({ scrollYRef }: SceneProps) {
     const visibleH = 2 * Math.tan(vFovRad / 2) * camera.position.z;
     const visibleW = visibleH * aspect;
 
-    // ── 1. BUTTERFLY CONTAIN SCALING (Preserves 8.6 : 4.8 aspect ratio at all viewports) ──
-    const targetButterflyWRatio = THREE.MathUtils.clamp(
-      0.52 + (1.0 - Math.min(aspect, 1.8)) * 0.22,
-      0.46,
-      0.78
-    );
-    const maxButterflyW = isSmallPhone
-      ? visibleW * 0.78
-      : isLandscapeShort
-        ? visibleW * 0.54
-        : Math.min(visibleW * targetButterflyWRatio, 8.2);
+    // ── 1. BUTTERFLY CONTAIN SCALING (Grand, screen-fitting presence on desktop) ──
+    const targetButterflyWRatio = isSmallPhone
+      ? 0.78
+      : isMobilePortrait
+        ? 0.82
+        : isTablet
+          ? 0.84
+          : isLandscapeShort
+            ? 0.68
+            : isUltrawide
+              ? 0.76
+              : 0.88; // 88% width on computer/desktop for majestic screen fit
 
-    const maxButterflyH = visibleH * (isLandscapeShort ? 0.44 : isMobilePortrait ? 0.38 : 0.48);
+    const maxButterflyW = visibleW * targetButterflyWRatio;
+
+    const maxButterflyH = visibleH * (
+      isLandscapeShort
+        ? 0.60
+        : isMobilePortrait
+          ? 0.38
+          : isTablet
+            ? 0.58
+            : 0.72 // 72% height on computer/desktop
+    );
+
     const scaleByW = maxButterflyW / 8.6;
     const scaleByH = maxButterflyH / 4.8;
-    const butterflyScale = Math.min(scaleByW, scaleByH, 1.08);
+    const butterflyScale = Math.min(scaleByW, scaleByH, 1.85);
 
     // Dynamic vertical anchor for butterfly (positioned in upper-center visual zone)
     const butterflyBaseY = isLandscapeShort
       ? 0.08 * visibleH
       : isMobilePortrait
         ? 0.13 * visibleH
-        : 0.07 * visibleH;
+        : 0.08 * visibleH;
 
     // ── 2. METAMORPHOSIS TYPOGRAPHY RESPONSIVE FITTING (Fits every screen size dynamically) ──
     // - On small mobile: 86% of visible screen width (7% clean margin on both sides, zero clipping)
