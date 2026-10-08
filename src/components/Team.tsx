@@ -16,7 +16,6 @@ const DEPARTMENTS = [
   "Documentation",
   "Production",
   "Technical Team",
-  "Design",
 ] as const;
 
 interface TeamMember {
@@ -149,7 +148,6 @@ const TEAM_MEMBERS: TeamMember[] = [
     code: "DIR-13",
     image: "/team/mr-bobba-thambi-aashish.png",
   },
-  { id: "lead-02",     role: "Co-Organizer & Executive Director",   department: "Leadership",  code: "DIR-14" },
   {
     id: "curation-sophie",
     name: "Sophie Blessing M",
@@ -167,6 +165,16 @@ const TEAM_MEMBERS: TeamMember[] = [
     department: "Operations & Logistics",
     code: "OPS-01",
     image: "/team/srijaya-chakradhar-chilakapati.jpg",
+  },
+  {
+    id: "ops-mahati",
+    name: "Naramsetty Mahati",
+    role: "Operations & Logistics Lead",
+    designation: "KLH University Bowrampet",
+    department: "Operations & Logistics",
+    code: "OPS-02",
+    image: "/team/naramsetty-mahati.jpg",
+    imagePosition: "center 28%",
   },
   {
     id: "reg-sameer",
@@ -231,16 +239,25 @@ const TEAM_MEMBERS: TeamMember[] = [
     imagePosition: "center 24%",
   },
   {
+    id: "tech-sesank",
+    name: "Yennam Sesank Reddy",
+    role: "Technical Lead",
+    designation: "KLH University Bowrampet",
+    department: "Technical Team",
+    code: "TEC-01",
+    image: "/team/yennam-sesank-reddy.jpg",
+    imagePosition: "center 38%",
+  },
+  {
     id: "tech-nishanth",
     name: "Babbula Nishanth",
     role: "Technical Lead",
     designation: "KLH University Bowrampet",
     department: "Technical Team",
-    code: "TEC-01",
+    code: "TEC-02",
     image: "/team/babbula-nishanth.png",
     imagePosition: "center 38%",
   },
-  { id: "design-01",   role: "Creative Director & Visual Lead",     department: "Design",      code: "DSN-01" },
 ];
 
 const CRYSTAL_POINTS = "62,6 104,26 122,70 108,114 66,130 22,110 4,66 18,22";
