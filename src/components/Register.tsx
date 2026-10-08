@@ -255,12 +255,16 @@ export default function Register() {
 
   const handleNext = () => {
     if (validateStep(step)) {
+      setSubmitError(null);
       if (step < 3) {
         setStep((step + 1) as 1 | 2 | 3);
         window.scrollTo({ top: document.getElementById("register")?.offsetTop ? document.getElementById("register")!.offsetTop + 100 : 0, behavior: "smooth" });
       } else {
         handleSubmit();
       }
+    } else {
+      setSubmitError("Please fill in all required fields highlighted in red to proceed.");
+      window.scrollTo({ top: document.getElementById("register")?.offsetTop ? document.getElementById("register")!.offsetTop + 100 : 0, behavior: "smooth" });
     }
   };
 
@@ -516,6 +520,18 @@ export default function Register() {
                     </div>
                   </div>
 
+                  {/* Validation Error Banner */}
+                  {submitError && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs flex items-center gap-3"
+                    >
+                      <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
+                      <span>{submitError}</span>
+                    </motion.div>
+                  )}
+
                   {/* Form Step Contents */}
                   <AnimatePresence mode="wait">
                     {/* STEP 1: Pass Tier Selection & Delegate Identity */}
@@ -731,23 +747,29 @@ export default function Register() {
                                         type="text"
                                         value={m.name}
                                         onChange={(e) => updateGroupMember(idx, "name", e.target.value)}
-                                        placeholder={`Delegate 0${num} Name`}
-                                        className="w-full px-3 py-2 rounded-lg bg-white/[0.03] border border-white/10 text-xs text-white placeholder-white/25 focus:outline-none focus:border-[#EB0028]"
+                                        placeholder={`Delegate 0${num} Name *`}
+                                        className={`w-full px-3 py-2 rounded-lg bg-white/[0.03] border text-xs text-white placeholder-white/25 focus:outline-none focus:border-[#EB0028] ${
+                                          errors[`member_${idx}_name`] ? "border-red-500" : "border-white/10"
+                                        }`}
                                       />
                                       <input
                                         type="email"
                                         value={m.email}
                                         onChange={(e) => updateGroupMember(idx, "email", e.target.value)}
-                                        placeholder="email@domain.com"
-                                        className="w-full px-3 py-2 rounded-lg bg-white/[0.03] border border-white/10 text-xs text-white placeholder-white/25 focus:outline-none focus:border-[#EB0028]"
+                                        placeholder="email@domain.com *"
+                                        className={`w-full px-3 py-2 rounded-lg bg-white/[0.03] border text-xs text-white placeholder-white/25 focus:outline-none focus:border-[#EB0028] ${
+                                          errors[`member_${idx}_email`] ? "border-red-500" : "border-white/10"
+                                        }`}
                                       />
                                       <input
                                         type="tel"
                                         maxLength={10}
                                         value={m.phone}
                                         onChange={(e) => updateGroupMember(idx, "phone", e.target.value.replace(/\D/g, "").slice(0, 10))}
-                                        placeholder="10 digit phone"
-                                        className="w-full px-3 py-2 rounded-lg bg-white/[0.03] border border-white/10 text-xs text-white placeholder-white/25 focus:outline-none focus:border-[#EB0028]"
+                                        placeholder="10-digit phone *"
+                                        className={`w-full px-3 py-2 rounded-lg bg-white/[0.03] border text-xs text-white placeholder-white/25 focus:outline-none focus:border-[#EB0028] ${
+                                          errors[`member_${idx}_phone`] ? "border-red-500" : "border-white/10"
+                                        }`}
                                       />
                                     </div>
                                     {(errors[`member_${idx}_name`] || errors[`member_${idx}_email`] || errors[`member_${idx}_phone`]) && (
@@ -1037,6 +1059,11 @@ export default function Register() {
                         <>
                           Confirm &amp; Generate Pass
                           <Check className="w-4 h-4" />
+                        </>
+                      ) : step === 2 ? (
+                        <>
+                          Proceed to Review
+                          <ArrowRight className="w-4 h-4" />
                         </>
                       ) : (
                         <>
