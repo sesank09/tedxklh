@@ -18,6 +18,7 @@ import Footer from "@/components/Footer";
 
 export default function Home() {
   const [mounted, setMounted] = useState(false);
+  const [showPreloader, setShowPreloader] = useState(true);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -33,8 +34,8 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen w-full bg-transparent text-white overflow-x-clip">
-      {/* Cinematic TEDx Preloader */}
-      <Preloader />
+      {/* Signature 3D Butterfly Metamorphosis Preloader */}
+      {showPreloader && <Preloader onComplete={() => setShowPreloader(false)} />}
 
       {/* Centralized Single Source of Truth 3D Background — exactly ONE WebGL Canvas */}
       <Background3D />

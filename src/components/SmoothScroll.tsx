@@ -12,15 +12,15 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
       window.history.scrollRestoration = "manual";
     }
 
-    // Initialize ultra-smooth Lenis with natural deceleration
+    // Initialize ultra-smooth Lenis with natural deceleration and zero lag
     const lenis = new Lenis({
-      duration: 1.15,
+      duration: 0.95,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       orientation: "vertical",
       gestureOrientation: "vertical",
       smoothWheel: true,
-      wheelMultiplier: 0.95,
-      touchMultiplier: 1.2,
+      wheelMultiplier: 1.0,
+      touchMultiplier: 1.1,
       infinite: false,
     });
 

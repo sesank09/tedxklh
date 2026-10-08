@@ -58,16 +58,14 @@ export default function Preloader({ onComplete }: PreloaderProps) {
     window.addEventListener("touchmove", preventScroll, { passive: false });
     window.addEventListener("keydown", preventKeys, { passive: false });
 
-    return () => {
-      document.documentElement.style.overflow = prevHtmlOverflow;
-      document.body.style.overflow = prevBodyOverflow;
-      document.body.style.touchAction = prevBodyTouchAction;
+    const unlock = () => {
+      document.documentElement.style.overflow = prevHtmlOverflow || "";
+      document.body.style.overflow = prevBodyOverflow || "";
+      document.body.style.touchAction = prevBodyTouchAction || "";
 
       window.removeEventListener("wheel", preventScroll);
       window.removeEventListener("touchmove", preventScroll);
       window.removeEventListener("keydown", preventKeys);
-
-      window.scrollTo(0, 0);
 
       const lenisAfter = (window as unknown as { __lenis?: { start: () => void; scrollTo: (target: number, opts?: { immediate?: boolean }) => void } }).__lenis;
       if (lenisAfter) {
@@ -75,25 +73,26 @@ export default function Preloader({ onComplete }: PreloaderProps) {
         lenisAfter.start();
       }
     };
-  }, []);
 
-  // ─────────────────────────────────────────────────────────────
-  // 2. TIMELINE & ACCESSIBILITY CONTROLLER (~4.8s cinematic sequence)
-  // ─────────────────────────────────────────────────────────────
-  useEffect(() => {
-    // Respect user's reduced-motion preference
-    if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    // ─────────────────────────────────────────────────────────────
+    // 2. TIMELINE & ACCESSIBILITY CONTROLLER (~3.2s crisp sequence)
+    // ─────────────────────────────────────────────────────────────
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       const fastTimer = setTimeout(() => {
         setIsFinishing(true);
+        unlock();
         setTimeout(() => {
           setShowPreloader(false);
           if (onComplete) onComplete();
         }, 300);
-      }, 600);
-      return () => clearTimeout(fastTimer);
+      }, 500);
+      return () => {
+        clearTimeout(fastTimer);
+        unlock();
+      };
     }
 
-    const DURATION = 4900; // 4.9s full signature cinematic sequence
+    const DURATION = 3200; // 3.2s signature butterfly sequence
     const startTime = performance.now();
 
     const checkLoop = (now: number) => {
@@ -102,10 +101,11 @@ export default function Preloader({ onComplete }: PreloaderProps) {
         if (!isCompletedRef.current) {
           isCompletedRef.current = true;
           setIsFinishing(true);
+          unlock();
           setTimeout(() => {
             setShowPreloader(false);
             if (onComplete) onComplete();
-          }, 500);
+          }, 450);
         }
       } else {
         requestAnimationFrame(checkLoop);
@@ -113,7 +113,11 @@ export default function Preloader({ onComplete }: PreloaderProps) {
     };
 
     const animId = requestAnimationFrame(checkLoop);
-    return () => cancelAnimationFrame(animId);
+
+    return () => {
+      cancelAnimationFrame(animId);
+      unlock();
+    };
   }, [onComplete]);
 
   // ─────────────────────────────────────────────────────────────
