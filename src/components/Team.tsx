@@ -15,6 +15,7 @@ const DEPARTMENTS = [
   "Hospitality",
   "Documentation",
   "Production",
+  "Technical Team",
   "Design",
 ] as const;
 
@@ -209,16 +210,36 @@ const TEAM_MEMBERS: TeamMember[] = [
     imageScale: 1.15,
   },
   {
-    id: "prod-nishanth",
-    name: "Babbula Nishanth",
-    role: "Production Lead",
+    id: "prod-balaji",
+    name: "Mr. Ummaneni Balaji",
+    role: "Production Head",
     designation: "KLH University Bowrampet",
     department: "Production",
     code: "PRD-01",
+    image: "/team/mr-ummaneni-balaji.jpg",
+    imagePosition: "center 42%",
+    imageScale: 1.1,
+  },
+  {
+    id: "prod-mukesh",
+    name: "Mr. Allari Mukesh Kumar",
+    role: "Production Co-Head",
+    designation: "KLH University Bowrampet",
+    department: "Production",
+    code: "PRD-02",
+    image: "/team/mr-allari-mukesh-kumar.jpg",
+    imagePosition: "center 24%",
+  },
+  {
+    id: "tech-nishanth",
+    name: "Babbula Nishanth",
+    role: "Technical Lead",
+    designation: "KLH University Bowrampet",
+    department: "Technical Team",
+    code: "TEC-01",
     image: "/team/babbula-nishanth.png",
     imagePosition: "center 38%",
   },
-  { id: "prod-02",     role: "Digital Experience & Systems Lead",   department: "Production",  code: "PRD-02" },
   { id: "design-01",   role: "Creative Director & Visual Lead",     department: "Design",      code: "DSN-01" },
 ];
 
