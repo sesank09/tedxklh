@@ -239,7 +239,7 @@ const TEAM_MEMBERS: TeamMember[] = [
   },
   {
     id: "hosp-dharani",
-    name: "Dharani",
+    name: "Bhimi Reddy Dharani",
     role: "Hospitality Lead",
     designation: "KLH University Bowrampet",
     department: "Hospitality",
@@ -249,7 +249,7 @@ const TEAM_MEMBERS: TeamMember[] = [
   },
   {
     id: "social-sahasra",
-    name: "Sahasra",
+    name: "Sahasra Kuncha",
     role: "Social Media Lead",
     designation: "KLH University Bowrampet",
     department: "Social Media",
@@ -260,7 +260,7 @@ const TEAM_MEMBERS: TeamMember[] = [
   },
   {
     id: "doc-nyshitha",
-    name: "Nyshitha",
+    name: "Sai Nyshitha Thammareddy",
     role: "Documentation Lead",
     designation: "KLH University Bowrampet",
     department: "Documentation",
