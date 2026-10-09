@@ -178,13 +178,13 @@ const TEAM_MEMBERS: TeamMember[] = [
     imagePosition: "center 28%",
   },
   {
-    id: "design-raju",
-    name: "Raju Nandan",
+    id: "design-ragu",
+    name: "Ragu Nandan",
     role: "Design Head",
     designation: "KLH University Bowrampet",
     department: "Design",
     code: "DSN-01",
-    image: "/team/raju-nandan.jpg",
+    image: "/team/ragu-nandan.jpg",
     imagePosition: "center 28%",
   },
   {
