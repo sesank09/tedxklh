@@ -29,6 +29,7 @@ interface TeamMember {
   image?: string;
   imagePosition?: string;
   imageScale?: number;
+  hideInAll?: boolean;
 }
 
 const TEAM_MEMBERS: TeamMember[] = [
@@ -200,6 +201,17 @@ const TEAM_MEMBERS: TeamMember[] = [
     image: "/team/sophie-blessing-m.jpg",
   },
   {
+    id: "curation-rohan",
+    name: "Rohan Joshi",
+    role: "Speaker Curation",
+    designation: "KLH University Bowrampet",
+    department: "Curation",
+    code: "CUR-02",
+    image: "/team/rohan-joshi.jpg",
+    imagePosition: "center 25%",
+    hideInAll: true,
+  },
+  {
     id: "ops-srijaya",
     name: "Srijaya Chakradhar Chilakapati",
     role: "Operations & Logistics Lead",
@@ -268,6 +280,50 @@ const TEAM_MEMBERS: TeamMember[] = [
     image: "/team/nyshitha.png",
     imagePosition: "center 30%",
     imageScale: 1.15,
+  },
+  {
+    id: "doc-aneesha",
+    name: "Aneesha Kandi",
+    role: "Documentation",
+    designation: "KLH University Bowrampet",
+    department: "Documentation",
+    code: "DOC-02",
+    image: "/team/aneesha-kandi.jpg",
+    imagePosition: "center 25%",
+    hideInAll: true,
+  },
+  {
+    id: "doc-chaitra",
+    name: "Chaitra",
+    role: "Documentation",
+    designation: "KLH University Bowrampet",
+    department: "Documentation",
+    code: "DOC-03",
+    image: "/team/chaitra.jpg",
+    imagePosition: "center 28%",
+    hideInAll: true,
+  },
+  {
+    id: "doc-ishitha",
+    name: "Ishitha Lankapalli",
+    role: "Documentation",
+    designation: "KLH University Bowrampet",
+    department: "Documentation",
+    code: "DOC-04",
+    image: "/team/ishitha-lankapalli.jpg",
+    imagePosition: "center 30%",
+    hideInAll: true,
+  },
+  {
+    id: "doc-raga-padmini",
+    name: "V. Raga Padmini",
+    role: "Documentation",
+    designation: "KLH University Bowrampet",
+    department: "Documentation",
+    code: "DOC-05",
+    image: "/team/v-raga-padmini.jpg",
+    imagePosition: "center 20%",
+    hideInAll: true,
   },
 ];
 
@@ -447,7 +503,7 @@ export default function Team() {
   const [selectedDept, setSelectedDept] = useState<typeof DEPARTMENTS[number]>("All");
 
   const filtered = selectedDept === "All"
-    ? TEAM_MEMBERS
+    ? TEAM_MEMBERS.filter(m => !m.hideInAll)
     : TEAM_MEMBERS.filter(m => m.department === selectedDept);
 
   return (
