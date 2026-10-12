@@ -6,7 +6,7 @@ import { Lock, ArrowUpRight, Sparkles, X, ChevronLeft, ChevronRight, Quote, Awar
 
 interface Speaker {
   id: number;
-  category: string;
+  category?: string;
   name?: string;
   role?: string;
   details?: string;
@@ -21,7 +21,6 @@ const SPEAKERS: Speaker[] = [
   {
     id: 1,
     isAnnounced: true,
-    category: "Keynote Speaker",
     name: "Sri Charan Lakkaraju",
     role: "Founder & CEO, Student Tribe",
     details:
@@ -34,7 +33,6 @@ const SPEAKERS: Speaker[] = [
   {
     id: 2,
     isAnnounced: true,
-    category: "Keynote Speaker",
     name: "Phani Gogireddy",
     role: "Founder & CEO, 24 Frames",
     details:
@@ -47,7 +45,6 @@ const SPEAKERS: Speaker[] = [
   {
     id: 3,
     isAnnounced: true,
-    category: "Session Speaker",
     name: "Dr. Vikrant Singh Thakur",
     role: "Neurologist & Founder, TIME Neurocare",
     details:
@@ -57,15 +54,15 @@ const SPEAKERS: Speaker[] = [
     image: "/speakers/dr-vikrant-singh-thakur.jpg",
     cardImage: "/speakers/dr-vikrant-singh-thakur-card.jpg",
   },
-  { id: 4,  category: "Panelist", isAnnounced: false },
-  { id: 5,  category: "Keynote Speaker", isAnnounced: false },
-  { id: 6,  category: "Session Speaker", isAnnounced: false },
-  { id: 7,  category: "Panelist", isAnnounced: false },
-  { id: 8,  category: "Keynote Speaker", isAnnounced: false },
-  { id: 9,  category: "Session Speaker", isAnnounced: false },
-  { id: 10, category: "Panelist", isAnnounced: false },
-  { id: 11, category: "Keynote Speaker", isAnnounced: false },
-  { id: 12, category: "Session Speaker", isAnnounced: false },
+  { id: 4,  isAnnounced: false },
+  { id: 5,  isAnnounced: false },
+  { id: 6,  isAnnounced: false },
+  { id: 7,  isAnnounced: false },
+  { id: 8,  isAnnounced: false },
+  { id: 9,  isAnnounced: false },
+  { id: 10, isAnnounced: false },
+  { id: 11, isAnnounced: false },
+  { id: 12, isAnnounced: false },
 ];
 
 const SHARDS = [
@@ -240,7 +237,7 @@ function SpeakerModal({
           {/* Right Column: Speaker Details */}
           <div className="md:col-span-7 flex flex-col justify-between space-y-5 sm:space-y-6">
             <div className="space-y-4">
-              {/* Category & Status Bar */}
+              {/* Status Bar */}
               <div className="flex flex-wrap items-center gap-2">
                 <span
                   style={{
@@ -256,7 +253,7 @@ function SpeakerModal({
                     boxShadow: "0 0 16px rgba(235,0,40,0.45)",
                   }}
                 >
-                  {speaker.category}
+                  TEDx SPEAKER
                 </span>
 
                 <span
@@ -688,25 +685,6 @@ function SpeakerCard({
               style={{ height: 1.5, background: "#EB0028", borderRadius: 1 }}
             />
           </div>
-
-          {/* Category Pill */}
-          <span
-            style={{
-              display: "inline-block",
-              fontFamily: "var(--font-dm-mono)",
-              fontSize: "9px",
-              letterSpacing: "0.22em",
-              textTransform: "uppercase",
-              fontWeight: 600,
-              color: "#EB0028",
-              background: "rgba(235,0,40,.1)",
-              border: "1px solid rgba(235,0,40,.25)",
-              padding: "3px 10px",
-              borderRadius: 6,
-            }}
-          >
-            {speaker.category}
-          </span>
 
           {speaker.isAnnounced ? (
             /* ANNOUNCED SPEAKER NAME & ROLE */
