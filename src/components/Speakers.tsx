@@ -489,7 +489,7 @@ function SpeakerCard({
           ? {}
           : { rotateX, rotateY, transformStyle: "preserve-3d", perspective: "900px", zIndex: isActive ? 20 : 1 }
       }
-      className="relative cursor-pointer select-none group"
+      className="relative cursor-pointer select-none group max-w-[340px] sm:max-w-none mx-auto w-full"
     >
       {/* Animated Conic Laser Border */}
       <div className="absolute overflow-hidden rounded-[25px] pointer-events-none" style={{ inset: "-1.5px", zIndex: 0 }}>
@@ -556,7 +556,7 @@ function SpeakerCard({
       </div>
 
       {/* Card Content */}
-      <div className="relative flex flex-col justify-between" style={{ minHeight: "clamp(400px,46vw,460px)", zIndex: 10 }}>
+      <div className="relative flex flex-col justify-between" style={{ minHeight: "clamp(430px,48vw,470px)", zIndex: 10 }}>
         {/* Top Media Container */}
         <div className="relative flex-grow flex items-end justify-center px-4 sm:px-5 pt-5 sm:pt-6" style={{ overflow: "visible" }}>
           {/* Floating Kinetic Shards */}
@@ -586,8 +586,7 @@ function SpeakerCard({
           </AnimatePresence>
 
           <motion.div
-            className="relative w-full"
-            style={{ height: "clamp(190px,23vw,230px)", zIndex: 20 }}
+            className="relative w-full h-[250px] xs:h-[260px] sm:h-[205px] md:h-[215px] lg:h-[230px]"
             animate={{ y: fx ? -10 : 0, scale: fx ? 1.03 : 1 }}
             transition={{ type: "spring", stiffness: 260, damping: 22 }}
           >
@@ -607,6 +606,7 @@ function SpeakerCard({
                   alt={speaker.name}
                   className="w-full h-full object-cover transition-transform duration-700"
                   style={{
+                    objectPosition: "center 10%",
                     transform: fx ? "scale(1.08)" : "scale(1)",
                     filter: fx ? "brightness(1.06) contrast(1.04)" : "brightness(0.95)",
                   }}

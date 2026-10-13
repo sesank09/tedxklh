@@ -425,6 +425,17 @@ const TEAM_MEMBERS: TeamMember[] = [
     hideInAll: true,
   },
   {
+    id: "social-harshavardhan",
+    name: "P Venkata Harshavardhan",
+    role: "Social Media Team",
+    designation: "KLH University Bowrampet",
+    department: "Social Media",
+    code: "SOC-05",
+    image: "/team/p-venkata-harshavardhan.jpg",
+    imagePosition: "center 25%",
+    hideInAll: true,
+  },
+  {
     id: "doc-nyshitha",
     name: "Sai Nyshitha Thammareddy",
     role: "Documentation Lead",
