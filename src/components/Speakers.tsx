@@ -635,7 +635,7 @@ function SpeakerCard({
                 }}
               >
                 <img
-                  src={speaker.cardImage || speaker.image}
+                  src={speaker.image || speaker.cardImage}
                   alt={speaker.name}
                   className="w-full h-full object-cover transition-transform duration-700"
                   style={{
