@@ -48,6 +48,7 @@ interface FormData {
   rollNumber: string;
   organization: string;
   city: string;
+  reference: string;
 
   // Squad Members (Members 2, 3, 4 if group_of_4)
   groupMembers: GroupMember[];
@@ -71,6 +72,7 @@ const INITIAL_FORM: FormData = {
   rollNumber: "",
   organization: "",
   city: "",
+  reference: "",
   groupMembers: [
     { name: "", email: "", phone: "" },
     { name: "", email: "", phone: "" },
@@ -356,6 +358,7 @@ export default function ApplyPage() {
       formData.append("rollNumber", form.rollNumber.trim());
       formData.append("organization", form.organization.trim());
       formData.append("city", form.city.trim());
+      formData.append("reference", form.reference.trim());
       formData.append("utrNumber", form.utrNumber.replace(/\D/g, ""));
 
       if (form.passType === "group_of_4") {
@@ -890,7 +893,7 @@ export default function ApplyPage() {
                             </div>
 
                             {/* City */}
-                            <div className="space-y-1.5 sm:space-y-2 sm:col-span-2">
+                            <div className="space-y-1.5 sm:space-y-2">
                               <label className="text-[11px] sm:text-xs uppercase text-white/80 font-medium tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
                                 City *
                               </label>
@@ -905,6 +908,25 @@ export default function ApplyPage() {
                                 style={{ fontFamily: "var(--font-manrope)" }}
                               />
                               {errors.city && <span className="text-[11px] text-[#EB0028] block">{errors.city}</span>}
+                            </div>
+
+                            {/* Reference */}
+                            <div className="space-y-1.5 sm:space-y-2">
+                              <div className="flex items-center justify-between">
+                                <label className="text-[11px] sm:text-xs uppercase text-white/80 font-medium tracking-wider" style={{ fontFamily: "var(--font-dm-mono)" }}>
+                                  Reference
+                                </label>
+                                <span className="text-[10px] text-white/40 font-mono">Optional</span>
+                              </div>
+                              <input
+                                type="text"
+                                name="reference"
+                                value={form.reference}
+                                onChange={(e) => updateField("reference", e.target.value)}
+                                placeholder="e.g. Friend, Faculty, Ambassador Name"
+                                className="w-full h-11 sm:h-12 px-3.5 sm:px-4 rounded-xl border border-white/10 bg-white/[0.03] text-white text-base sm:text-sm placeholder-white/25 focus:outline-none focus:border-[#EB0028] focus:ring-1 focus:ring-[#EB0028]/50 transition-all"
+                                style={{ fontFamily: "var(--font-manrope)" }}
+                              />
                             </div>
                           </div>
                         </div>
@@ -1306,9 +1328,13 @@ export default function ApplyPage() {
                               <span className="text-[10px] text-white/40 uppercase font-mono block">Lead Contact Phone</span>
                               <span className="font-semibold text-white font-mono">{form.phone}</span>
                             </div>
-                            <div className="space-y-0.5 min-w-0 sm:col-span-2">
+                            <div className="space-y-0.5 min-w-0">
                               <span className="text-[10px] text-white/40 uppercase font-mono block">Organization &amp; City</span>
                               <span className="font-semibold text-white break-words">{form.organization} · {form.city}</span>
+                            </div>
+                            <div className="space-y-0.5 min-w-0">
+                              <span className="text-[10px] text-white/40 uppercase font-mono block">Reference</span>
+                              <span className="font-semibold text-white/90 font-mono break-words">{form.reference.trim() || "—"}</span>
                             </div>
 
                             {form.passType === "group_of_4" && (

@@ -16,6 +16,7 @@ export async function POST(req: NextRequest) {
     const organization = (formData.get("organization") as string || "").trim();
     const city = (formData.get("city") as string || "").trim();
     const rollNumber = (formData.get("rollNumber") as string || "").trim();
+    const reference = ((formData.get("reference") || formData.get("referance")) as string || "").trim();
     const utrNumber = (formData.get("utrNumber") as string || "").replace(/\D/g, "");
     const screenshot = formData.get("screenshot") as File | null;
     const rawPassType = (formData.get("passType") as string || "individual").trim();
@@ -257,28 +258,47 @@ export async function POST(req: NextRequest) {
 
        // Direct fallback insert
        const generatedNum = `TEDXKLH-${String(Date.now()).slice(-4)}`;
-       const { data: directApp, error: directAppError } = await supabaseAdmin
+       const insertPayload: any = {
+         application_number: generatedNum,
+         first_name: firstName,
+         last_name: lastName,
+         email: email,
+         phone: phone,
+         college_organization: organization,
+         city: city,
+         roll_number: rollNumber,
+         pass_type: passType,
+         ticket_type: ticketType,
+         ticket_price: ticketPrice,
+         ticket_count: ticketCount,
+         total_amount: totalAmount,
+         group_members: groupMembers,
+         application_status: "submitted",
+         payment_status: "pending",
+       };
+
+       if (reference) {
+         insertPayload.reference = reference;
+       }
+
+       let { data: directApp, error: directAppError } = await supabaseAdmin
          .from("delegate_applications")
-         .insert({
-           application_number: generatedNum,
-           first_name: firstName,
-           last_name: lastName,
-           email: email,
-           phone: phone,
-           college_organization: organization,
-           city: city,
-           roll_number: rollNumber,
-           pass_type: passType,
-           ticket_type: ticketType,
-           ticket_price: ticketPrice,
-           ticket_count: ticketCount,
-           total_amount: totalAmount,
-           group_members: groupMembers,
-           application_status: "submitted",
-           payment_status: "pending",
-         })
+         .insert(insertPayload)
          .select("id, application_number")
          .single();
+
+       if (directAppError && reference) {
+         // Fallback if 'reference' column is not yet present on table schema
+         delete insertPayload.reference;
+         insertPayload.admin_notes = `[Reference]: ${reference}`;
+         const retry = await supabaseAdmin
+           .from("delegate_applications")
+           .insert(insertPayload)
+           .select("id, application_number")
+           .single();
+         directApp = retry.data;
+         directAppError = retry.error;
+       }
 
        if (directAppError || !directApp) {
          console.error("Direct fallback app insert error:", directAppError);
@@ -310,12 +330,27 @@ export async function POST(req: NextRequest) {
        appNumber = directApp.application_number;
      } else {
        appNumber = rpcResult?.application_number || `TEDXKLH-${String(Date.now()).slice(-4)}`;
+
+       if (rpcResult?.application_id && reference) {
+         const { error: refUpdateErr } = await supabaseAdmin
+           .from("delegate_applications")
+           .update({ reference })
+           .eq("id", rpcResult.application_id);
+
+         if (refUpdateErr) {
+           await supabaseAdmin
+             .from("delegate_applications")
+             .update({ admin_notes: `[Reference]: ${reference}` })
+             .eq("id", rpcResult.application_id);
+         }
+       }
      }
 
      return NextResponse.json({
        success: true,
        application_number: appNumber,
        roll_number: rollNumber,
+       reference: reference || null,
        ticket_type: ticketType,
        ticket_price: ticketPrice,
        pass_type: passType,

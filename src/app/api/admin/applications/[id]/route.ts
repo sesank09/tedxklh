@@ -55,9 +55,14 @@ export async function GET(
       .eq("application_id", id)
       .order("created_at", { ascending: false });
 
+    const mappedApp = {
+      ...application,
+      reference: application.reference || (application.admin_notes?.match(/\[Reference\]:\s*([^\n]+)/)?.[1]?.trim()) || null,
+    };
+
     return NextResponse.json({
       success: true,
-      application,
+      application: mappedApp,
       payment,
       signedScreenshotUrl,
       auditLogs: auditLogs || [],
@@ -156,4 +161,3 @@ export async function DELETE(
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
-

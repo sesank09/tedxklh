@@ -34,6 +34,7 @@ interface ApplicationDetail {
   college_organization: string;
   city: string;
   roll_number?: string | null;
+  reference?: string | null;
   pass_type?: string;
   ticket_type?: string;
   ticket_price?: number;
@@ -401,6 +402,11 @@ export default function ApplicationDetailPage({
               <div>
                 <span className="text-[10px] uppercase font-mono text-white/40 block">College / Organization</span>
                 <span className="text-white font-medium">{application.college_organization || "—"}</span>
+              </div>
+
+              <div>
+                <span className="text-[10px] uppercase font-mono text-white/40 block">Reference</span>
+                <span className="text-white font-medium font-mono text-amber-400/90">{application.reference || "—"}</span>
               </div>
             </div>
           </div>

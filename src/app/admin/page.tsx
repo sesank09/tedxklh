@@ -58,6 +58,7 @@ interface ApplicationSummary {
   college_organization: string;
   city: string;
   roll_number?: string | null;
+  reference?: string | null;
   pass_type?: string;
   ticket_type?: string;
   ticket_price?: number;
@@ -619,6 +620,11 @@ export default function AdminDashboardPage() {
                           {app.first_name} {app.last_name}
                         </div>
                         <div className="text-[11px] text-white/40">{app.email}</div>
+                        {app.reference && (
+                          <div className="text-[10px] text-amber-400 font-mono mt-0.5">
+                            <span className="text-white/40">Ref:</span> {app.reference}
+                          </div>
+                        )}
                       </td>
                       <td className="py-3.5 px-3 font-mono font-semibold text-white/90">
                         {app.roll_number || "—"}

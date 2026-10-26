@@ -24,26 +24,7 @@ export async function GET(req: NextRequest) {
     let query = supabaseAdmin
       .from("delegate_applications")
       .select(`
-        id,
-        application_number,
-        first_name,
-        last_name,
-        email,
-        phone,
-        college_organization,
-        city,
-        roll_number,
-        pass_type,
-        ticket_type,
-        ticket_price,
-        ticket_count,
-        total_amount,
-        group_members,
-        application_status,
-        payment_status,
-        delegate_id,
-        created_at,
-        updated_at,
+        *,
         payment_verifications (
           id,
           utr_number,
@@ -71,7 +52,7 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Comprehensive Search across Application No, First Name, Last Name, Email, Phone, Roll Number, Delegate ID, Ticket Type
+    // Comprehensive Search across Application No, First Name, Last Name, Email, Phone, Roll Number, Delegate ID, Ticket Type, Organization
     if (search) {
       query = query.or(
         `application_number.ilike.%${search}%,first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%,roll_number.ilike.%${search}%,delegate_id.ilike.%${search}%,ticket_type.ilike.%${search}%,college_organization.ilike.%${search}%`
@@ -101,9 +82,14 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Failed to fetch applications" }, { status: 500 });
     }
 
+    const mappedApplications = (applications || []).map((app: any) => ({
+      ...app,
+      reference: app.reference || (app.admin_notes?.match(/\[Reference\]:\s*([^\n]+)/)?.[1]?.trim()) || null,
+    }));
+
     return NextResponse.json({
       success: true,
-      applications: applications || [],
+      applications: mappedApplications,
       pagination: {
         page,
         limit,

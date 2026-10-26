@@ -41,6 +41,7 @@ interface FormData {
   whatsapp: string;
   rollNumber: string;
   city: string;
+  reference: string;
   organization: string;
   role: string;
   field: string;
@@ -64,6 +65,7 @@ const INITIAL_FORM: FormData = {
   whatsapp: "",
   rollNumber: "",
   city: "",
+  reference: "",
   organization: "KL University Hyderabad",
   role: "Delegate",
   field: "Technology & Design",
@@ -294,6 +296,7 @@ export default function Register() {
       formData.append("rollNumber", form.rollNumber.trim());
       formData.append("organization", form.organization.trim());
       formData.append("city", form.city.trim());
+      formData.append("reference", form.reference.trim());
       formData.append("utrNumber", form.utrNumber.replace(/\D/g, ""));
 
       if (form.passType === "group_of_4") {
@@ -735,7 +738,7 @@ export default function Register() {
                               {errors.rollNumber && <span className="text-[10px] text-red-400 font-medium" style={{ fontFamily: "var(--font-dm-mono)" }}>{errors.rollNumber}</span>}
                             </div>
 
-                            <div className="space-y-1.5 sm:col-span-2">
+                            <div className="space-y-1.5">
                               <label className="text-xs uppercase text-white/70 font-medium" style={{ fontFamily: "var(--font-dm-mono)" }}>City &amp; State *</label>
                               <input
                                 type="text"
@@ -748,6 +751,21 @@ export default function Register() {
                                 }`}
                               />
                               {errors.city && <span className="text-[10px] text-red-400 font-medium" style={{ fontFamily: "var(--font-dm-mono)" }}>{errors.city}</span>}
+                            </div>
+
+                            <div className="space-y-1.5">
+                              <div className="flex items-center justify-between">
+                                <label className="text-xs uppercase text-white/70 font-medium" style={{ fontFamily: "var(--font-dm-mono)" }}>Reference</label>
+                                <span className="text-[10px] font-mono text-white/40">Optional</span>
+                              </div>
+                              <input
+                                type="text"
+                                value={form.reference}
+                                onChange={(e) => updateForm("reference", e.target.value)}
+                                placeholder="e.g. Friend, Faculty, Ambassador Name"
+                                style={{ fontFamily: "var(--font-manrope)" }}
+                                className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#EB0028] transition-colors"
+                              />
                             </div>
                           </div>
                         </div>
@@ -1021,6 +1039,7 @@ export default function Register() {
                               <div><span className="text-white/40">Lead Name:</span> {form.firstName} {form.lastName}</div>
                               <div><span className="text-white/40">Email:</span> {form.email}</div>
                               <div><span className="text-white/40">Phone:</span> {form.phone}</div>
+                              {form.reference && <div><span className="text-white/40">Reference:</span> {form.reference}</div>}
                               {form.passType === "group_of_4" && (
                                 <div className="pt-1 text-[11px] text-emerald-400">
                                   + 3 Squad Members included

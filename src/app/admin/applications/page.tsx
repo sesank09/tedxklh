@@ -25,6 +25,7 @@ interface ApplicationItem {
   college_organization: string;
   city: string;
   roll_number?: string | null;
+  reference?: string | null;
   pass_type?: string;
   ticket_type?: string;
   ticket_price?: number;
@@ -322,6 +323,11 @@ export default function AdminApplicationsPage() {
                       </td>
                       <td className="py-3.5 px-3 font-semibold text-white">
                         <div>{app.first_name} {app.last_name}</div>
+                        {app.reference && (
+                          <div className="text-[10px] text-amber-400 font-mono mt-0.5 flex items-center gap-1 font-normal">
+                            <span className="text-white/40">Ref:</span> {app.reference}
+                          </div>
+                        )}
                       </td>
                       <td className="py-3.5 px-3 font-mono font-bold text-white/95">
                         {app.roll_number || "—"}
