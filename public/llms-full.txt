@@ -1,0 +1,94 @@
+# Full Knowledge Manifest: TEDxKLH 2026
+
+## 1. Overview & License
+TEDxKLH is an independently organized event operated under official license from TED Conferences LLC.
+The 2026 edition carries the theme **"METAMORPHOSIS: The Unseen Process of Becoming"**, exploring structural transformations across science, cognitive computing, synthetic biology, planetary engineering, human consciousness, and design.
+
+## 2. Event Specifics
+- **Official Title**: TEDxKLH 2026 | METAMORPHOSIS
+- **Host Institution**: KLH University, Bowrampet Campus
+- **Date**: Wednesday, November 4, 2026
+- **Timing**: 09:00 AM - 06:00 PM IST (Full Day Experience)
+- **Venue**: KLH Auditorium & Pavilion
+- **Full Address**: ALEAP Industrial Area, Bowrampet, Hyderabad, Telangana 500043, India
+- **Coordinates**: Latitude 17.5623° N, Longitude 78.3846° E
+- **Cohort Size**: Strictly capped at 250 curated delegates
+- **Official Website**: https://tedxklhbowrampet.in
+- **Registration URL**: https://tedxklhbowrampet.in/apply
+- **Contact Email**: tedxklhbowrampet@klh.edu.in
+
+## 3. Speakers & Full Biographies
+
+### Speaker 01: Sri Charan Lakkaraju
+- **Role**: Founder & CEO, Student Tribe
+- **Bio**: Sri Charan Lakkaraju is an entrepreneur and youth-focused community builder who has spent over 15 years building platforms that connect students with opportunities, communities, skills, and careers. Through Student Tribe, he works to bridge the opportunity gap for students from Tier 2 and Tier 3 colleges across India, empowering them to discover their potential and build meaningful careers.
+- **Quote**: "Empowering students across Tier 2 and Tier 3 colleges to discover their potential and build meaningful careers."
+- **Tags**: Youth Empowerment, Student Tribe, 15+ Years Impact, EdTech Visionary
+
+### Speaker 02: Phani Gogireddy
+- **Role**: Founder & CEO, 24 Frames; Filmmaker & Director of Photography
+- **Bio**: Phani Gogireddy is a filmmaker, Director of Photography, and entrepreneur who transformed his passion for visual storytelling into 24 Frames, a recognised luxury wedding photography and cinematography brand in South India. Starting in 2016 with a single camera and two computers, he built a thriving creative enterprise. As an Official Nikon India Influencer, PPIN National Advisor, and APPVWA Advisor, his journey reflects creativity, perseverance, and entrepreneurial ambition.
+- **Quote**: "From a single camera and two computers to redefining luxury visual storytelling across South India."
+- **Tags**: Visual Storytelling, 24 Frames, Nikon Influencer, Cinematography
+
+### Speaker 03: Dr. Vikrant Singh Thakur
+- **Role**: Neurologist & Founder, TIME Neurocare
+- **Bio**: Dr. Vikrant Singh Thakur is a neurologist dedicated to advancing healthcare and making quality medical services accessible to all. Based in Karimnagar, Telangana, he works to bring advanced neurological care closer to communities beyond major cities. Through TIME Neurocare, he combines medical expertise with a commitment to patient well-being, health awareness, and social responsibility, striving to make a meaningful difference in the lives of patients and their families.
+- **Quote**: "Bringing advanced neurological care and social responsibility to communities beyond metropolitan borders."
+- **Tags**: Neurology, TIME Neurocare, Healthcare Access, Patient Advocacy
+
+### Speaker 04: Kumar Raja
+- **Role**: Founder & Creative Director, Design by Raja
+- **Bio**: Kumar Raja is a renowned wedding planner and designer, celebrated for transforming grand celebrations into extraordinary visual experiences. Through Design by Raja, he combines creative vision, refined aesthetics, and meticulous craftsmanship to create bespoke wedding environments that reflect each client's unique story. His distinctive approach blends elegance, innovation, and timeless grandeur, turning wedding celebrations into immersive experiences that leave a lasting impression.
+- **Quote**: "Blending elegance, innovation, and timeless grandeur into immersive experiences that leave a lasting impression."
+- **Tags**: Creative Direction, Design by Raja, Bespoke Design, Visual Storytelling
+
+### Speaker 05: Major General N D Prasad AVSM, VSM (Retd.)
+- **Role**: Veteran Indian Army Officer & Strategic Affairs Expert
+- **Bio**: Major General N D Prasad is a decorated Indian Army veteran with an illustrious career spanning operational command, military leadership, and strategic affairs. Having commanded formations along India's western borders and the Line of Actual Control, he also served as India's Deputy Defence Attaché in Beijing. A former Dean and Chief Instructor at the Army War College, he brings extensive expertise in national security, China studies, and defence strategy.
+- **Quote**: "Bringing extensive leadership, strategic command, and national security expertise from across India's frontiers."
+- **Tags**: Indian Army, Strategic Affairs, National Security, Army War College
+
+### Speaker 06: Moses Chowdari
+- **Role**: Trustee & Chief Operating Officer, EnAble India
+- **Bio**: Moses Chowdari is a mission leader and inclusion champion with over 15 years of experience advancing employment opportunities for persons with disabilities. Having begun his journey as a candidate at EnAble India, he rose to become its Trustee and Chief Operating Officer, transforming his lived experience with low vision into a mission to empower others. He led the team behind EnAble India's EYE Tool, recognised by the Zero Project Award in 2020, and received the NCPEDP-Mindtree Helen Keller Award and Sarojini Trilok Nath National Award in 2018 for his contributions to disability inclusion and empowerment.
+- **Quote**: "Transforming lived experience into a mission to empower others and advance disability inclusion."
+- **Tags**: Disability Inclusion, EnAble India, Social Impact, Empowerment Leader
+
+### Speaker 07: Poorna Malavath
+- **Role**: Mountaineer & Seven Summits Achiever
+- **Bio**: Poorna Malavath is an Indian mountaineer who made history in 2014 by becoming the world's youngest girl to summit Mount Everest at just 13 years old. Hailing from Pakala village in Telangana, she went on to conquer the highest peaks across all seven continents, completing the Seven Summits challenge in 2022. Recognised by Guinness World Records for her historic Everest achievement and featured in Forbes India's Self-Made Women 2020 list, she continues to inspire young people to break barriers through her courage, resilience, and determination.
+- **Quote**: "Becoming the world's youngest girl to summit Mount Everest and inspiring youth to break barriers through courage and resilience."
+- **Tags**: Seven Summits, Everest Record, Mountaineer, Forbes Self-Made
+
+### Speaker 08: Srikanth Acharya
+- **Role**: Founder & CEO, OffiNeeds
+- **Bio**: Srikanth Acharya is an entrepreneur who recognised the power of thoughtful gifting in building meaningful connections in the corporate world. As the founder of OffiNeeds, established in 2005, he built a business around transforming everyday corporate gifting into a powerful tool for employee appreciation, brand identity, and lasting relationships. His entrepreneurial journey reflects a deeper idea: that even the smallest gestures, when driven by purpose, can create a lasting impact on how people and organisations connect.
+- **Quote**: "Transforming everyday corporate gifting into a powerful tool for lasting relationships and brand identity."
+- **Tags**: Corporate Gifting, OffiNeeds, Entrepreneurship, Brand Identity
+
+### Speaker 09: Tamal Chatterjee
+- **Role**: Chief Growth Officer, Sid's Farm
+- **Bio**: Tamal Chatterjee is a seasoned business leader and marketing strategist with over 23 years of experience spanning consumer durables, B2B e-commerce, media, rural digital access, and the dairy industry. As Chief Growth Officer at Sid's Farm, he drives business growth, brand strategy, and market expansion, combining consumer insights with a deep understanding of operations and customer trust. An alumnus of Christ University, Bengaluru, and the Indian Institute of Management Bangalore, he brings a wealth of cross-industry expertise in building brands, developing growth strategies, and creating lasting business impact.
+- **Quote**: "Combining consumer insights with operational excellence to build lasting brands and sustainable business impact."
+- **Tags**: Sid's Farm, Chief Growth Officer, Brand Strategy, IIM Bangalore Alum
+
+## 4. Frequently Asked Questions (FAQ)
+
+### What is TEDxKLH 2026: METAMORPHOSIS?
+TEDxKLH is a local, independently organized event operated under official license from TED. Our 2026 theme, METAMORPHOSIS: The Unseen Process of Becoming, explores structural transformations across cognitive computing, synthetic biology, planetary engineering, human consciousness, and design.
+
+### When and where is the conference taking place?
+The conference takes place on NOVEMBER 4, 2026 as an all-day immersive experience at the KLH Auditorium & Pavilion, Bowrampet Campus, Hyderabad. Selected delegates gain full access to keynotes, interactive pavilion installations, breakout networking lounges, and curated dining.
+
+### How does the delegate curation and pass allocation work?
+To ensure intimacy, intellectual depth, and high-value networking, TEDxKLH admits a cohort of 250 curated delegates. Applications are evaluated on candidate background, perspective, and alignment with the spirit of ideas worth spreading.
+
+### What is the fee and payment verification process?
+Once you submit your application and transfer the registration pass fee via UPI or Bank transfer, you submit your 12-digit UTR transaction reference and payment screenshot. Our finance desk verifies your payment within 24 hours and issues your encrypted digital entry pass.
+
+### Will the talks be recorded and published globally?
+Yes, every talk is filmed in 4K multi-angle cinema resolution and published to the official TEDx global YouTube channel (39M+ subscribers) and the official TED platform post-conference.
+
+### Are there opportunities for corporate partnerships or speaker nominations?
+We welcome forward-thinking organizations, labs, and research collectives to partner with us. You can submit partnership inquiries or speaker nominations via our official desk at tedxklhbowrampet@klh.edu.in.
