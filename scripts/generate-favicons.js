@@ -3,7 +3,6 @@ const path = require('path');
 const sharp = require('sharp');
 
 function createIcoFromPngs(pngBuffersWithSizes) {
-  // pngBuffersWithSizes is array of { buffer: Buffer, size: number }
   const count = pngBuffersWithSizes.length;
   const header = Buffer.alloc(6);
   header.writeUInt16LE(0, 0);     // Reserved
@@ -43,15 +42,16 @@ async function generate() {
     process.exit(1);
   }
 
-  console.log('Generating crisp favicon and app icons from:', src);
+  console.log('Generating crisp favicons and app icons from:', src);
 
-  const b16 = await sharp(src).resize(16, 16).png().toBuffer();
-  const b32 = await sharp(src).resize(32, 32).png().toBuffer();
-  const b48 = await sharp(src).resize(48, 48).png().toBuffer();
-  const b96 = await sharp(src).resize(96, 96).png().toBuffer();
-  const b180 = await sharp(src).resize(180, 180).png().toBuffer();
-  const b192 = await sharp(src).resize(192, 192).png().toBuffer();
-  const b512 = await sharp(src).resize(512, 512).png().toBuffer();
+  // Ensure 32-bit RGBA for maximum compatibility
+  const b16 = await sharp(src).resize(16, 16).ensureAlpha().png().toBuffer();
+  const b32 = await sharp(src).resize(32, 32).ensureAlpha().png().toBuffer();
+  const b48 = await sharp(src).resize(48, 48).ensureAlpha().png().toBuffer();
+  const b96 = await sharp(src).resize(96, 96).ensureAlpha().png().toBuffer();
+  const b180 = await sharp(src).resize(180, 180).ensureAlpha().png().toBuffer();
+  const b192 = await sharp(src).resize(192, 192).ensureAlpha().png().toBuffer();
+  const b512 = await sharp(src).resize(512, 512).ensureAlpha().png().toBuffer();
 
   // Write PNG assets to public/
   fs.writeFileSync(path.join(root, 'public/favicon-16x16.png'), b16);
@@ -62,27 +62,26 @@ async function generate() {
   fs.writeFileSync(path.join(root, 'public/icon-192.png'), b192);
   fs.writeFileSync(path.join(root, 'public/icon-512.png'), b512);
 
-  // Create real multi-size .ico container (16x16, 32x32, 48x48)
+  // Create real multi-size .ico in public/
   const icoBuffer = createIcoFromPngs([
     { buffer: b16, size: 16 },
     { buffer: b32, size: 32 },
     { buffer: b48, size: 48 },
   ]);
-
   fs.writeFileSync(path.join(root, 'public/favicon.ico'), icoBuffer);
-  fs.writeFileSync(path.join(root, 'src/app/favicon.ico'), icoBuffer);
 
-  // Update src/app/icon.png and src/app/apple-icon.png for Next.js App Router metadata
+  // src/app/icon.png (Next.js automatically uses this to generate the page favicon link!)
   fs.writeFileSync(path.join(root, 'src/app/icon.png'), b512);
   fs.writeFileSync(path.join(root, 'src/app/apple-icon.png'), b180);
 
-  console.log('All icons generated successfully!');
-  console.log('- public/favicon.ico (Multi-res 16, 32, 48)');
-  console.log('- public/favicon-48x48.png (Google Search Standard)');
-  console.log('- public/favicon-32x32.png');
-  console.log('- public/favicon-16x16.png');
-  console.log('- public/icon-192.png & icon-512.png');
-  console.log('- src/app/icon.png & src/app/favicon.ico');
+  // If src/app/favicon.ico exists, remove it so Turbopack uses icon.png cleanly without decode conflict
+  const appFavicon = path.join(root, 'src/app/favicon.ico');
+  if (fs.existsSync(appFavicon)) {
+    fs.unlinkSync(appFavicon);
+    console.log('Removed src/app/favicon.ico (Turbopack uses src/app/icon.png cleanly)');
+  }
+
+  console.log('Favicon generation completed successfully!');
 }
 
 generate().catch((err) => {
