@@ -1,12 +1,40 @@
 export default function StructuredData() {
   const baseUrl = "https://tedxklhbowrampet.in";
 
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "TEDxKLH",
+    "alternateName": [
+      "TEDx KLH",
+      "tedxklh",
+      "TEDxKLH 2026",
+      "TEDxKLH Bowrampet",
+      "TEDx KL University",
+      "TEDx Hyderabad"
+    ],
+    "url": baseUrl,
+    "description": "Official TEDxKLH website. An independently organized TED event under official license from TED, hosted at KLH University, Bowrampet Campus, Hyderabad.",
+    "publisher": {
+      "@type": "Organization",
+      "name": "TEDxKLH",
+      "logo": `${baseUrl}/icon-512.png`
+    }
+  };
+
   const eventSchema = {
     "@context": "https://schema.org",
     "@type": "Event",
     "name": "TEDxKLH 2026: METAMORPHOSIS — The Unseen Process of Becoming",
-    "alternateName": ["TEDxKLH 2026", "TEDxKLH", "TEDx Bowrampet 2026", "TEDx Hyderabad 2026"],
-    "description": "Experience TEDxKLH 2026: METAMORPHOSIS. An annual flagship TEDx conference exploring structural transformations across cognitive computing, neuroscience, mountaineering, luxury design, social inclusion, and sustainable enterprise at KLH University, Bowrampet, Hyderabad.",
+    "alternateName": [
+      "TEDxKLH",
+      "TEDx KLH",
+      "tedxklh",
+      "TEDxKLH 2026",
+      "TEDx Bowrampet 2026",
+      "TEDx Hyderabad 2026"
+    ],
+    "description": "Official TEDxKLH 2026 flagship conference: METAMORPHOSIS. An annual conference exploring structural transformations across cognitive computing, neuroscience, mountaineering, luxury design, social inclusion, and sustainable enterprise at KLH University, Bowrampet, Hyderabad.",
     "url": baseUrl,
     "startDate": "2026-11-04T09:00:00+05:30",
     "endDate": "2026-11-04T18:00:00+05:30",
@@ -15,6 +43,7 @@ export default function StructuredData() {
     "image": [
       `${baseUrl}/metamorphosis-art.jpg`,
       `${baseUrl}/butterfly-art.jpg`,
+      `${baseUrl}/icon-512.png`,
       `${baseUrl}/tedxklh-logo.png`
     ],
     "location": {
@@ -37,7 +66,7 @@ export default function StructuredData() {
     },
     "offers": {
       "@type": "Offer",
-      "name": "Delegate Pass",
+      "name": "TEDxKLH Delegate Pass",
       "url": `${baseUrl}/apply`,
       "price": "499",
       "priceCurrency": "INR",
@@ -48,8 +77,9 @@ export default function StructuredData() {
     "organizer": {
       "@type": "Organization",
       "name": "TEDxKLH",
+      "alternateName": ["TEDx KLH", "tedxklh", "TEDxKLH 2026"],
       "url": baseUrl,
-      "logo": `${baseUrl}/tedxklh-logo.png`,
+      "logo": `${baseUrl}/icon-512.png`,
       "sameAs": [
         "https://www.instagram.com/tedxklh",
         "https://www.linkedin.com/company/tedxklh",
@@ -137,8 +167,10 @@ export default function StructuredData() {
     "@type": "EducationalOrganization",
     "name": "TEDxKLH",
     "legalName": "TEDxKLH Bowrampet Campus",
+    "alternateName": ["TEDx KLH", "tedxklh", "TEDxKLH 2026", "TEDxKLH Hyderabad"],
     "url": baseUrl,
-    "logo": `${baseUrl}/tedxklh-logo.png`,
+    "logo": `${baseUrl}/icon-512.png`,
+    "image": `${baseUrl}/icon-512.png`,
     "description": "TEDxKLH is an independently organized TED event hosted at KLH University, Bowrampet Campus, Hyderabad under official license from TED.",
     "address": {
       "@type": "PostalAddress",
@@ -277,6 +309,10 @@ export default function StructuredData() {
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(eventSchema) }}

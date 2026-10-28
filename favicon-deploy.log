@@ -1,0 +1,11 @@
+Starting Favicon generation and SEO deployment... 
+Generating favicons... 
+Generating crisp favicon and app icons from: S:\tedx - Copy\public\icon-512.png
+All icons generated successfully!
+- public/favicon.ico (Multi-res 16, 32, 48)
+- public/favicon-48x48.png (Google Search Standard)
+- public/favicon-32x32.png
+- public/favicon-16x16.png
+- public/icon-192.png & icon-512.png
+- src/app/icon.png & src/app/favicon.ico
+Staging files... 

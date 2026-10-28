@@ -74,6 +74,7 @@ export default function Hero() {
           <div className="flex flex-col items-center justify-center select-none text-center">
             <h1
               className="text-[clamp(2.4rem,8.2vw,7.5rem)] font-extrabold tracking-tight flex items-baseline justify-center select-none"
+              aria-label="TEDxKLH — Official TEDx Conference at KLH Bowrampet Campus"
               style={{ 
                 fontFamily: "var(--font-sora)", 
                 fontWeight: 800,
