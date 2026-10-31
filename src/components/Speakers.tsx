@@ -126,8 +126,30 @@ const SPEAKERS: Speaker[] = [
     image: "/speakers/tamal-chatterjee.jpg",
     cardImage: "/speakers/tamal-chatterjee-card.jpg",
   },
-  { id: 10, isAnnounced: false },
-  { id: 11, isAnnounced: false },
+  {
+    id: 10,
+    isAnnounced: true,
+    name: "Madhulash Babu Krovvidi",
+    role: "Founder, Edodwaja",
+    details:
+      "Madhulash Babu Krovvidi is a social entrepreneur transforming access to technology education for rural students in India. As the Founder and CEO of Edodwaja Foundation, he pioneered the Futuristic Lab on Wheels (FLOW Bus), a solar-powered mobile laboratory bringing hands-on learning in robotics, artificial intelligence, and emerging technologies to underserved communities. Inspired by the challenges he encountered as a student, he built an initiative that has reached over 60,000 rural students across Telangana and Andhra Pradesh. Recognised in Forbes 30 Under 30 Asia 2026 in the Social Impact category, his journey reflects how personal challenges can inspire innovative solutions that create meaningful change.",
+    quote: "Transforming access to technology education for rural students and pioneering mobile learning to bridge the opportunity gap.",
+    tags: ["Edodwaja Foundation", "FLOW Bus", "Forbes 30 Under 30", "Social Impact"],
+    image: "/speakers/madhulash-babu-krovvidi.jpg",
+    cardImage: "/speakers/madhulash-babu-krovvidi-card.jpg",
+  },
+  {
+    id: 11,
+    isAnnounced: true,
+    name: "Mamatha Shanmugam",
+    role: "Global Head – AWS Cloud COE, Financial Services, Capgemini",
+    details:
+      "Mamatha Shanmugam is a technology leader driving cloud innovation and digital transformation in the financial services industry. As Global Head of the AWS Cloud Centre of Excellence at Capgemini, she works at the intersection of cloud strategy, enterprise technology, and business transformation. Her work reflects the growing role of cloud computing in reshaping financial services, enabling organisations to embrace emerging technologies, build resilient digital ecosystems, and navigate an increasingly technology-driven world.",
+    quote: "Driving cloud innovation and enterprise agility at the intersection of cloud strategy and business transformation.",
+    tags: ["AWS Cloud COE", "Capgemini", "Cloud Innovation", "Digital Transformation"],
+    image: "/speakers/mamatha-shanmugam.jpg",
+    cardImage: "/speakers/mamatha-shanmugam-card.jpg",
+  },
   { id: 12, isAnnounced: false },
 ];
 

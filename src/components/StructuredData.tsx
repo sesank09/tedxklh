@@ -158,6 +158,22 @@ export default function StructuredData() {
         "worksFor": { "@type": "Organization", "name": "Sid's Farm" },
         "image": `${baseUrl}/speakers/tamal-chatterjee.jpg`,
         "description": "Seasoned business leader with 23+ years of experience across consumer durables, e-commerce, and dairy, driving growth and brand strategy."
+      },
+      {
+        "@type": "Person",
+        "name": "Madhulash Babu Krovvidi",
+        "jobTitle": "Founder, Edodwaja",
+        "worksFor": { "@type": "Organization", "name": "Edodwaja Foundation" },
+        "image": `${baseUrl}/speakers/madhulash-babu-krovvidi.jpg`,
+        "description": "Social entrepreneur and Forbes 30 Under 30 Asia honoree, pioneering the Futuristic Lab on Wheels (FLOW Bus) to transform STEM education for rural students."
+      },
+      {
+        "@type": "Person",
+        "name": "Mamatha Shanmugam",
+        "jobTitle": "Global Head – AWS Cloud COE, Financial Services",
+        "worksFor": { "@type": "Organization", "name": "Capgemini" },
+        "image": `${baseUrl}/speakers/mamatha-shanmugam.jpg`,
+        "description": "Technology leader driving cloud innovation and digital transformation at the intersection of enterprise technology and financial services."
       }
     ]
   };

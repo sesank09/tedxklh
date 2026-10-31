@@ -73,6 +73,18 @@ The 2026 edition carries the theme **"METAMORPHOSIS: The Unseen Process of Becom
 - **Quote**: "Combining consumer insights with operational excellence to build lasting brands and sustainable business impact."
 - **Tags**: Sid's Farm, Chief Growth Officer, Brand Strategy, IIM Bangalore Alum
 
+### Speaker 10: Madhulash Babu Krovvidi
+- **Role**: Founder, Edodwaja
+- **Bio**: Madhulash Babu Krovvidi is a social entrepreneur transforming access to technology education for rural students in India. As the Founder and CEO of Edodwaja Foundation, he pioneered the Futuristic Lab on Wheels (FLOW Bus), a solar-powered mobile laboratory bringing hands-on learning in robotics, artificial intelligence, and emerging technologies to underserved communities. Inspired by the challenges he encountered as a student, he built an initiative that has reached over 60,000 rural students across Telangana and Andhra Pradesh. Recognised in Forbes 30 Under 30 Asia 2026 in the Social Impact category, his journey reflects how personal challenges can inspire innovative solutions that create meaningful change.
+- **Quote**: "Transforming access to technology education for rural students and pioneering mobile learning to bridge the opportunity gap."
+- **Tags**: Edodwaja Foundation, FLOW Bus, Forbes 30 Under 30, Social Impact
+
+### Speaker 11: Mamatha Shanmugam
+- **Role**: Global Head – AWS Cloud COE, Financial Services, Capgemini
+- **Bio**: Mamatha Shanmugam is a technology leader driving cloud innovation and digital transformation in the financial services industry. As Global Head of the AWS Cloud Centre of Excellence at Capgemini, she works at the intersection of cloud strategy, enterprise technology, and business transformation. Her work reflects the growing role of cloud computing in reshaping financial services, enabling organisations to embrace emerging technologies, build resilient digital ecosystems, and navigate an increasingly technology-driven world.
+- **Quote**: "Driving cloud innovation and enterprise agility at the intersection of cloud strategy and business transformation."
+- **Tags**: AWS Cloud COE, Capgemini, Cloud Innovation, Digital Transformation
+
 ## 4. Frequently Asked Questions (FAQ)
 
 ### What is TEDxKLH 2026: METAMORPHOSIS?

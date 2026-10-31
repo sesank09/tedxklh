@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     template: "%s | TEDxKLH 2026",
   },
   description:
-    "Official website for TEDxKLH 2026: METAMORPHOSIS on November 4, 2026 at KLH Auditorium, Bowrampet Campus, Hyderabad. Featuring 9+ visionary speakers across technology, neuroscience, mountaineering, design, and enterprise. Apply for 250 curated delegate passes.",
+    "Official website for TEDxKLH 2026: METAMORPHOSIS on November 4, 2026 at KLH Auditorium, Bowrampet Campus, Hyderabad. Featuring 11+ visionary speakers across technology, neuroscience, mountaineering, design, and enterprise. Apply for 250 curated delegate passes.",
   applicationName: "TEDxKLH",
   authors: [{ name: "TEDxKLH Team", url: "https://tedxklhbowrampet.in" }],
   generator: "Next.js",
@@ -62,6 +62,8 @@ export const metadata: Metadata = {
     "Poorna Malavath Everest",
     "Srikanth Acharya OffiNeeds",
     "Tamal Chatterjee Sids Farm",
+    "Madhulash Babu Krovvidi Edodwaja",
+    "Mamatha Shanmugam Capgemini",
     // Registration & Passes
     "TEDxKLH Passes",
     "TEDxKLH Registration",
@@ -95,7 +97,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "TEDxKLH — Official Website | TEDxKLH 2026 METAMORPHOSIS",
     description:
-      "Official website for TEDxKLH 2026: METAMORPHOSIS on November 4, 2026 at KLH Auditorium, Bowrampet, Hyderabad. 9+ visionary speakers, 250 curated delegates.",
+      "Official website for TEDxKLH 2026: METAMORPHOSIS on November 4, 2026 at KLH Auditorium, Bowrampet, Hyderabad. 11+ visionary speakers, 250 curated delegates.",
     url: "https://tedxklhbowrampet.in",
     siteName: "TEDxKLH",
     locale: "en_IN",
@@ -119,7 +121,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "TEDxKLH — Official Website | TEDxKLH 2026 METAMORPHOSIS",
     description:
-      "Official TEDxKLH 2026 Conference on Nov 4, 2026 at KLH Bowrampet, Hyderabad. 9+ Visionary speakers. 250 Curated delegates.",
+      "Official TEDxKLH 2026 Conference on Nov 4, 2026 at KLH Bowrampet, Hyderabad. 11+ Visionary speakers. 250 Curated delegates.",
     images: ["https://tedxklhbowrampet.in/metamorphosis-art.jpg"],
     creator: "@tedxklh",
     site: "@tedxklh",
