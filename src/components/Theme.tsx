@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { ChevronRight, ChevronLeft } from "lucide-react";
+import { ChevronRight, ChevronLeft, Sparkles } from "lucide-react";
 
 interface MetamorphosisStage {
   id: string;
@@ -21,61 +21,61 @@ const STAGES: MetamorphosisStage[] = [
     id: "idea",
     num: "01",
     name: "IDEA",
-    concept: "Primal structure / Potential",
-    tagline: "Primal Structure & Potential",
+    concept: "Potential / The Beginning",
+    tagline: "The Latent Chrysalis",
     description:
-      "A compact crystalline core containing the primordial impulse. Four foundational facets dense with intent, beginning their subtle inward fold toward biological emergence.",
-    heroImage: "/metamorphosis/phase-01-large.png",
-    cardImage: "/metamorphosis/phase-01-card.png",
+      "Suspended in stillness, a spun silk cocoon holds the primordial impulse. Dense with unmanifested life and cellular memory, quietly gathering energy in the shadows before the first stirrings of change.",
+    heroImage: "/assets/metamorphosis/phase-01-cocoon.webp",
+    cardImage: "/assets/metamorphosis/phase-01-cocoon-card.webp",
     accentColor: "#FFFFFF",
   },
   {
     id: "friction",
     num: "02",
     name: "FRICTION",
-    concept: "Initialization / Encapsulation",
-    tagline: "Initialization & Encapsulation",
+    concept: "Initialization / Internal Pressure",
+    tagline: "Internal Pressure & Tension",
     description:
-      "External resistance and environmental tension weave a resilient protective mantle of fine silk threads. The structure anchors to living wood as a hanging cocoon takes form.",
-    heroImage: "/metamorphosis/phase-02-large.png",
-    cardImage: "/metamorphosis/phase-02-card.png",
+      "Inner pressure mounts as the original cellular bonds dissolve into liquid potential. Micro-fissures separate the silk fibers as warm crimson bioluminescence breaks through the protective shell.",
+    heroImage: "/assets/metamorphosis/phase-02-friction.webp",
+    cardImage: "/assets/metamorphosis/phase-02-friction-card.webp",
     accentColor: "#FFAA66",
   },
   {
     id: "change",
     num: "03",
     name: "CHANGE",
-    concept: "Internal reconfiguration",
-    tagline: "Internal Reconfiguration",
+    concept: "Internal Reconfiguration",
+    tagline: "Cellular Reconfiguration",
     description:
-      "The chrysalis awakens with deep crimson internal illumination. Outer silk layers turn translucent, revealing the symphonic cellular metamorphosis of developing butterfly wings.",
-    heroImage: "/metamorphosis/phase-03-large.png",
-    cardImage: "/metamorphosis/phase-03-card.png",
-    accentColor: "#EB0028",
+      "The cocoon yields to deep transmutation. Translucent walls reveal imaginal discs coalescing into velvet black and rich scarlet wings, pulsing with internal energy as form replaces chaos.",
+    heroImage: "/assets/metamorphosis/phase-03-change.webp",
+    cardImage: "/assets/metamorphosis/phase-03-change-card.webp",
+    accentColor: "#E00025",
   },
   {
     id: "experiment",
     num: "04",
     name: "EXPERIMENT",
     concept: "Emergence / Formation",
-    tagline: "Cellular Reconfiguration",
+    tagline: "Emergence & First Wings",
     description:
-      "Discrete imaginal fragments align into experimental bilateral symmetry, forging new geometry. The chrysalis yields as luminous scarlet wings begin their tentative unfolding.",
-    heroImage: "/metamorphosis/phase-04-hero.png",
-    cardImage: "/metamorphosis/phase-04-card.png",
-    accentColor: "#EB0028",
+      "The chrysalis splits open. Gripping the silk husk, the emerging butterfly unfolds its damp wings for the first time, pumping vital hemolymph through delicate veins in a trial of bilateral symmetry.",
+    heroImage: "/assets/metamorphosis/phase-04-experiment.webp",
+    cardImage: "/assets/metamorphosis/phase-04-experiment-card.webp",
+    accentColor: "#E00025",
   },
   {
     id: "transformation",
     num: "05",
     name: "TRANSFORMATION",
-    concept: "Realization / Flight",
+    concept: "Realization / Freedom",
     tagline: "Realization & Flight",
     description:
-      "The final synthesis is achieved. Unshackled from its chrysalis, the deep crimson monarch spreads its wings in full symmetrical glory, taking flight into the infinite.",
-    heroImage: "/metamorphosis/phase-05-large.png",
-    cardImage: "/metamorphosis/phase-05-card.png",
-    accentColor: "#EB0028",
+      "Metamorphosis complete. Free from its silk origin, the magnificent crimson monarch unfurls symmetrical wings into the dark expanse, ascending in effortless, sovereign flight.",
+    heroImage: "/assets/metamorphosis/phase-05-butterfly.webp",
+    cardImage: "/assets/metamorphosis/phase-05-butterfly-card.webp",
+    accentColor: "#E00025",
   },
 ];
 
@@ -100,15 +100,15 @@ function ParticleCanvas({ activeStageIdx }: { activeStageIdx: number }) {
     };
     window.addEventListener("resize", handleResize);
 
-    const count = 36;
+    const count = 42;
     const particles = Array.from({ length: count }, () => ({
       x: Math.random() * width,
       y: Math.random() * height,
       r: Math.random() * 2 + 0.6,
-      vx: (Math.random() - 0.5) * 0.45,
-      vy: (Math.random() - 0.5) * 0.45 - (activeStageIdx >= 3 ? 0.35 : 0.1),
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: (Math.random() - 0.5) * 0.4 - (activeStageIdx >= 3 ? 0.35 : 0.08),
       alpha: Math.random() * 0.65 + 0.25,
-      hue: activeStageIdx === 0 ? "white" : activeStageIdx === 1 ? "gold" : "crimson",
+      hue: activeStageIdx === 0 ? "white" : activeStageIdx === 1 ? "amber" : "crimson",
     }));
 
     let burst = 1.0;
@@ -133,13 +133,13 @@ function ParticleCanvas({ activeStageIdx }: { activeStageIdx: number }) {
 
         if (p.hue === "white") {
           ctx.fillStyle = `rgba(255, 255, 255, ${p.alpha * 0.7})`;
-        } else if (p.hue === "gold") {
-          ctx.fillStyle = `rgba(255, 200, 120, ${p.alpha * 0.8})`;
+        } else if (p.hue === "amber") {
+          ctx.fillStyle = `rgba(255, 180, 90, ${p.alpha * 0.8})`;
         } else {
-          ctx.fillStyle = `rgba(235, 0, 40, ${p.alpha * 0.9})`;
+          ctx.fillStyle = `rgba(224, 0, 37, ${p.alpha * 0.85})`;
         }
         ctx.shadowBlur = 8;
-        ctx.shadowColor = p.hue === "crimson" ? "rgba(235,0,40,0.8)" : "rgba(255,255,255,0.4)";
+        ctx.shadowColor = p.hue === "crimson" ? "rgba(224,0,37,0.7)" : "rgba(255,255,255,0.4)";
         ctx.fill();
       });
 
@@ -164,7 +164,7 @@ function ParticleCanvas({ activeStageIdx }: { activeStageIdx: number }) {
 }
 
 export default function Theme() {
-  const [activeStageIdx, setActiveStageIdx] = useState(3); // Default to Phase 04 (EXPERIMENT) as in reference mockup
+  const [activeStageIdx, setActiveStageIdx] = useState(0); // Starts at Phase 01 (IDEA: Closed Cocoon)
   const [isPaused, setIsPaused] = useState(false);
   const cardRowRef = useRef<HTMLDivElement>(null);
   const prefersReducedMotion = useReducedMotion();
@@ -223,7 +223,7 @@ export default function Theme() {
       onMouseLeave={() => setIsPaused(false)}
     >
       {/* Background Ambient Radial Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85vw] max-w-[1400px] h-[720px] bg-[radial-gradient(ellipse_at_center,rgba(235,0,40,0.08),transparent_70%)] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85vw] max-w-[1400px] h-[720px] bg-[radial-gradient(ellipse_at_center,rgba(224,0,37,0.08),transparent_70%)] pointer-events-none" />
 
       <div className="w-full max-w-[1400px] mx-auto space-y-[clamp(2.5rem,5vw,4.5rem)] relative z-20">
         
@@ -239,7 +239,7 @@ export default function Theme() {
           >
             METAMORPHOSIS<br />
             <span
-              className="text-[#EB0028] text-[clamp(1.1rem,2.8vw,2.2rem)] font-semibold tracking-normal block mt-1.5 sm:mt-2"
+              className="text-[#E00025] text-[clamp(1.1rem,2.8vw,2.2rem)] font-semibold tracking-normal block mt-1.5 sm:mt-2"
               style={{ fontFamily: "var(--font-sora)" }}
             >
               The Unseen Process of Becoming
@@ -258,13 +258,13 @@ export default function Theme() {
                 aria-label={`Select ${st.name} phase`}
                 className={`group relative px-4 sm:px-6 py-2.5 sm:py-3 rounded-2xl border transition-all duration-300 flex items-center gap-2 sm:gap-3 shrink-0 cursor-pointer min-h-[44px] ${
                   isActive
-                    ? "bg-[#EB0028]/15 border-[#EB0028] shadow-[0_0_25px_rgba(235,0,40,0.35)] ring-1 ring-[#EB0028]/50"
+                    ? "bg-[#E00025]/15 border-[#E00025] shadow-[0_0_25px_rgba(224,0,37,0.35)] ring-1 ring-[#E00025]/50"
                     : "bg-black/60 border-white/[0.08] hover:border-white/20 hover:bg-white/[0.03]"
                 }`}
               >
                 <span
                   className={`text-xs font-bold transition-colors ${
-                    isActive ? "text-[#EB0028]" : "text-white/40 group-hover:text-white/80"
+                    isActive ? "text-[#E00025]" : "text-white/40 group-hover:text-white/80"
                   }`}
                   style={{ fontFamily: "var(--font-dm-mono)" }}
                 >
@@ -288,15 +288,15 @@ export default function Theme() {
           
           {/* Left: Cinematic Master Cocoon-to-Butterfly Transformation Visual Panel */}
           <div className="lg:col-span-6 xl:col-span-6 flex items-center justify-center w-full">
-            <div className="relative w-full max-w-[560px] aspect-[16/10] rounded-3xl border border-white/10 bg-[#060606] backdrop-blur-2xl p-4 sm:p-6 flex items-center justify-center overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.95)] group">
+            <div className="relative w-full max-w-[560px] aspect-[16/10] rounded-3xl border border-white/10 bg-[#030303] backdrop-blur-2xl p-4 sm:p-6 flex items-center justify-center overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.95)] group">
               
               {/* Corner Ambient Core Glow */}
               <div
-                className="absolute inset-0 bg-radial-gradient pointer-events-none transition-all duration-700"
+                className="absolute inset-0 pointer-events-none transition-all duration-700"
                 style={{
                   background:
                     activeStageIdx >= 2
-                      ? "radial-gradient(circle at 50% 50%, rgba(235,0,40,0.18) 0%, transparent 70%)"
+                      ? "radial-gradient(circle at 50% 50%, rgba(224,0,37,0.18) 0%, transparent 70%)"
                       : "radial-gradient(circle at 50% 50%, rgba(255,255,255,0.06) 0%, transparent 70%)",
                 }}
               />
@@ -309,48 +309,48 @@ export default function Theme() {
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={currentStage.id}
-                    initial={{ opacity: 0, scale: 0.94, filter: "blur(6px)" }}
+                    initial={{ opacity: 0, scale: 0.95, filter: "blur(6px)" }}
                     animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                    exit={{ opacity: 0, scale: 1.05, filter: "blur(6px)" }}
+                    exit={{ opacity: 0, scale: 1.04, filter: "blur(6px)" }}
                     transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
                     className="relative w-full h-full flex items-center justify-center"
                   >
-                    {/* Living Stage-Specific Animation Wrappers */}
+                    {/* Stage 1: Closed Silk Cocoon with Subtle Inner Glow */}
                     {activeStageIdx === 0 && (
-                      /* Phase 01: Diamond Crystalline Monolith */
                       <motion.div
-                        animate={{ y: [0, -5, 0] }}
-                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                        animate={{ rotate: [-0.9, 0.9, -0.9] }}
+                        transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
+                        style={{ transformOrigin: "50% 8%" }}
                         className="relative w-full h-full flex items-center justify-center"
                       >
                         <img
                           src={currentStage.heroImage}
-                          alt="Phase 01 — Idea Crystalline Structure"
-                          className="w-full h-full object-contain filter drop-shadow-[0_0_25px_rgba(255,255,255,0.25)] max-h-[300px]"
+                          alt="Phase 01 — Idea Closed Silk Cocoon"
+                          className="w-full h-full object-contain filter drop-shadow-[0_10px_35px_rgba(0,0,0,0.85)] max-h-[300px]"
                         />
                       </motion.div>
                     )}
 
+                    {/* Stage 2: Cocoon Under Internal Pressure & Fissures */}
                     {activeStageIdx === 1 && (
-                      /* Phase 02: Silk Cocoon Hanging from Twig */
                       <motion.div
-                        animate={{ rotate: [-1.4, 1.4, -1.4] }}
-                        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                        style={{ transformOrigin: "50% 10%" }}
+                        animate={{ rotate: [-1.2, 1.2, -1.2] }}
+                        transition={{ duration: 4.8, repeat: Infinity, ease: "easeInOut" }}
+                        style={{ transformOrigin: "50% 8%" }}
                         className="relative w-full h-full flex items-center justify-center"
                       >
                         <img
                           src={currentStage.heroImage}
-                          alt="Phase 02 — Friction Silk Cocoon"
-                          className="w-full h-full object-contain filter drop-shadow-[0_10px_30px_rgba(0,0,0,0.8)] max-h-[300px]"
+                          alt="Phase 02 — Friction Silk Cocoon Tension"
+                          className="w-full h-full object-contain filter drop-shadow-[0_0_25px_rgba(224,0,37,0.4)] max-h-[300px]"
                         />
                       </motion.div>
                     )}
 
+                    {/* Stage 3: Translucent Chrysalis & Developing Wing Venation */}
                     {activeStageIdx === 2 && (
-                      /* Phase 03: Internal Crimson Luminescence */
                       <motion.div
-                        animate={{ scale: [1, 1.025, 1] }}
+                        animate={{ scale: [1, 1.02, 1] }}
                         transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
                         className="relative w-full h-full flex items-center justify-center"
                       >
@@ -359,42 +359,42 @@ export default function Theme() {
                           transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
                           className="absolute inset-0 flex items-center justify-center pointer-events-none"
                         >
-                          <div className="w-48 h-48 rounded-full bg-[#EB0028]/25 blur-3xl" />
+                          <div className="w-52 h-52 rounded-full bg-[#E00025]/25 blur-3xl" />
                         </motion.div>
                         <img
                           src={currentStage.heroImage}
-                          alt="Phase 03 — Change Chrysalis Reconfiguration"
-                          className="relative z-10 w-full h-full object-contain filter drop-shadow-[0_0_35px_rgba(235,0,40,0.65)] max-h-[300px]"
+                          alt="Phase 03 — Change Chrysalis Wing Formation"
+                          className="relative z-10 w-full h-full object-contain filter drop-shadow-[0_0_35px_rgba(224,0,37,0.6)] max-h-[300px]"
                         />
                       </motion.div>
                     )}
 
+                    {/* Stage 4: Butterfly Actively Emerging from Cocoon */}
                     {activeStageIdx === 3 && (
-                      /* Phase 04: Butterfly Wing Emergence from Chrysalis */
                       <motion.div
                         animate={{ y: [0, -4, 0] }}
                         transition={{ duration: 3.8, repeat: Infinity, ease: "easeInOut" }}
                         className="relative w-full h-full flex items-center justify-center"
                       >
-                        {/* Swirling Orbital Ring */}
+                        {/* Swirling Orbital Energy Ring */}
                         <motion.div
                           animate={{ rotate: [0, 360] }}
                           transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
-                          className="absolute w-[260px] h-[260px] rounded-full border border-[#EB0028]/25 pointer-events-none"
+                          className="absolute w-[270px] h-[270px] rounded-full border border-[#E00025]/20 pointer-events-none"
                           style={{
-                            boxShadow: "0 0 30px rgba(235,0,40,0.2)",
+                            boxShadow: "0 0 30px rgba(224,0,37,0.18)",
                           }}
                         />
                         <img
                           src={currentStage.heroImage}
-                          alt="Phase 04 — Experiment Emergent Chrysalis"
-                          className="relative z-10 w-full h-full object-contain filter drop-shadow-[0_0_40px_rgba(235,0,40,0.7)] max-h-[300px]"
+                          alt="Phase 04 — Experiment Emergent Butterfly"
+                          className="relative z-10 w-full h-full object-contain filter drop-shadow-[0_0_40px_rgba(224,0,37,0.65)] max-h-[300px]"
                         />
                       </motion.div>
                     )}
 
+                    {/* Stage 5: Fully Developed Symmetrical Butterfly in Flight */}
                     {activeStageIdx === 4 && (
-                      /* Phase 05: Fully Formed Red & Black Butterfly in Flight */
                       <motion.div
                         animate={{
                           scaleX: [1, 0.9, 1],
@@ -407,7 +407,7 @@ export default function Theme() {
                         <img
                           src={currentStage.heroImage}
                           alt="Phase 05 — Transformation Full Butterfly"
-                          className="w-full h-full object-contain filter drop-shadow-[0_0_45px_rgba(235,0,40,0.8)] max-h-[300px]"
+                          className="w-full h-full object-contain filter drop-shadow-[0_0_45px_rgba(224,0,37,0.75)] max-h-[300px]"
                         />
                       </motion.div>
                     )}
@@ -415,12 +415,12 @@ export default function Theme() {
                 </AnimatePresence>
               </div>
 
-              {/* HUD Coordinates Label (Bottom-Left, exactly as in Reference Image) */}
+              {/* HUD Coordinates Label (Bottom-Left) */}
               <div
                 className="absolute bottom-4 left-5 text-[9px] font-mono text-white/40 uppercase tracking-widest z-20 flex items-center gap-1.5"
                 style={{ fontFamily: "var(--font-dm-mono)" }}
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-[#EB0028] animate-pulse" />
+                <span className="w-1.5 h-1.5 rounded-full bg-[#E00025] animate-pulse" />
                 PHASE 0{activeStageIdx + 1} — {currentStage.name}
               </div>
             </div>
@@ -430,7 +430,7 @@ export default function Theme() {
           <div className="lg:col-span-6 xl:col-span-6 space-y-4 sm:space-y-6 text-center lg:text-left">
             
             {/* Tagline Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#EB0028]/40 bg-[#EB0028]/10 text-[#EB0028] text-xs font-bold uppercase tracking-widest shadow-[0_0_15px_rgba(235,0,40,0.2)]">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#E00025]/40 bg-[#E00025]/10 text-[#E00025] text-xs font-bold uppercase tracking-widest shadow-[0_0_15px_rgba(224,0,37,0.2)]">
               <span>PHASE {currentStage.num}</span>
               <span className="text-white/30">·</span>
               <span className="text-white/90">{currentStage.tagline}</span>
@@ -442,7 +442,7 @@ export default function Theme() {
               style={{
                 fontFamily: "var(--font-sora)",
                 fontWeight: 800,
-                textShadow: "0 0 35px rgba(235,0,40,0.25)",
+                textShadow: "0 0 35px rgba(224,0,37,0.25)",
               }}
             >
               {currentStage.name}
@@ -456,7 +456,7 @@ export default function Theme() {
               {currentStage.description}
             </p>
 
-            {/* Navigation Actions (NEXT PHASE >) */}
+            {/* Navigation Actions (NEXT PHASE > / < PREV) */}
             <div className="pt-2 flex items-center justify-center lg:justify-start gap-5">
               <button
                 onClick={handlePrev}
@@ -469,18 +469,18 @@ export default function Theme() {
 
               <button
                 onClick={handleNext}
-                className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#EB0028] hover:text-[#ff2e54] transition-all cursor-pointer py-2 group"
+                className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-[#E00025] hover:text-[#ff2e54] transition-all cursor-pointer py-2 group"
                 style={{ fontFamily: "var(--font-dm-mono)" }}
               >
                 <span>NEXT PHASE</span>
-                <ChevronRight className="w-4 h-4 text-[#EB0028] group-hover:translate-x-1 transition-transform" />
+                <ChevronRight className="w-4 h-4 text-[#E00025] group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
           </div>
 
         </div>
 
-        {/* Bottom Horizontal Row of 5 Phase Cards with Chevrons (Exactly as in Reference Image 2) */}
+        {/* Bottom Horizontal Row of 5 Phase Cards with Chevrons */}
         <div className="pt-4 sm:pt-6">
           <div
             ref={cardRowRef}
@@ -496,9 +496,9 @@ export default function Theme() {
                     className="flex flex-col space-y-2 cursor-pointer group w-[150px] sm:w-[170px] md:w-[195px] lg:w-[210px] xl:w-[230px]"
                   >
                     <div
-                      className={`relative aspect-[16/9] w-full rounded-2xl overflow-hidden border transition-all duration-300 bg-black/60 ${
+                      className={`relative aspect-[16/9] w-full rounded-2xl overflow-hidden border transition-all duration-300 bg-[#030303] ${
                         isActive
-                          ? "border-[#EB0028] shadow-[0_0_25px_rgba(235,0,40,0.45)] ring-1 ring-[#EB0028]/60 scale-[1.02]"
+                          ? "border-[#E00025] shadow-[0_0_25px_rgba(224,0,37,0.45)] ring-1 ring-[#E00025]/60 scale-[1.02]"
                           : "border-white/10 hover:border-white/30 opacity-65 hover:opacity-100"
                       }`}
                     >
@@ -508,8 +508,8 @@ export default function Theme() {
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                       {isActive && (
-                        <div className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded bg-black/80 border border-[#EB0028]/60 text-[8px] font-mono text-[#EB0028] font-bold uppercase tracking-wider">
-                          <span className="w-1 h-1 rounded-full bg-[#EB0028] animate-pulse" />
+                        <div className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded bg-black/80 border border-[#E00025]/60 text-[8px] font-mono text-[#E00025] font-bold uppercase tracking-wider">
+                          <span className="w-1 h-1 rounded-full bg-[#E00025] animate-pulse" />
                           ACTIVE
                         </div>
                       )}
@@ -519,7 +519,7 @@ export default function Theme() {
                     <div className="text-center sm:text-left px-1 space-y-0.5">
                       <div
                         className={`text-xs font-bold uppercase tracking-wider transition-colors ${
-                          isActive ? "text-[#EB0028]" : "text-white/80 group-hover:text-white"
+                          isActive ? "text-[#E00025]" : "text-white/80 group-hover:text-white"
                         }`}
                         style={{ fontFamily: "var(--font-sora)", fontWeight: 700 }}
                       >
@@ -536,7 +536,7 @@ export default function Theme() {
 
                   {/* Red Chevron separator connecting stages (hidden after the last stage) */}
                   {idx < STAGES.length - 1 && (
-                    <ChevronRight className="w-4 h-4 text-[#EB0028] opacity-50 shrink-0 hidden md:block" />
+                    <ChevronRight className="w-4 h-4 text-[#E00025] opacity-50 shrink-0 hidden md:block" />
                   )}
                 </div>
               );
