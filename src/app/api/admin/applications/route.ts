@@ -14,10 +14,13 @@ export async function GET(req: NextRequest) {
     const appStatus = searchParams.get("appStatus") || "all";
     const paymentStatus = searchParams.get("paymentStatus") || "all";
     const ticketFilter = searchParams.get("ticketFilter") || "all";
+    const isExport = searchParams.get("export") === "true";
     const sortBy = searchParams.get("sortBy") || "newest";
     const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
-    const limit = Math.min(50, Math.max(5, parseInt(searchParams.get("limit") || "15", 10)));
-    const offset = (page - 1) * limit;
+    const limit = isExport
+      ? 10000
+      : Math.min(50, Math.max(5, parseInt(searchParams.get("limit") || "15", 10)));
+    const offset = isExport ? 0 : (page - 1) * limit;
 
     const supabaseAdmin = getAdminClient();
 
@@ -52,11 +55,24 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Comprehensive Search across Application No, First Name, Last Name, Email, Phone, Roll Number, Delegate ID, Ticket Type, Organization
+    // Comprehensive Search across Application No, First Name, Last Name, Email, Phone, Roll Number, Delegate ID, Ticket Type, Organization, UTR
     if (search) {
-      query = query.or(
-        `application_number.ilike.%${search}%,first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%,roll_number.ilike.%${search}%,delegate_id.ilike.%${search}%,ticket_type.ilike.%${search}%,college_organization.ilike.%${search}%`
-      );
+      // Find any application IDs matching UTR from payment_verifications
+      const { data: utrMatches } = await supabaseAdmin
+        .from("payment_verifications")
+        .select("application_id")
+        .ilike("utr_number", `%${search}%`)
+        .limit(100);
+
+      const utrAppIds = (utrMatches || []).map((m: any) => m.application_id).filter(Boolean);
+
+      let orClauses = `application_number.ilike.%${search}%,first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%,roll_number.ilike.%${search}%,delegate_id.ilike.%${search}%,ticket_type.ilike.%${search}%,college_organization.ilike.%${search}%`;
+      
+      if (utrAppIds.length > 0) {
+        orClauses += `,id.in.(${utrAppIds.join(",")})`;
+      }
+
+      query = query.or(orClauses);
     }
 
     // Sorting
@@ -82,10 +98,14 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Failed to fetch applications" }, { status: 500 });
     }
 
-    const mappedApplications = (applications || []).map((app: any) => ({
-      ...app,
-      reference: app.reference || (app.admin_notes?.match(/\[Reference\]:\s*([^\n]+)/)?.[1]?.trim()) || null,
-    }));
+    const mappedApplications = (applications || []).map((app: any) => {
+      const verif = Array.isArray(app.payment_verifications) ? app.payment_verifications[0] : app.payment_verifications;
+      return {
+        ...app,
+        reference: app.reference || (app.admin_notes?.match(/\[Reference\]:\s*([^\n]+)/)?.[1]?.trim()) || null,
+        utr_number: verif?.utr_number || (app as any).utr_number || null,
+      };
+    });
 
     return NextResponse.json({
       success: true,

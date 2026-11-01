@@ -2,6 +2,9 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import * as XLSX from "xlsx";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 import {
   Search,
   ChevronLeft,
@@ -11,7 +14,8 @@ import {
   Trash2,
   AlertTriangle,
   Radio,
-  Ticket,
+  FileSpreadsheet,
+  FileText,
 } from "lucide-react";
 import { formatINR } from "@/lib/constants";
 
@@ -35,6 +39,7 @@ interface ApplicationItem {
   payment_status: string;
   delegate_id: string | null;
   created_at: string;
+  utr_number?: string | null;
   payment_verifications?: Array<{
     utr_number: string;
     verification_status: string;
@@ -55,6 +60,10 @@ export default function AdminApplicationsPage() {
   const [ticketFilter, setTicketFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
   const [loading, setLoading] = useState(true);
+
+  // Export States
+  const [isExportingExcel, setIsExportingExcel] = useState(false);
+  const [isExportingPDF, setIsExportingPDF] = useState(false);
 
   // Delete State
   const [deleteTarget, setDeleteTarget] = useState<ApplicationItem | null>(null);
@@ -153,6 +162,215 @@ export default function AdminApplicationsPage() {
     }
   };
 
+  const fetchExportData = async () => {
+    const params = new URLSearchParams({
+      export: "true",
+      search: search.trim(),
+      appStatus,
+      paymentStatus,
+      ticketFilter,
+      sortBy,
+    });
+    const res = await fetch(`/api/admin/applications?${params.toString()}`);
+    const data = await res.json();
+    return (data.applications || []) as ApplicationItem[];
+  };
+
+  const handleExportXLSX = async () => {
+    try {
+      setIsExportingExcel(true);
+      const apps = await fetchExportData();
+      if (!apps.length) {
+        alert("No applications found to export.");
+        return;
+      }
+
+      const rows = apps.map((app, idx) => {
+        const isGroup = app.pass_type === "group_of_4" || (app.ticket_type && app.ticket_type.includes("1999"));
+        const ticket = app.ticket_type || (isGroup ? "Group Pass (4 Seats)" : "Individual Pass");
+        const amount = app.ticket_price || app.total_amount || (isGroup ? 1999 : 549);
+        const utr = app.utr_number || app.payment_verifications?.[0]?.utr_number || "—";
+        const dateStr = app.created_at
+          ? new Date(app.created_at).toLocaleString("en-IN", {
+              timeZone: "Asia/Kolkata",
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true,
+            })
+          : "—";
+
+        return {
+          "S.No": idx + 1,
+          "Application #": String(app.application_number || "—"),
+          "Delegate Name": `${app.first_name || ""} ${app.last_name || ""}`.trim(),
+          "Roll Number": String(app.roll_number || "—"),
+          "Email Address": String(app.email || "—"),
+          "Phone Number": String(app.phone || "—"),
+          "College / Organization": String(app.college_organization || "—"),
+          "City": String(app.city || "—"),
+          "Ticket Tier": ticket,
+          "Amount (INR)": amount,
+          "Payment Status": String(app.payment_status || "pending").toUpperCase(),
+          "UTR Number": String(utr),
+          "Reference": String(app.reference || "None"),
+          "Registration Date (IST)": dateStr,
+        };
+      });
+
+      const ws = XLSX.utils.json_to_sheet(rows);
+
+      // Auto-fit column widths so no values are truncated or confusing in Excel
+      ws["!cols"] = [
+        { wch: 6 },   // S.No
+        { wch: 20 },  // Application #
+        { wch: 24 },  // Delegate Name
+        { wch: 16 },  // Roll Number
+        { wch: 28 },  // Email
+        { wch: 16 },  // Phone
+        { wch: 30 },  // College / Org
+        { wch: 16 },  // City
+        { wch: 22 },  // Ticket Tier
+        { wch: 14 },  // Amount (INR)
+        { wch: 16 },  // Payment Status
+        { wch: 22 },  // UTR Number
+        { wch: 16 },  // Reference
+        { wch: 24 },  // Registration Date
+      ];
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Delegates Registry");
+
+      const dateStamp = new Date().toISOString().split("T")[0];
+      XLSX.writeFile(wb, `TEDxKLH_2026_Delegates_${dateStamp}.xlsx`);
+    } catch (err) {
+      console.error("Export XLSX error:", err);
+      alert("Failed to export Excel file. Please try again.");
+    } finally {
+      setIsExportingExcel(false);
+    }
+  };
+
+  const handleExportPDF = async () => {
+    try {
+      setIsExportingPDF(true);
+      const apps = await fetchExportData();
+      if (!apps.length) {
+        alert("No applications found to export.");
+        return;
+      }
+
+      const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
+      const pageWidth = doc.internal.pageSize.width;
+
+      // Header Banner
+      doc.setFillColor(15, 15, 15);
+      doc.rect(0, 0, pageWidth, 52, "F");
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(15);
+      doc.setTextColor(235, 0, 40);
+      doc.text("TEDxKLH 2026 : METAMORPHOSIS", 25, 24);
+
+      doc.setFontSize(9);
+      doc.setTextColor(190, 190, 190);
+      doc.text("Official Delegate Applications Registry", 25, 40);
+
+      const nowStr = new Date().toLocaleString("en-IN", {
+        timeZone: "Asia/Kolkata",
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8.5);
+      doc.setTextColor(160, 160, 160);
+      doc.text(`Generated: ${nowStr} IST  |  Total: ${apps.length} Records`, pageWidth - 25, 34, { align: "right" });
+
+      const tableRows = apps.map((app, idx) => {
+        const isGroup = app.pass_type === "group_of_4" || (app.ticket_type && app.ticket_type.includes("1999"));
+        const ticket = isGroup ? "₹1999 (Group)" : "₹549 (Individual)";
+        const amount = app.ticket_price || app.total_amount || (isGroup ? 1999 : 549);
+        const utr = app.utr_number || app.payment_verifications?.[0]?.utr_number || "—";
+        const contact = `${app.email || "—"}\n${app.phone || "—"}`;
+        const collegeCity = `${app.college_organization || "—"}${app.city ? " (" + app.city + ")" : ""}`;
+
+        return [
+          String(idx + 1),
+          String(app.application_number || "—"),
+          `${app.first_name || ""} ${app.last_name || ""}`.trim(),
+          String(app.roll_number || "—"),
+          contact,
+          collegeCity,
+          ticket,
+          `INR ${amount}`,
+          String(app.payment_status || "pending").toUpperCase(),
+          String(utr),
+          String(app.reference || "—"),
+        ];
+      });
+
+      autoTable(doc, {
+        startY: 62,
+        head: [["#", "App #", "Delegate Name", "Roll No", "Contact Info", "College / City", "Ticket", "Amount", "Payment", "UTR Number", "Ref"]],
+        body: tableRows,
+        theme: "grid",
+        headStyles: {
+          fillColor: [18, 18, 18],
+          textColor: [255, 255, 255],
+          fontSize: 8,
+          fontStyle: "bold",
+          halign: "center",
+          valign: "middle",
+        },
+        bodyStyles: {
+          fontSize: 7.5,
+          textColor: [25, 25, 25],
+          valign: "middle",
+          cellPadding: 3.5,
+        },
+        alternateRowStyles: {
+          fillColor: [248, 248, 250],
+        },
+        columnStyles: {
+          0: { halign: "center", cellWidth: 22 },
+          1: { fontStyle: "bold", textColor: [180, 0, 20], halign: "center" },
+          2: { fontStyle: "bold" },
+          3: { halign: "center", fontStyle: "bold" },
+          7: { halign: "right", fontStyle: "bold" },
+          8: { halign: "center", fontStyle: "bold" },
+          9: { fontStyle: "bold", textColor: [180, 0, 20], halign: "center" },
+          10: { halign: "center" },
+        },
+        margin: { left: 25, right: 25 },
+      });
+
+      // Add footer with total page count to every page
+      const pageCount = doc.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(7.5);
+        doc.setTextColor(130, 130, 130);
+        doc.text("Confidential — For TEDxKLH 2026 Curatorial Desk Only", 25, doc.internal.pageSize.height - 12);
+        doc.text(`Page ${i} of ${pageCount}`, pageWidth - 25, doc.internal.pageSize.height - 12, { align: "right" });
+      }
+
+      const dateStamp = new Date().toISOString().split("T")[0];
+      doc.save(`TEDxKLH_2026_Delegates_${dateStamp}.pdf`);
+    } catch (err) {
+      console.error("Export PDF error:", err);
+      alert("Failed to export PDF file. Please try again.");
+    } finally {
+      setIsExportingPDF(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Title & Stats summary */}
@@ -175,13 +393,38 @@ export default function AdminApplicationsPage() {
           </h1>
         </div>
 
-        <button
-          onClick={() => fetchApplications()}
-          className="px-4 py-2 rounded-full border border-white/10 hover:border-white/25 text-white/70 hover:text-white text-xs font-mono uppercase tracking-wider flex items-center gap-2 transition-colors cursor-pointer self-start sm:self-auto bg-white/[0.02]"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-[#EB0028]" : ""}`} />
-          <span>Refresh</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
+          {/* Download XLSX Button */}
+          <button
+            onClick={handleExportXLSX}
+            disabled={isExportingExcel || isExportingPDF || totalCount === 0}
+            title="Download full registry as well-formatted Excel spreadsheet"
+            className="px-3.5 py-2 rounded-xl border border-emerald-500/30 hover:border-emerald-500/60 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-mono uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(16,185,129,0.15)]"
+          >
+            <FileSpreadsheet className={`w-3.5 h-3.5 ${isExportingExcel ? "animate-bounce" : ""}`} />
+            <span>{isExportingExcel ? "Exporting..." : "Download XLSX"}</span>
+          </button>
+
+          {/* Download PDF Button */}
+          <button
+            onClick={handleExportPDF}
+            disabled={isExportingExcel || isExportingPDF || totalCount === 0}
+            title="Download full registry as formal printable PDF document"
+            className="px-3.5 py-2 rounded-xl border border-[#EB0028]/30 hover:border-[#EB0028]/60 bg-[#EB0028]/10 hover:bg-[#EB0028]/20 text-[#EB0028] text-xs font-mono uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(235,0,40,0.15)]"
+          >
+            <FileText className={`w-3.5 h-3.5 ${isExportingPDF ? "animate-pulse" : ""}`} />
+            <span>{isExportingPDF ? "Exporting..." : "Download PDF"}</span>
+          </button>
+
+          {/* Refresh Button */}
+          <button
+            onClick={() => fetchApplications()}
+            className="px-3.5 py-2 rounded-xl border border-white/10 hover:border-white/25 text-white/70 hover:text-white text-xs font-mono uppercase tracking-wider flex items-center gap-2 transition-colors cursor-pointer bg-white/[0.02]"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-[#EB0028]" : ""}`} />
+            <span>Refresh</span>
+          </button>
+        </div>
       </div>
 
       {/* Search & Filter Controls Bar */}
@@ -290,22 +533,21 @@ export default function AdminApplicationsPage() {
                 <th className="py-3 px-3">Ticket</th>
                 <th className="py-3 px-3">Amount</th>
                 <th className="py-3 px-3">Payment</th>
-                <th className="py-3 px-3">Status</th>
-                <th className="py-3 px-3">Delegate ID</th>
+                <th className="py-3 px-3">UTR Number</th>
                 <th className="py-3 px-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
               {loading && applications.length === 0 ? (
                 <tr>
-                  <td colSpan={11} className="py-12 text-center text-white/40 font-mono">
+                  <td colSpan={10} className="py-12 text-center text-white/40 font-mono">
                     <div className="w-6 h-6 border-2 border-[#EB0028] border-t-transparent rounded-full animate-spin mx-auto mb-2" />
                     Querying delegate records...
                   </td>
                 </tr>
               ) : applications.length === 0 ? (
                 <tr>
-                  <td colSpan={11} className="py-14 text-center text-white/40 font-mono space-y-1">
+                  <td colSpan={10} className="py-14 text-center text-white/40 font-mono space-y-1">
                     <p className="text-sm font-semibold text-white/60">No matching applications found</p>
                     <p className="text-xs text-white/30">When new applications arrive, they will appear here live.</p>
                   </td>
@@ -363,17 +605,14 @@ export default function AdminApplicationsPage() {
                           {app.payment_status}
                         </span>
                       </td>
-                      <td className="py-3.5 px-3">
-                        <span
-                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase font-bold border ${
-                            getStatusBadge(app.application_status)
-                          }`}
-                        >
-                          {app.application_status}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-3 font-mono text-[11px] font-semibold text-emerald-400">
-                        {app.delegate_id || "—"}
+                      <td className="py-3.5 px-3 font-mono text-[11px] font-semibold">
+                        {app.utr_number || app.payment_verifications?.[0]?.utr_number ? (
+                          <span className="px-2 py-0.5 rounded bg-white/[0.04] border border-white/10 text-amber-300 font-bold select-all tracking-wider inline-block">
+                            {app.utr_number || app.payment_verifications?.[0]?.utr_number}
+                          </span>
+                        ) : (
+                          <span className="text-white/30">—</span>
+                        )}
                       </td>
                       <td className="py-3.5 px-3 text-right">
                         <div className="flex items-center justify-end gap-2">
