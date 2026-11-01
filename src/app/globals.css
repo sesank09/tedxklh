@@ -215,6 +215,29 @@ html.lenis, html.lenis body { height: auto; }
 }
 .scrollbar-none::-webkit-scrollbar { display: none; }
 
+/* ───────── Custom Modal Scrollbar ───────── */
+.custom-modal-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(235, 0, 40, 0.6) rgba(255, 255, 255, 0.05);
+}
+.custom-modal-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-modal-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 9999px;
+  margin: 6px 0;
+}
+.custom-modal-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(235, 0, 40, 0.5);
+  border-radius: 9999px;
+  border: 1px solid rgba(235, 0, 40, 0.3);
+}
+.custom-modal-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(235, 0, 40, 0.85);
+  box-shadow: 0 0 10px rgba(235, 0, 40, 0.8);
+}
+
 /* ───────── Card Layer Performance ───────── */
 .card-border-layer {
   will-change: transform;

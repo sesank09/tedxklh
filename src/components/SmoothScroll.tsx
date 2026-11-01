@@ -22,6 +22,16 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
       wheelMultiplier: 1.0,
       touchMultiplier: 1.1,
       infinite: false,
+      allowNestedScroll: true,
+      prevent: (node) => {
+        if (!node || !(node instanceof HTMLElement)) return false;
+        return (
+          node.hasAttribute("data-lenis-prevent") ||
+          node.closest("[data-lenis-prevent]") !== null ||
+          node.closest(".custom-modal-scrollbar") !== null ||
+          node.closest(".overflow-y-auto") !== null
+        );
+      },
     });
 
     // Provide global instance for lock synchronization
@@ -45,4 +55,3 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
 
   return <>{children}</>;
 }
-

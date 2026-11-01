@@ -178,6 +178,7 @@ function SpeakerModal({
   onNavigate?: (direction: "prev" | "next") => void;
 }) {
   const prefersReducedMotion = useReducedMotion();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -188,11 +189,24 @@ function SpeakerModal({
     document.addEventListener("keydown", handleKeyDown);
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+
+    // Pause Lenis smooth scroll while modal is active so it never hijacks wheel/touch
+    const lenisInstance = (window as unknown as { __lenis?: { stop: () => void; start: () => void } }).__lenis;
+    lenisInstance?.stop();
+
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = originalOverflow;
+      lenisInstance?.start();
     };
   }, [onClose, onNavigate]);
+
+  // Reset scroll to top when user navigates between speakers
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0;
+    }
+  }, [speaker.id]);
 
   const num = String(speaker.id).padStart(2, "0");
 
@@ -202,7 +216,8 @@ function SpeakerModal({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 md:p-8 bg-black/85 backdrop-blur-2xl overflow-y-auto"
+      data-lenis-prevent="true"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 md:p-8 bg-black/85 backdrop-blur-2xl overflow-y-auto overscroll-contain"
       onClick={onClose}
     >
       {/* Ambient background glows */}
@@ -228,11 +243,11 @@ function SpeakerModal({
         exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.92, y: 24 }}
         transition={{ type: "spring", stiffness: 320, damping: 28, mass: 0.9 }}
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-4xl my-auto rounded-[28px] overflow-hidden select-text"
+        data-lenis-prevent="true"
+        className="relative w-full max-w-4xl my-auto rounded-[28px] overflow-hidden select-text overscroll-contain shadow-[0_25px_80px_rgba(0,0,0,0.85),0_0_50px_rgba(235,0,40,0.22),inset_0_0_40px_rgba(235,0,40,0.06)]"
         style={{
           background: "linear-gradient(155deg, #111111 0%, #080808 55%, #050505 100%)",
           border: "1px solid rgba(235,0,40,0.35)",
-          boxShadow: "0 25px 80px rgba(0,0,0,0.85), 0 0 50px rgba(235,0,40,0.22), inset 0 0 40px rgba(235,0,40,0.06)",
         }}
       >
         {/* Animated Laser Border Sweep */}
@@ -286,10 +301,21 @@ function SpeakerModal({
           <span className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-[0_0_18px_rgba(235,0,40,0.6)]" />
         </button>
 
-        {/* Modal Content */}
-        <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8 p-5 sm:p-7 md:p-9 max-h-[88vh] overflow-y-auto">
-          {/* Left Column: Full Poster */}
-          <div className="md:col-span-5 flex flex-col items-center">
+        {/* Modal Scrollable Content */}
+        <div
+          ref={scrollContainerRef}
+          tabIndex={0}
+          data-lenis-prevent="true"
+          onWheel={(e) => e.stopPropagation()}
+          className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8 p-5 sm:p-7 md:p-9 max-h-[85vh] sm:max-h-[88vh] overflow-y-auto overscroll-contain focus:outline-none custom-modal-scrollbar select-text"
+          style={{
+            WebkitOverflowScrolling: "touch",
+            scrollbarWidth: "thin",
+            scrollbarColor: "rgba(235,0,40,0.6) rgba(255,255,255,0.05)",
+          }}
+        >
+          {/* Left Column: Full Poster (pinned on desktop) */}
+          <div className="md:col-span-5 flex flex-col items-center md:sticky md:top-0 md:self-start">
             <motion.div
               initial={{ opacity: 0, scale: 0.94, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -467,7 +493,7 @@ function SpeakerModal({
             </div>
 
             {/* Bottom Actions & Speaker Pagination */}
-            <div className="pt-4 border-t border-white/[0.08] flex flex-wrap items-center justify-between gap-3">
+            <div className="pt-4 border-t border-white/[0.08] flex flex-wrap items-center justify-between gap-3 pb-3 sm:pb-1">
               {onNavigate && (
                 <div className="flex items-center gap-2">
                   <button
