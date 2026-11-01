@@ -166,20 +166,37 @@ function ParticleCanvas({ activeStageIdx }: { activeStageIdx: number }) {
 export default function Theme() {
   const [activeStageIdx, setActiveStageIdx] = useState(0); // Starts at Phase 01 (IDEA: Closed Cocoon)
   const [isPaused, setIsPaused] = useState(false);
+  const [isInView, setIsInView] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
   const cardRowRef = useRef<HTMLDivElement>(null);
   const prefersReducedMotion = useReducedMotion();
 
-  // Auto-cycle through metamorphosis (pauses when user interacts or hovers)
+  // Track if section is in viewport so timers and scrolls NEVER fire when viewing other sections (e.g. Hero)
   useEffect(() => {
-    if (isPaused) return;
+    const section = sectionRef.current;
+    if (!section) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsInView(entry.isIntersecting);
+      },
+      { threshold: 0.15 }
+    );
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
+
+  // Auto-cycle through metamorphosis ONLY when the user is actually viewing the section
+  useEffect(() => {
+    if (isPaused || !isInView) return;
     const timer = setInterval(() => {
       setActiveStageIdx((prev) => (prev + 1) % STAGES.length);
     }, 6500);
     return () => clearInterval(timer);
-  }, [isPaused]);
+  }, [isPaused, isInView]);
 
-  // Keyboard navigation support
+  // Keyboard navigation support (only active when viewing section)
   useEffect(() => {
+    if (!isInView) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (["INPUT", "TEXTAREA"].includes((e.target as HTMLElement)?.tagName)) return;
       if (e.key === "ArrowRight") {
@@ -190,20 +207,22 @@ export default function Theme() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [isInView]);
 
-  // Smooth scroll active bottom card into view on small screens
+  // Only scroll the inner horizontal container on small screens — NEVER scroll the window!
   useEffect(() => {
-    if (!cardRowRef.current) return;
-    const activeEl = cardRowRef.current.children[activeStageIdx] as HTMLElement;
+    const container = cardRowRef.current;
+    if (!container || !isInView) return;
+    if (container.scrollWidth <= container.clientWidth) return;
+    const activeEl = container.children[activeStageIdx] as HTMLElement;
     if (activeEl) {
-      activeEl.scrollIntoView({
+      const targetScroll = activeEl.offsetLeft - (container.clientWidth - activeEl.clientWidth) / 2;
+      container.scrollTo({
+        left: Math.max(0, targetScroll),
         behavior: "smooth",
-        block: "nearest",
-        inline: "center",
       });
     }
-  }, [activeStageIdx]);
+  }, [activeStageIdx, isInView]);
 
   const currentStage = STAGES[activeStageIdx];
 
@@ -218,6 +237,7 @@ export default function Theme() {
   return (
     <section
       id="theme"
+      ref={sectionRef}
       className="relative w-full py-[clamp(3.5rem,7vw,8.5rem)] px-[clamp(1rem,4vw,3.5rem)] select-none overflow-hidden"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
