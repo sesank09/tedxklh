@@ -15,6 +15,7 @@ interface Speaker {
   image?: string;
   cardImage?: string;
   isAnnounced?: boolean;
+  imagePosition?: string;
 }
 
 const SPEAKERS: Speaker[] = [
@@ -161,6 +162,7 @@ const SPEAKERS: Speaker[] = [
     tags: ["Global AI Leader", "100 GIGA", "Generative AI", "Enterprise Automation"],
     image: "/speakers/priyanka-kamath.jpg",
     cardImage: "/speakers/priyanka-kamath-card.jpg",
+    imagePosition: "center 38%",
   },
 ];
 
@@ -731,8 +733,8 @@ function SpeakerCard({
                   alt={speaker.name}
                   className="w-full h-full object-cover transition-transform duration-700"
                   style={{
-                    objectPosition: "center 10%",
-                    transform: fx ? "scale(1.08)" : "scale(1)",
+                    objectPosition: speaker.imagePosition || "center 10%",
+                    transform: fx ? "scale(1.04)" : "scale(1)",
                     filter: fx ? "brightness(1.06) contrast(1.04)" : "brightness(0.95)",
                   }}
                 />
