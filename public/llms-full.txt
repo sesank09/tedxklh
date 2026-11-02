@@ -85,6 +85,12 @@ The 2026 edition carries the theme **"METAMORPHOSIS: The Unseen Process of Becom
 - **Quote**: "Driving cloud innovation and enterprise agility at the intersection of cloud strategy and business transformation."
 - **Tags**: AWS Cloud COE, Capgemini, Cloud Innovation, Digital Transformation
 
+### Speaker 12: Priyanka Kamath
+- **Role**: Founder & CEO, 100 GIGA | x- World Bank & Pepsico Inc
+- **Bio**: Priyanka Kamath is a Global AI Business Leader with over 16 years of experience building and scaling enterprise technology across Artificial Intelligence, Blockchain, and Cybersecurity. Her work spans major global organisations, including Novartis, the World Bank Group’s IFC, and PepsiCo, driving enterprise-scale digital transformation and technology initiatives. Specialising in Generative AI, Agentic AI, and enterprise automation, she transforms complex business challenges into practical, real-world AI solutions. Internationally recognised across India, the USA, Singapore, Japan, and Paris, her work has also been featured at the United Nations in New York, NASDAQ, the New York Stock Exchange, CES, Forbes, and Business Insider.
+- **Quote**: "Transforming complex enterprise challenges into practical, real-world AI solutions that drive global transformation."
+- **Tags**: Global AI Leader, 100 GIGA, Generative AI, Enterprise Automation
+
 ## 4. Frequently Asked Questions (FAQ)
 
 ### What is TEDxKLH 2026: METAMORPHOSIS?

@@ -150,7 +150,18 @@ const SPEAKERS: Speaker[] = [
     image: "/speakers/mamatha-shanmugam.jpg",
     cardImage: "/speakers/mamatha-shanmugam-card.jpg",
   },
-  { id: 12, isAnnounced: false },
+  {
+    id: 12,
+    isAnnounced: true,
+    name: "Priyanka Kamath",
+    role: "Founder & CEO, 100 GIGA | x- World Bank & Pepsico Inc",
+    details:
+      "Priyanka Kamath is a Global AI Business Leader with over 16 years of experience building and scaling enterprise technology across Artificial Intelligence, Blockchain, and Cybersecurity. Her work spans major global organisations, including Novartis, the World Bank Group’s IFC, and PepsiCo, driving enterprise-scale digital transformation and technology initiatives. Specialising in Generative AI, Agentic AI, and enterprise automation, she transforms complex business challenges into practical, real-world AI solutions. Internationally recognised across India, the USA, Singapore, Japan, and Paris, her work has also been featured at the United Nations in New York, NASDAQ, the New York Stock Exchange, CES, Forbes, and Business Insider.",
+    quote: "Transforming complex enterprise challenges into practical, real-world AI solutions that drive global transformation.",
+    tags: ["Global AI Leader", "100 GIGA", "Generative AI", "Enterprise Automation"],
+    image: "/speakers/priyanka-kamath.jpg",
+    cardImage: "/speakers/priyanka-kamath-card.jpg",
+  },
 ];
 
 const SHARDS = [

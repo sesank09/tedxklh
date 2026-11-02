@@ -174,6 +174,14 @@ export default function StructuredData() {
         "worksFor": { "@type": "Organization", "name": "Capgemini" },
         "image": `${baseUrl}/speakers/mamatha-shanmugam.jpg`,
         "description": "Technology leader driving cloud innovation and digital transformation at the intersection of enterprise technology and financial services."
+      },
+      {
+        "@type": "Person",
+        "name": "Priyanka Kamath",
+        "jobTitle": "Founder & CEO, Global AI Business Leader",
+        "worksFor": { "@type": "Organization", "name": "100 GIGA" },
+        "image": `${baseUrl}/speakers/priyanka-kamath.jpg`,
+        "description": "Global AI Business Leader with over 16 years of experience building and scaling enterprise technology across Artificial Intelligence, Blockchain, and Cybersecurity."
       }
     ]
   };

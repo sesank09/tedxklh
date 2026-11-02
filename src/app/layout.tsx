@@ -64,6 +64,8 @@ export const metadata: Metadata = {
     "Tamal Chatterjee Sids Farm",
     "Madhulash Babu Krovvidi Edodwaja",
     "Mamatha Shanmugam Capgemini",
+    "Priyanka Kamath 100 GIGA",
+    "Priyanka Kamath AI Leader",
     // Registration & Passes
     "TEDxKLH Passes",
     "TEDxKLH Registration",
